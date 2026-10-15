@@ -1,0 +1,38 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+/.vite
+
+# Next.js build output
+/.next/
+/out/
+/build
+/dist
+
+# Environment & Secrets (NEVER commit live secrets)
+.env
+.env*.local
+*.pem
+
+# Database & SQLite files
+*.db
+*.db-journal
+*.tmp*
+
+# Storage uploads
+/storage/manuscripts/*
+!/storage/manuscripts/.gitkeep
+/storage/published/*
+!/storage/published/.gitkeep
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
+next-env.d.ts

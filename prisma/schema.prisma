@@ -1,0 +1,465 @@
+// This is your Prisma schema file for NextGen Research and Innovation Press
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  affiliation   String?
+  orcid         String?
+  country       String?
+  bio           String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  roleAssignments  UserRoleAssignment[]
+  submissions      Submission[]           @relation("AuthorSubmissions")
+  editorialBoards  EditorialBoardMember[]
+  reviewAssignments ReviewAssignment[]     @relation("ReviewerAssignments")
+  assignedEditorReviews ReviewAssignment[] @relation("EditorAssignments")
+  editorialDecisions   EditorialDecision[]
+  uploadedFiles    ManuscriptFile[]
+  discussionsSent  DiscussionMessage[]    @relation("DiscussionsSent")
+  notifications    Notification[]
+  auditEvents      AuditEvent[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model UserRoleAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String   // MASTER_ADMIN, JOURNAL_MANAGER, EDITOR, SECTION_EDITOR, REVIEWER, AUTHOR, READER
+  journalId String?  // Optional: when role is journal-scoped
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  journal Journal? @relation(fields: [journalId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role, journalId])
+}
+
+model Journal {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  title             String
+  abbreviation      String
+  description       String
+  aimsScope         String
+  publisher         String   @default("NextGen Research and Innovation Press")
+  printIssn         String?
+  onlineIssn        String?
+  peerReviewPolicy  String   @default("Double-anonymous peer review")
+  openAccessPolicy  String   @default("Open Access under CC BY 4.0")
+  licensingPolicy   String   @default("Creative Commons Attribution 4.0 International (CC BY 4.0)")
+  apcInfo           String?  @default("No publication fees for authors during the inaugural volume period.")
+  contactEmail      String
+  logoUrl           String?
+  coverImageUrl     String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  editorialBoard   EditorialBoardMember[]
+  submissions      Submission[]
+  volumes          Volume[]
+  issues           Issue[]
+  publishedArticles PublishedArticle[]
+  roleAssignments  UserRoleAssignment[]
+}
+
+model EditorialBoardMember {
+  id           String   @id @default(cuid())
+  journalId    String
+  userId       String
+  roleTitle    String   // Editor-in-Chief, Associate Editor, Advisory Board Member, Section Editor
+  affiliation  String
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([journalId, userId, roleTitle])
+}
+
+model Submission {
+  id                  String   @id @default(cuid())
+  submissionNumber    String   @unique // e.g., NGR-2026-0001
+  journalId           String
+  authorId            String
+  articleType         String   // RESEARCH_ARTICLE, REVIEW_ARTICLE, SHORT_COMMUNICATION, TECHNICAL_REPORT, CASE_STUDY
+  title               String
+  subtitle            String?
+  abstract            String
+  discipline          String
+  language            String   @default("en")
+  status              String   @default("SUBMITTED")
+  reviewModel         String   @default("DOUBLE_ANONYMOUS") // SINGLE_ANONYMOUS, DOUBLE_ANONYMOUS, OPEN
+  conflictOfInterest  String?
+  ethicsStatement     String?
+  fundingInfo         String?
+  dataAvailability    String?
+  consentStatement    String?
+  acknowledgements    String?
+  coverLetter         String?
+  declarationsConfirmed Boolean @default(true)
+
+  assignedEditorId    String?
+
+  submittedAt         DateTime?
+  acceptedAt          DateTime?
+  rejectedAt          DateTime?
+  withdrawnAt         DateTime?
+  publishedAt         DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  journal             Journal               @relation(fields: [journalId], references: [id])
+  author              User                  @relation("AuthorSubmissions", fields: [authorId], references: [id])
+  coAuthors           SubmissionAuthor[]
+  files               ManuscriptFile[]
+  versions            ManuscriptVersion[]
+  reviewAssignments   ReviewAssignment[]
+  editorialDecisions  EditorialDecision[]
+  discussions         DiscussionMessage[]
+  publishedArticle    PublishedArticle?
+  doiRecord           DOIRecord?
+}
+
+model SubmissionAuthor {
+  id              String   @id @default(cuid())
+  submissionId    String
+  firstName       String
+  lastName        String
+  email           String
+  affiliation     String
+  country         String?
+  orcid           String?
+  isCorresponding Boolean  @default(false)
+  authorOrder     Int      @default(1)
+  bio             String?
+
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+model ManuscriptFile {
+  id               String   @id @default(cuid())
+  submissionId     String
+  versionNumber    Int      @default(1)
+  fileType         String   // MANUSCRIPT_DOCX, SUPPLEMENTARY, REVISION, COPYEDITED, FINAL_TYPESET_PDF
+  originalFileName String
+  storageKey       String   // Supabase Storage path or local storage key
+  storageUrl       String?
+  mimeType         String
+  fileSize         Int
+  isConfidential   Boolean  @default(false)
+  uploadedById     String
+  createdAt        DateTime @default(now())
+
+  submission       Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  uploadedBy       User       @relation(fields: [uploadedById], references: [id])
+
+  @@index([submissionId, versionNumber])
+}
+
+model ManuscriptVersion {
+  id             String   @id @default(cuid())
+  submissionId   String
+  versionNumber  Int
+  title          String
+  abstract       String
+  changeSummary  String?  // Response to reviewers / revision notes
+  submittedById  String
+  createdAt      DateTime @default(now())
+
+  submission     Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, versionNumber])
+}
+
+model ReviewAssignment {
+  id                        String    @id @default(cuid())
+  submissionId              String
+  reviewerId                String
+  editorId                  String
+  status                    String    @default("INVITED") // INVITED, ACCEPTED, DECLINED, COMPLETED, CANCELLED
+  invitationDate            DateTime  @default(now())
+  responseDate              DateTime?
+  dueDate                   DateTime
+  completedDate             DateTime?
+  conflictOfInterestDeclared Boolean   @default(false)
+  declineReason             String?
+  remindersSent             Int       @default(0)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  submission                Submission    @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewer                  User          @relation("ReviewerAssignments", fields: [reviewerId], references: [id])
+  editor                    User          @relation("EditorAssignments", fields: [editorId], references: [id])
+  report                    ReviewReport?
+
+  @@index([submissionId, reviewerId])
+}
+
+model ReviewReport {
+  id                            String   @id @default(cuid())
+  reviewAssignmentId            String   @unique
+  recommendation                String   // ACCEPT, MINOR_REVISION, MAJOR_REVISION, REJECT
+  commentsForAuthors            String
+  confidentialCommentsForEditors String?
+  attachmentStorageKey          String?
+  rating                        Int?     // 1 to 5 scale
+  submittedAt                   DateTime @default(now())
+
+  reviewAssignment              ReviewAssignment @relation(fields: [reviewAssignmentId], references: [id], onDelete: Cascade)
+}
+
+model EditorialDecision {
+  id               String   @id @default(cuid())
+  submissionId     String
+  editorId         String
+  decision         String   // ACCEPT, MINOR_REVISION, MAJOR_REVISION, REJECT, DESK_REJECT, SEND_TO_REVIEW
+  rationale        String
+  commentsToAuthor String?
+  internalNotes    String?
+  versionNumber    Int      @default(1)
+  decidedAt        DateTime @default(now())
+
+  submission       Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  editor           User       @relation(fields: [editorId], references: [id])
+
+  @@index([submissionId])
+}
+
+model DiscussionMessage {
+  id           String   @id @default(cuid())
+  submissionId String
+  senderId     String
+  subject      String
+  message      String
+  isInternal   Boolean  @default(false) // If true, only visible to editors
+  createdAt    DateTime @default(now())
+
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  sender       User       @relation("DiscussionsSent", fields: [senderId], references: [id])
+
+  @@index([submissionId])
+}
+
+model Volume {
+  id           String   @id @default(cuid())
+  journalId    String
+  volumeNumber Int
+  year         Int
+  title        String?
+  description  String?
+  createdAt    DateTime @default(now())
+
+  journal      Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  issues       Issue[]
+
+  @@unique([journalId, volumeNumber])
+}
+
+model Issue {
+  id                     String    @id @default(cuid())
+  journalId              String
+  volumeId               String
+  issueNumber            Int
+  year                   Int
+  title                  String
+  description            String?
+  coverImageUrl          String?
+  status                 String    @default("DRAFT") // DRAFT, IN_PROGRESS, PUBLISHED, ARCHIVED
+  publicationDate        DateTime?
+  scheduledPublishDate   DateTime?
+  editorialIntroduction  String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  journal                Journal            @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  volume                 Volume             @relation(fields: [volumeId], references: [id], onDelete: Cascade)
+  publishedArticles      PublishedArticle[]
+
+  @@unique([journalId, volumeId, issueNumber])
+}
+
+model PublishedArticle {
+  id             String    @id @default(cuid())
+  submissionId   String    @unique
+  journalId      String
+  issueId        String
+  title          String
+  abstract       String
+  doi            String?   @unique
+  doiStatus      String    @default("NOT_GENERATED") // NOT_GENERATED, DRAFT, PENDING, DEPOSITED, REGISTERED, FAILED
+  articleNumber  String?   // e.g. "001" or "e2026001"
+  pageRange      String?   // e.g. "1-14"
+  pdfStorageKey  String
+  pdfUrl         String?
+  license        String    @default("CC BY 4.0")
+  citationString String?
+  viewsCount     Int       @default(0)
+  downloadsCount Int       @default(0)
+  publishedAt    DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  submission     Submission         @relation(fields: [submissionId], references: [id])
+  journal        Journal            @relation(fields: [journalId], references: [id])
+  issue          Issue              @relation(fields: [issueId], references: [id])
+  references     ArticleReference[]
+  keywords       ArticleKeyword[]
+
+  @@index([journalId, issueId])
+}
+
+model ArticleReference {
+  id                 String   @id @default(cuid())
+  publishedArticleId String
+  rawText            String
+  doi                String?
+  orderIndex         Int      @default(1)
+
+  publishedArticle   PublishedArticle @relation(fields: [publishedArticleId], references: [id], onDelete: Cascade)
+
+  @@index([publishedArticleId, orderIndex])
+}
+
+model ArticleKeyword {
+  id                 String   @id @default(cuid())
+  publishedArticleId String
+  keyword            String
+
+  publishedArticle   PublishedArticle @relation(fields: [publishedArticleId], references: [id], onDelete: Cascade)
+
+  @@index([publishedArticleId])
+  @@index([keyword])
+}
+
+model DOIRecord {
+  id                String    @id @default(cuid())
+  submissionId      String    @unique
+  doi               String    @unique
+  prefix            String    // e.g. 10.5555
+  suffix            String    // e.g. ngr.2026.0001
+  agency            String    @default("CROSSREF")
+  status            String    @default("DRAFT") // NOT_GENERATED, DRAFT, PENDING, DEPOSITED, REGISTERED, FAILED
+  depositBatchId    String?
+  depositPayloadXml String?
+  responseMessage   String?
+  registeredAt      DateTime?
+  lastAttemptAt     DateTime?
+  retryCount        Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  submission        Submission           @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  depositAttempts   DOIDepositAttempt[]
+}
+
+model DOIDepositAttempt {
+  id             String   @id @default(cuid())
+  doiRecordId    String
+  attemptedAt    DateTime @default(now())
+  requestPayload String
+  responseStatus Int
+  responseBody   String
+  isSuccessful   Boolean
+  errorDetails   String?
+
+  doiRecord      DOIRecord @relation(fields: [doiRecordId], references: [id], onDelete: Cascade)
+
+  @@index([doiRecordId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // SUBMISSION_RECEIVED, REVIEW_INVITATION, DECISION_RENDERED, etc.
+  title     String
+  message   String
+  linkUrl   String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String   // BOOTSTRAP_ADMIN, ASSIGN_EDITOR, MAKE_DECISION, DEPOSIT_DOI, etc.
+  entityType String   // SUBMISSION, USER, ISSUE, JOURNAL, DOI
+  entityId   String?
+  details    String   // JSON string of event metadata
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([action])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  isEncrypted Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+}
