@@ -28,17 +28,20 @@ export default async function EditorDashboardPage() {
     );
   }
 
-  // Fetch submissions permitted for this editor
+  // Fetch submissions and issues permitted for this editor
   let whereSub: any = {};
+  let whereIssues: any = {};
+  const editorRoles = user.roles?.filter((r: any) => r.role === 'EDITOR' || r.role === 'JOURNAL_MANAGER') || [];
+  const journalIds = editorRoles.map((r: any) => r.journalId).filter(Boolean);
+
   if (!isMasterAdmin(user)) {
-    const editorRoles = user.roles.filter((r: any) => r.role === 'EDITOR' || r.role === 'JOURNAL_MANAGER');
-    const journalIds = editorRoles.map((r: any) => r.journalId).filter(Boolean);
     if (journalIds.length > 0) {
       whereSub.journalId = { in: journalIds };
+      whereIssues.journalId = { in: journalIds };
     }
   }
 
-  const [submissions, journals, reviewers, issues] = await Promise.all([
+  const [submissions, allJournals, reviewers, issues] = await Promise.all([
     prisma.submission.findMany({
       where: whereSub,
       include: {
@@ -60,7 +63,9 @@ export default async function EditorDashboardPage() {
       },
       orderBy: { createdAt: 'desc' },
     }),
-    prisma.journal.findMany(),
+    prisma.journal.findMany({
+      orderBy: { title: 'asc' },
+    }),
     prisma.user.findMany({
       where: {
         roleAssignments: { some: { role: 'REVIEWER' } },
@@ -68,10 +73,21 @@ export default async function EditorDashboardPage() {
       select: { id: true, name: true, email: true, affiliation: true },
     }),
     prisma.issue.findMany({
-      include: { journal: true, volume: true },
+      where: whereIssues,
+      include: {
+        journal: true,
+        volume: true,
+        publishedArticles: {
+          select: { id: true, title: true, articleNumber: true },
+        },
+      },
       orderBy: [{ year: 'desc' }, { issueNumber: 'desc' }],
     }),
   ]);
+
+  const permittedJournals = isMasterAdmin(user) || journalIds.length === 0
+    ? allJournals
+    : allJournals.filter((j) => journalIds.includes(j.id));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 space-y-6">
@@ -81,13 +97,13 @@ export default async function EditorDashboardPage() {
           Editorial Queue & Decision Center
         </h1>
         <p className="text-xs text-slate-500">
-          Managing submissions following standard PKP OJS editorial workflow. Logged in as <strong>{user.name || user.email}</strong>.
+          Managing submissions following NextGen Press scholarly editorial workflow. Logged in as <strong>{user.name || user.email}</strong>.
         </p>
       </div>
 
       <EditorDashboardClient
         submissions={submissions}
-        journals={journals}
+        journals={permittedJournals}
         reviewers={reviewers}
         issues={issues}
         currentUser={user}

@@ -1,7 +1,7 @@
 # NextGen Research and Innovation Press
-### Academic Journal Publishing Platform (OJS Architecture)
+### Academic Journal Publishing Platform
 
-**NextGen Research and Innovation Press** is a modern, full-stack scholarly journal publishing platform following the editorial workflow, peer-review standards, and role-based access control of **PKP Open Journal Systems (OJS)**, designed with an academic light aesthetic, deep navy and blue accents, and full integration with **PostgreSQL (Supabase)** and **Crossref DOI** services.
+**NextGen Research and Innovation Press** is a modern, full-stack scholarly journal publishing platform following established academic editorial workflows, peer-review standards, and role-based access control, designed with an academic light aesthetic, deep navy and blue accents, and full integration with **PostgreSQL (Supabase)** and **Crossref DOI** services.
 
 ---
 
@@ -15,7 +15,7 @@
   - **Interdisciplinary Health & Life Sciences (IHLS)**
 - Independent mastheads, editorial boards, ISSNs, aims & scopes, and volume/issue schedules.
 
-### 2. OJS-Aligned 14-Stage Editorial Workflow
+### 2. Rigorous 14-Stage Editorial Workflow
 Strictly models the academic publication lifecycle:
 $$\text{Draft} \rightarrow \text{Submitted} \rightarrow \text{Desk Screening} \rightarrow \text{Under Review} \rightarrow \text{Revisions Requested} \rightarrow \text{Revision Submitted} \rightarrow \text{Accepted} \rightarrow \text{Production} \rightarrow \text{Published}$$
 

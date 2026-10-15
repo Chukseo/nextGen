@@ -108,7 +108,7 @@ export default async function HomePage() {
             </div>
             <h3 className="font-bold text-slate-900 text-base">Double-Anonymous Review</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Standardized OJS-aligned editorial workflow ensuring unbiased expert technical assessment and rigorous reproducibility checks.
+              Standardized rigorous academic editorial workflow ensuring unbiased expert technical assessment and reproducibility checks.
             </p>
           </div>
 

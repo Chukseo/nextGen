@@ -38,7 +38,7 @@ export default async function SubmitPage({
           Manuscript Submission Wizard
         </h1>
         <p className="text-xs text-slate-500">
-          Logged in as <strong>{session.user.name || session.user.email}</strong>. Submissions follow standard OJS workflow.
+          Logged in as <strong>{session.user.name || session.user.email}</strong>. Submissions follow rigorous double-anonymous review.
         </p>
       </div>
 

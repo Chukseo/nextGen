@@ -19,7 +19,7 @@ export default function EditorialPoliciesPage() {
         {/* Section 1: Peer Review */}
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-slate-900 scholarly-heading">
-            1. Peer Review Process (OJS Aligned)
+            1. Peer Review Process & Editorial Workflow
           </h2>
           <p>
             All submitted manuscripts undergo an initial desk screening by the Editor-in-Chief or assigned Section Editor to evaluate scope alignment, metadata completeness, and initial readability. Submissions that pass desk check are assigned to at least two independent expert peer reviewers.

@@ -76,8 +76,8 @@ export default function Footer() {
                 <span className="text-[11px] text-slate-300">Ethics Compliant</span>
               </div>
               <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center">
-                <span className="text-[10px] text-indigo-400 font-bold block uppercase tracking-wider">OJS Aligned</span>
-                <span className="text-[11px] text-slate-300">Workflow Standard</span>
+                <span className="text-[10px] text-indigo-400 font-bold block uppercase tracking-wider">Peer-Reviewed</span>
+                <span className="text-[11px] text-slate-300">Scholarly Standard</span>
               </div>
             </div>
           </div>
