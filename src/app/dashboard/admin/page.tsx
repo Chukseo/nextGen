@@ -114,6 +114,7 @@ export default async function AdminDashboardPage() {
         journals={journals}
         doiRecords={doiRecords}
         auditEvents={auditEvents}
+        currentUser={user}
       />
     </div>
   );

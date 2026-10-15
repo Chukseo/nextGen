@@ -16,7 +16,10 @@ import {
   X,
   ExternalLink,
   Lock,
-  Plus
+  Plus,
+  Trash2,
+  UserCog,
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function AdminDashboardClient({
@@ -25,12 +28,14 @@ export default function AdminDashboardClient({
   journals,
   doiRecords,
   auditEvents,
+  currentUser,
 }: {
   metrics: any;
   users: any[];
   journals: any[];
   doiRecords: any[];
   auditEvents: any[];
+  currentUser?: any;
 }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'journals' | 'doi' | 'audit'>('overview');
 
@@ -42,6 +47,14 @@ export default function AdminDashboardClient({
   const [newUserJournalId, setNewUserJournalId] = useState(journals[0]?.id || '');
   const [newUserAffiliation, setNewUserAffiliation] = useState('');
 
+  // Role management modal
+  const [rolesModalUser, setRolesModalUser] = useState<any | null>(null);
+  const [addRoleType, setAddRoleType] = useState('REVIEWER');
+  const [addRoleJournalId, setAddRoleJournalId] = useState('');
+
+  // Delete user modal
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<any | null>(null);
+
   // Journal modal
   const [journalModalOpen, setJournalModalOpen] = useState(false);
   const [journalSlug, setJournalSlug] = useState('');
@@ -52,6 +65,74 @@ export default function AdminDashboardClient({
 
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleRemoveRole = async (userId: string, roleAssignmentId: string) => {
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, removeRoleId: roleAssignmentId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to remove role');
+
+      setFeedback({ type: 'success', text: 'Role removed successfully.' });
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
+  const handleAddRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rolesModalUser) return;
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: rolesModalUser.id,
+          newRole: addRoleType,
+          journalId: addRoleJournalId || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add role');
+
+      setFeedback({ type: 'success', text: `Role ${addRoleType} assigned successfully.` });
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteConfirmUser) return;
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: deleteConfirmUser.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+
+      setFeedback({ type: 'success', text: data.message || 'User deleted successfully.' });
+      setDeleteConfirmUser(null);
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -325,16 +406,40 @@ export default function AdminDashboardClient({
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => handleToggleUserStatus(u.id, u.isActive)}
-                          className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${
-                            u.isActive
-                              ? 'text-rose-600 hover:bg-rose-50'
-                              : 'text-emerald-600 hover:bg-emerald-50'
-                          }`}
-                        >
-                          {u.isActive ? 'Suspend' : 'Reactivate'}
-                        </button>
+                        <div className="flex items-center justify-end space-x-1.5">
+                          <button
+                            onClick={() => {
+                              setRolesModalUser(u);
+                              setAddRoleType('REVIEWER');
+                              setAddRoleJournalId('');
+                            }}
+                            className="text-[11px] font-semibold px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center space-x-1"
+                            title="Manage and change roles"
+                          >
+                            <UserCog className="w-3 h-3" />
+                            <span>Roles</span>
+                          </button>
+                          <button
+                            onClick={() => handleToggleUserStatus(u.id, u.isActive)}
+                            disabled={currentUser?.id === u.id}
+                            className={`text-[11px] font-semibold px-2 py-1 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                              u.isActive
+                                ? 'text-amber-700 hover:bg-amber-50'
+                                : 'text-emerald-700 hover:bg-emerald-50'
+                            }`}
+                          >
+                            {u.isActive ? 'Suspend' : 'Reactivate'}
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmUser(u)}
+                            disabled={currentUser?.id === u.id}
+                            className="text-[11px] font-semibold px-2 py-1 rounded text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-0.5"
+                            title={currentUser?.id === u.id ? "Cannot delete your own admin account" : "Delete user account"}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -694,6 +799,211 @@ export default function AdminDashboardClient({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MANAGE USER ROLES MODAL */}
+      {rolesModalUser && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
+                  <UserCog className="w-4 h-4 text-blue-700" />
+                  <span>Manage Roles: {rolesModalUser.name || 'Scholar'}</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 font-mono mt-0.5">{rolesModalUser.email}</p>
+              </div>
+              <button
+                onClick={() => setRolesModalUser(null)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6 overflow-y-auto text-xs">
+              {/* Existing Roles */}
+              <div className="space-y-2">
+                <label className="block font-bold text-slate-700 uppercase text-[11px]">
+                  Assigned Roles ({rolesModalUser.roleAssignments?.length || 0})
+                </label>
+                <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden bg-slate-50/50">
+                  {rolesModalUser.roleAssignments?.length === 0 ? (
+                    <div className="p-3 text-slate-500 italic text-center">No roles assigned.</div>
+                  ) : (
+                    rolesModalUser.roleAssignments.map((ra: any) => {
+                      const isSelfMasterAdmin = currentUser?.id === rolesModalUser.id && ra.role === 'MASTER_ADMIN';
+                      return (
+                        <div key={ra.id} className="p-3 flex items-center justify-between gap-2 bg-white">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center space-x-2">
+                              <span
+                                className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                                  ra.role === 'MASTER_ADMIN'
+                                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                                    : ra.role === 'JOURNAL_MANAGER'
+                                    ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                                    : ra.role === 'EDITOR'
+                                    ? 'bg-blue-100 text-blue-900 border border-blue-200'
+                                    : ra.role === 'REVIEWER'
+                                    ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                                    : 'bg-slate-100 text-slate-800 border border-slate-200'
+                                }`}
+                              >
+                                {ra.role}
+                              </span>
+                              <span className="text-slate-600 text-[11px]">
+                                {ra.journal ? (
+                                  <span>Journal: <strong>{ra.journal.title}</strong> ({ra.journal.slug})</span>
+                                ) : (
+                                  <span className="text-slate-400">Global / All Journals</span>
+                                )}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleRemoveRole(rolesModalUser.id, ra.id)}
+                            disabled={loading || isSelfMasterAdmin}
+                            className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2 py-1 rounded transition-colors text-[11px] font-semibold disabled:opacity-30 disabled:cursor-not-allowed flex items-center space-x-1"
+                            title={isSelfMasterAdmin ? 'Cannot remove your own Master Admin role' : 'Remove this role assignment'}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Remove</span>
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Add New Role */}
+              <form onSubmit={handleAddRole} className="p-4 border border-blue-200 rounded-lg bg-blue-50/40 space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs flex items-center space-x-1.5">
+                  <Plus className="w-3.5 h-3.5 text-blue-700" />
+                  <span>Assign Additional Role</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1 text-[11px]">Role *</label>
+                    <select
+                      value={addRoleType}
+                      onChange={(e) => setAddRoleType(e.target.value)}
+                      className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none font-medium text-slate-800"
+                    >
+                      <option value="AUTHOR">Author</option>
+                      <option value="REVIEWER">Peer Reviewer</option>
+                      <option value="EDITOR">Journal Editor</option>
+                      <option value="SECTION_EDITOR">Section Editor</option>
+                      <option value="JOURNAL_MANAGER">Journal Manager</option>
+                      <option value="MASTER_ADMIN">Master Administrator</option>
+                      <option value="READER">Reader</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1 text-[11px]">Scope to Journal (Optional)</label>
+                    <select
+                      value={addRoleJournalId}
+                      onChange={(e) => setAddRoleJournalId(e.target.value)}
+                      className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white outline-none text-slate-800"
+                    >
+                      <option value="">-- All Journals (Global) --</option>
+                      {journals.map((j) => (
+                        <option key={j.id} value={j.id}>
+                          {j.title} ({j.abbreviation})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-4 py-1.5 rounded transition-colors text-xs flex items-center space-x-1 shadow-sm disabled:opacity-50"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{loading ? 'Adding...' : 'Add Role'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="p-4 border-t border-slate-100 flex justify-end bg-slate-50">
+              <button
+                type="button"
+                onClick={() => setRolesModalUser(null)}
+                className="px-4 py-2 border border-slate-300 rounded text-slate-700 text-xs font-semibold hover:bg-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELETE USER MODAL */}
+      {deleteConfirmUser && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-rose-200 max-w-md w-full overflow-hidden">
+            <div className="p-4 border-b border-rose-100 flex items-center justify-between bg-rose-50">
+              <h3 className="font-bold text-rose-900 text-sm flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600" />
+                <span>Permanently Delete User</span>
+              </h3>
+              <button onClick={() => setDeleteConfirmUser(null)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs text-slate-600">
+              <p>
+                Are you sure you want to permanently delete the account for:
+              </p>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1">
+                <div className="font-bold text-slate-900 text-sm">{deleteConfirmUser.name || 'Scholar'}</div>
+                <div className="font-mono text-slate-600 text-[11px]">{deleteConfirmUser.email}</div>
+                <div className="text-[11px] text-slate-500 pt-1">
+                  Affiliation: <strong>{deleteConfirmUser.affiliation || 'None'}</strong>
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-[11px] space-y-1">
+                <div className="font-bold flex items-center space-x-1">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Permanent Deletion Warning</span>
+                </div>
+                <p>
+                  This user will be permanently deleted along with all assigned roles, sessions, authored submissions, and review reports. This operation cannot be reversed.
+                </p>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmUser(null)}
+                  className="px-4 py-2 border border-slate-300 rounded text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteUser}
+                  disabled={loading}
+                  className="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-4 py-2 rounded transition-colors disabled:opacity-50 flex items-center space-x-1.5 shadow-sm"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{loading ? 'Deleting...' : 'Permanently Delete User'}</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
