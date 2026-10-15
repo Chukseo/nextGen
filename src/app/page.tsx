@@ -54,9 +54,23 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-16 pb-16">
-      {/* Scholarly Hero Section */}
-      <section className="bg-gradient-to-b from-navy-950 via-navy-900 to-navy-950 text-white pt-16 pb-20 px-4 sm:px-8 border-b border-navy-800">
-        <div className="max-w-7xl mx-auto space-y-8">
+      {/* Scholarly Hero Section with Faded Unsplash Image & Navy Solid Overlay */}
+      <section className="relative bg-navy-950 text-white pt-20 pb-24 px-4 sm:px-8 border-b border-navy-800 overflow-hidden">
+        {/* Background Image Layer with Solid Hero Color Overlay */}
+        <div className="absolute inset-0 pointer-events-none select-none z-0">
+          <img
+            src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=2400&q=85"
+            alt="Scholarly Research Library Architecture"
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center opacity-20 filter brightness-75 contrast-125"
+          />
+          {/* Solid Hero Navy Overlay with subtle gradient blend */}
+          <div className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/85 to-navy-950/95" />
+          <div className="absolute inset-0 bg-gradient-to-b from-navy-950/90 via-transparent to-navy-950" />
+          <div className="absolute inset-0 bg-navy-950/40 mix-blend-multiply" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto space-y-8">
           <div className="max-w-3xl space-y-4">
             <div className="inline-flex items-center space-x-2 bg-blue-900/60 border border-blue-700/50 rounded-full px-3 py-1 text-xs text-blue-300">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
