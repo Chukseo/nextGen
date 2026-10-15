@@ -6,6 +6,12 @@ import bcrypt from 'bcryptjs';
 import prisma from './prisma';
 import { logAuditEvent } from './audit';
 
+// Auto-detect production URL on Vercel if NEXTAUTH_URL is missing or still points to localhost
+if (process.env.VERCEL_URL && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.includes('localhost'))) {
+  process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+}
+process.env.AUTH_TRUST_HOST = 'true';
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   session: {
@@ -63,69 +69,109 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  callbacks: {
-    async signIn({ user, account, profile }) {
-      if (account?.provider === 'google' && user.email) {
-        // Find existing user or check if this user is designated MASTER_ADMIN_EMAIL
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email.toLowerCase() },
-          include: { roleAssignments: true },
+  events: {
+    async createUser({ user }) {
+      try {
+        const masterAdminEmail = process.env.MASTER_ADMIN_EMAIL?.toLowerCase().trim();
+        const isDesignatedAdmin = masterAdminEmail && user.email?.toLowerCase().trim() === masterAdminEmail;
+
+        await prisma.userRoleAssignment.createMany({
+          data: isDesignatedAdmin
+            ? [
+                { userId: user.id, role: 'MASTER_ADMIN' },
+                { userId: user.id, role: 'AUTHOR' },
+              ]
+            : [
+                { userId: user.id, role: 'AUTHOR' },
+                { userId: user.id, role: 'READER' },
+              ],
         });
 
-        const masterAdminEmail = process.env.MASTER_ADMIN_EMAIL?.toLowerCase();
-        const isDesignatedAdmin = masterAdminEmail && user.email.toLowerCase() === masterAdminEmail;
-
-        if (!existingUser) {
-          // If first time Google sign in, default role is AUTHOR
-          // If matches designated MASTER_ADMIN_EMAIL, assign MASTER_ADMIN
-          const newUser = await prisma.user.create({
-            data: {
-              email: user.email.toLowerCase(),
-              name: user.name || 'Scholarly Author',
-              image: user.image,
-              roleAssignments: {
-                create: isDesignatedAdmin
-                  ? [{ role: 'MASTER_ADMIN' }, { role: 'AUTHOR' }]
-                  : [{ role: 'AUTHOR' }, { role: 'READER' }],
-              },
-            },
+        if (isDesignatedAdmin) {
+          await logAuditEvent({
+            userId: user.id,
+            action: 'BOOTSTRAP_MASTER_ADMIN_GOOGLE',
+            entityType: 'USER',
+            entityId: user.id,
+            details: { email: user.email, method: 'Google OAuth first-run' },
+          });
+        }
+      } catch (err) {
+        console.error('Failed to create default roles for new Google user in events.createUser:', err);
+      }
+    },
+  },
+  callbacks: {
+    async signIn({ user, account }) {
+      try {
+        if (account?.provider === 'google' && user.email) {
+          // If the user already exists in the database, ensure they have at least one role
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email.toLowerCase().trim() },
+            include: { roleAssignments: true },
           });
 
-          if (isDesignatedAdmin) {
-            await logAuditEvent({
-              userId: newUser.id,
-              action: 'BOOTSTRAP_MASTER_ADMIN_GOOGLE',
-              entityType: 'USER',
-              entityId: newUser.id,
-              details: { email: newUser.email, method: 'Google OAuth first-run' },
+          if (existingUser && existingUser.roleAssignments.length === 0) {
+            const masterAdminEmail = process.env.MASTER_ADMIN_EMAIL?.toLowerCase().trim();
+            const isDesignatedAdmin = masterAdminEmail && user.email.toLowerCase().trim() === masterAdminEmail;
+
+            await prisma.userRoleAssignment.createMany({
+              data: isDesignatedAdmin
+                ? [
+                    { userId: existingUser.id, role: 'MASTER_ADMIN' },
+                    { userId: existingUser.id, role: 'AUTHOR' },
+                  ]
+                : [
+                    { userId: existingUser.id, role: 'AUTHOR' },
+                    { userId: existingUser.id, role: 'READER' },
+                  ],
             });
           }
         }
+        return true;
+      } catch (error) {
+        console.error('NextAuth signIn callback error:', error);
+        return true;
       }
-      return true;
     },
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.id = user.id;
-      }
-      if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          include: {
-            roleAssignments: {
-              include: { journal: { select: { slug: true, title: true } } },
-            },
-          },
-        });
-        if (dbUser) {
-          token.roles = dbUser.roleAssignments.map(ra => ({
-            role: ra.role,
-            journalId: ra.journalId,
-            journalSlug: ra.journal?.slug,
-          }));
-          token.affiliation = dbUser.affiliation;
-          token.orcid = dbUser.orcid;
+    async jwt({ token, user }) {
+      try {
+        if (user) {
+          token.id = user.id;
         }
+
+        // If token.id is missing (e.g. initial OAuth token before adapter population), resolve by email
+        if (!token.id && token.email) {
+          const dbUserByEmail = await prisma.user.findUnique({
+            where: { email: (token.email as string).toLowerCase().trim() },
+            select: { id: true },
+          });
+          if (dbUserByEmail) {
+            token.id = dbUserByEmail.id;
+          }
+        }
+
+        if (token.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            include: {
+              roleAssignments: {
+                include: { journal: { select: { slug: true, title: true } } },
+              },
+            },
+          });
+          if (dbUser) {
+            token.roles = dbUser.roleAssignments.map(ra => ({
+              role: ra.role,
+              journalId: ra.journalId,
+              journalSlug: ra.journal?.slug,
+            }));
+            token.affiliation = dbUser.affiliation;
+            token.orcid = dbUser.orcid;
+          }
+        }
+      } catch (err) {
+        console.error('NextAuth jwt callback error:', err);
       }
       return token;
     },
