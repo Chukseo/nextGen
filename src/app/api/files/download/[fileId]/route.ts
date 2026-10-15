@@ -5,6 +5,8 @@ import prisma from '@/lib/prisma';
 import { getFileStream } from '@/lib/storage';
 import { canAccessSubmissionFile } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: Request,
   { params }: { params: { fileId: string } }

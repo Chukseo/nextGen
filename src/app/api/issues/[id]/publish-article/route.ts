@@ -8,6 +8,8 @@ import { createNotification } from '@/lib/notifications';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }

@@ -5,6 +5,8 @@ import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }

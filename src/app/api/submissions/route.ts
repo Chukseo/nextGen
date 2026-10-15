@@ -7,6 +7,8 @@ import { logAuditEvent } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications';
 import { isMasterAdmin, isEditor } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 const AuthorSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),

@@ -5,6 +5,8 @@ import prisma from '@/lib/prisma';
 import { depositDOI, generateCrossrefXML, formatDOISuffix } from '@/lib/crossref';
 import { isMasterAdmin, isEditor } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }

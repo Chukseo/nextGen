@@ -6,6 +6,8 @@ import { logAuditEvent } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications';
 import { isMasterAdmin, isEditor } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { logAuditEvent } from '@/lib/audit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Check if any Master Admin exists

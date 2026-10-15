@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma';
 import { isMasterAdmin, isEditor } from '@/lib/permissions';
 import EditorDashboardClient from './EditorDashboardClient';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function EditorDashboardPage() {
