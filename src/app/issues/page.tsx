@@ -42,27 +42,50 @@ export default async function IssuesPage() {
             className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm space-y-6"
           >
             {/* Issue Header */}
-            <div className="bg-navy-950 text-white p-6 sm:p-8 flex flex-col md:flex-row justify-between md:items-center gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
-                  <span>{issue.journal.title}</span>
-                  <span>•</span>
-                  <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
-                </div>
-                <h2 className="text-2xl font-bold scholarly-heading">
-                  <Link href={`/issues/${issue.id}`} className="hover:text-blue-300">
-                    {issue.title}
-                  </Link>
-                </h2>
-                {issue.editorialIntroduction && (
-                  <p className="text-xs text-slate-300 max-w-3xl leading-relaxed italic">
-                    &ldquo;{issue.editorialIntroduction}&rdquo;
-                  </p>
+            <div className="bg-navy-950 text-white p-6 sm:p-8 flex flex-col md:flex-row justify-between md:items-center gap-6">
+              <div className="flex gap-5 items-start flex-1">
+                {issue.coverImageUrl && (
+                  <div className="w-20 sm:w-24 flex-shrink-0 rounded overflow-hidden border border-slate-700 shadow-md bg-navy-900 hidden sm:block">
+                    <Link href={`/issues/${issue.id}`}>
+                      <img
+                        src={issue.coverImageUrl}
+                        alt={issue.title}
+                        className="w-full h-auto aspect-[3/4] object-cover hover:scale-105 transition-transform"
+                      />
+                    </Link>
+                  </div>
                 )}
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
+                    <Link href={`/journals/${issue.journal.slug}`} className="hover:underline">
+                      {issue.journal.title}
+                    </Link>
+                    <span>•</span>
+                    <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
+                  </div>
+                  <h2 className="text-2xl font-bold scholarly-heading">
+                    <Link href={`/issues/${issue.id}`} className="hover:text-blue-300">
+                      {issue.title}
+                    </Link>
+                  </h2>
+                  {issue.editorialIntroduction && (
+                    <p className="text-xs text-slate-300 max-w-3xl leading-relaxed italic">
+                      &ldquo;{issue.editorialIntroduction}&rdquo;
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="text-xs text-slate-400 flex flex-col md:items-end">
+
+              <div className="text-xs text-slate-400 flex flex-col md:items-end flex-shrink-0">
                 <span>Published: {issue.publicationDate ? new Date(issue.publicationDate).toLocaleDateString() : 'Recent'}</span>
                 <span className="text-emerald-400 font-semibold">{issue.publishedArticles.length} Published Articles</span>
+                <Link
+                  href={`/issues/${issue.id}`}
+                  className="mt-2 text-blue-400 hover:text-blue-300 font-semibold flex items-center space-x-1"
+                >
+                  <span>Explore Issue</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
 

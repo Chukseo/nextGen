@@ -44,9 +44,21 @@ export default async function JournalsPage() {
           return (
             <div
               key={journal.id}
-              className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow grid grid-cols-1 md:grid-cols-4 gap-6"
+              className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6 items-start"
             >
-              <div className="md:col-span-3 space-y-4">
+              {journal.coverImageUrl && (
+                <div className="w-28 sm:w-36 flex-shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
+                  <Link href={`/journals/${journal.slug}`}>
+                    <img
+                      src={journal.coverImageUrl}
+                      alt={journal.title}
+                      className="w-full h-auto aspect-[3/4] object-cover hover:scale-105 transition-transform"
+                    />
+                  </Link>
+                </div>
+              )}
+
+              <div className="flex-1 space-y-4">
                 <div className="flex items-center space-x-3">
                   <span className="bg-navy-900 text-white font-bold text-xs px-2.5 py-1 rounded">
                     {journal.slug.toUpperCase()}
@@ -81,7 +93,7 @@ export default async function JournalsPage() {
               </div>
 
               {/* Sidebar stats & CTA */}
-              <div className="border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between space-y-4">
+              <div className="w-full md:w-56 border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-6 flex flex-col justify-between space-y-4 flex-shrink-0 self-stretch">
                 <div className="grid grid-cols-2 gap-3 text-center">
                   <div className="bg-slate-50 p-2.5 rounded border border-slate-100">
                     <span className="block text-lg font-bold text-navy-900">{journal._count.publishedArticles}</span>

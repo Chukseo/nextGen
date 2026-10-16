@@ -42,17 +42,36 @@ export default async function IssueDetailPage({
       </Link>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="bg-navy-950 text-white p-8 space-y-3">
-          <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
-            <span>{issue.journal.title}</span>
-            <span>•</span>
-            <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
+        <div className="bg-navy-950 text-white p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
+              <Link href={`/journals/${issue.journal.slug}`} className="hover:underline">
+                {issue.journal.title}
+              </Link>
+              <span>•</span>
+              <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
+            </div>
+            <h1 className="text-3xl font-bold scholarly-heading">{issue.title}</h1>
+            {issue.editorialIntroduction && (
+              <p className="text-xs text-slate-300 max-w-3xl leading-relaxed italic pt-2">
+                &ldquo;{issue.editorialIntroduction}&rdquo;
+              </p>
+            )}
+            <div className="text-xs text-slate-400 pt-1">
+              <span>Published: {issue.publicationDate ? new Date(issue.publicationDate).toLocaleDateString() : 'Recent'}</span>
+              <span className="mx-2">•</span>
+              <span className="text-emerald-400 font-semibold">{issue.publishedArticles.length} Published Articles</span>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold scholarly-heading">{issue.title}</h1>
-          {issue.editorialIntroduction && (
-            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed italic pt-2">
-              &ldquo;{issue.editorialIntroduction}&rdquo;
-            </p>
+
+          {issue.coverImageUrl && (
+            <div className="w-32 sm:w-40 flex-shrink-0 rounded-lg overflow-hidden border-2 border-slate-700/60 shadow-xl bg-navy-900">
+              <img
+                src={issue.coverImageUrl}
+                alt={`${issue.title} cover`}
+                className="w-full h-auto aspect-[3/4] object-cover"
+              />
+            </div>
           )}
         </div>
 

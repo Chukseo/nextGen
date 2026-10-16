@@ -50,6 +50,8 @@ export async function POST(req: Request) {
       contactEmail,
       peerReviewPolicy,
       openAccessPolicy,
+      coverImageUrl,
+      logoUrl,
     } = body;
 
     if (!slug || !title || !contactEmail) {
@@ -68,6 +70,8 @@ export async function POST(req: Request) {
         contactEmail,
         peerReviewPolicy: peerReviewPolicy || 'Double-anonymous peer review',
         openAccessPolicy: openAccessPolicy || 'Open Access under CC BY 4.0',
+        coverImageUrl: coverImageUrl || null,
+        logoUrl: logoUrl || null,
       },
     });
 

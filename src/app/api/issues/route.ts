@@ -62,6 +62,7 @@ export async function POST(req: Request) {
       status = 'DRAFT',
       scheduledPublishDate,
       editorialIntroduction,
+      coverImageUrl,
     } = body;
 
     if (!journalId || !issueNumber || !year || !title) {
@@ -100,6 +101,7 @@ export async function POST(req: Request) {
         year: Number(year),
         title,
         description,
+        coverImageUrl: coverImageUrl || null,
         status,
         scheduledPublishDate: scheduledPublishDate ? new Date(scheduledPublishDate) : null,
         publicationDate: status === 'PUBLISHED' ? new Date() : null,

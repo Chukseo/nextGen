@@ -71,6 +71,7 @@ export async function PATCH(
       editorialIntroduction,
       issueNumber,
       year,
+      coverImageUrl,
     } = body;
 
     const updatedIssue = await prisma.issue.update({
@@ -78,9 +79,10 @@ export async function PATCH(
       data: {
         ...(title && { title }),
         ...(description !== undefined && { description }),
+        ...(coverImageUrl !== undefined && { coverImageUrl }),
         ...(status && {
           status,
-          ...(status === 'PUBLISHED' && !issue.publicationDate ? { publicationDate: new Date() } : {}),
+          ...(status === 'PUBLISHED' ? { publicationDate: new Date() } : {}),
         }),
         ...(scheduledPublishDate !== undefined && {
           scheduledPublishDate: scheduledPublishDate ? new Date(scheduledPublishDate) : null,
