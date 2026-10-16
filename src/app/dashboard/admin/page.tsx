@@ -45,6 +45,8 @@ export default async function AdminDashboardPage() {
   let journals: any[] = [];
   let doiRecords: any[] = [];
   let auditEvents: any[] = [];
+  let publishedArticles: any[] = [];
+  let productionSubmissions: any[] = [];
   let loadError: string | null = null;
 
   try {
@@ -87,7 +89,7 @@ export default async function AdminDashboardPage() {
     };
 
     // Run record fetches in a separate batch
-    [users, journals, doiRecords, auditEvents] = await Promise.all([
+    [users, journals, doiRecords, auditEvents, publishedArticles, productionSubmissions] = await Promise.all([
       prisma.user.findMany({
         include: {
           roleAssignments: {
@@ -109,6 +111,24 @@ export default async function AdminDashboardPage() {
         take: 20,
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { name: true, email: true } } },
+      }),
+      prisma.publishedArticle.findMany({
+        orderBy: { publishedAt: 'desc' },
+        include: {
+          journal: { select: { title: true, abbreviation: true, slug: true } },
+          issue: { include: { volume: true } },
+          submission: {
+            include: { coAuthors: { orderBy: { authorOrder: 'asc' } } },
+          },
+        },
+      }),
+      prisma.submission.findMany({
+        where: { status: { in: ['PRODUCTION', 'ACCEPTED', 'COPYEDITING'] } },
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          journal: { select: { title: true, abbreviation: true, slug: true } },
+          coAuthors: { orderBy: { authorOrder: 'asc' } },
+        },
       }),
     ]);
   } catch (error: any) {
@@ -145,6 +165,8 @@ export default async function AdminDashboardPage() {
         journals={journals}
         doiRecords={doiRecords}
         auditEvents={auditEvents}
+        publishedArticles={publishedArticles}
+        productionSubmissions={productionSubmissions}
         currentUser={user}
       />
     </div>

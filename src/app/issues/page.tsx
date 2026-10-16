@@ -44,11 +44,11 @@ export default async function IssuesPage() {
             {/* Issue Header */}
             <div className="bg-navy-950 text-white p-6 sm:p-8 flex flex-col md:flex-row justify-between md:items-center gap-6">
               <div className="flex gap-5 items-start flex-1">
-                {issue.coverImageUrl && (
+                {(issue.coverImageUrl || issue.journal.coverImageUrl) && (
                   <div className="w-20 sm:w-24 flex-shrink-0 rounded overflow-hidden border border-slate-700 shadow-md bg-navy-900 hidden sm:block">
                     <Link href={`/issues/${issue.id}`}>
                       <img
-                        src={issue.coverImageUrl}
+                        src={(issue.coverImageUrl || issue.journal.coverImageUrl) || undefined}
                         alt={issue.title}
                         className="w-full h-auto aspect-[3/4] object-cover hover:scale-105 transition-transform"
                       />

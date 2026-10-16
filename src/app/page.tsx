@@ -252,40 +252,61 @@ export default async function HomePage() {
             {journals.map((journal) => (
               <div
                 key={journal.id}
-                className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between space-y-4"
+                className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-0 overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="space-y-3">
-                  <div className="w-10 h-10 bg-navy-950 text-white rounded-lg flex items-center justify-center font-bold text-sm">
-                    {journal.slug.toUpperCase()}
+                {/* Cover Image or Fallback Slug Banner */}
+                {journal.coverImageUrl ? (
+                  <Link href={`/journals/${journal.slug}`} className="block w-full overflow-hidden bg-slate-100">
+                    <img
+                      src={journal.coverImageUrl}
+                      alt={journal.title}
+                      className="w-full h-40 object-cover hover:scale-105 transition-transform duration-200"
+                    />
+                  </Link>
+                ) : (
+                  <div className="w-full h-24 bg-navy-950 flex items-center justify-center">
+                    <span className="text-white font-bold text-2xl tracking-widest opacity-60">
+                      {journal.slug.toUpperCase()}
+                    </span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 scholarly-heading">
-                    <Link href={`/journals/${journal.slug}`} className="hover:text-blue-700">
-                      {journal.title}
-                    </Link>
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
-                    {journal.description}
-                  </p>
-                  <div className="text-[11px] text-slate-500 space-y-1 pt-2 border-t border-slate-100">
-                    <div><span className="font-bold">Online ISSN:</span> {journal.onlineIssn || 'Pending'}</div>
-                    <div><span className="font-bold">Policy:</span> {journal.peerReviewPolicy}</div>
-                  </div>
-                </div>
+                )}
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <Link
-                    href={`/journals/${journal.slug}`}
-                    className="text-blue-700 font-semibold hover:text-blue-900 flex items-center space-x-1"
-                  >
-                    <span>View Journal</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                  <Link
-                    href={`/submit?journal=${journal.id}`}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-2.5 py-1 rounded transition-colors"
-                  >
-                    Submit
-                  </Link>
+                <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    {!journal.coverImageUrl && (
+                      <div className="w-10 h-10 bg-navy-950 text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                        {journal.slug.toUpperCase()}
+                      </div>
+                    )}
+                    <h3 className="text-base font-bold text-slate-900 scholarly-heading">
+                      <Link href={`/journals/${journal.slug}`} className="hover:text-blue-700">
+                        {journal.title}
+                      </Link>
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                      {journal.description}
+                    </p>
+                    <div className="text-[11px] text-slate-500 space-y-1 pt-2 border-t border-slate-100">
+                      <div><span className="font-bold">Online ISSN:</span> {journal.onlineIssn || 'Pending'}</div>
+                      <div><span className="font-bold">Policy:</span> {journal.peerReviewPolicy}</div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <Link
+                      href={`/journals/${journal.slug}`}
+                      className="text-blue-700 font-semibold hover:text-blue-900 flex items-center space-x-1"
+                    >
+                      <span>View Journal</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                    <Link
+                      href={`/submit?journal=${journal.id}`}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-2.5 py-1 rounded transition-colors"
+                    >
+                      Submit
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

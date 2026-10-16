@@ -46,13 +46,26 @@ export default function ArticleDetailClient({ article }: { article: any }) {
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 space-y-10">
       {/* Back Link & Journal Banner */}
       <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 gap-4 border-b border-slate-200 pb-4">
-        <Link
-          href={`/journals/${article.journal.slug}`}
-          className="hover:text-blue-700 flex items-center space-x-1 font-semibold"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>{article.journal.title}</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          {article.journal?.coverImageUrl && (
+            <Link href={`/journals/${article.journal.slug}`} className="flex-shrink-0">
+              <div className="w-12 h-16 rounded overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
+                <img
+                  src={article.journal.coverImageUrl}
+                  alt={article.journal.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </Link>
+          )}
+          <Link
+            href={`/journals/${article.journal.slug}`}
+            className="hover:text-blue-700 flex items-center space-x-1 font-semibold"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>{article.journal.title}</span>
+          </Link>
+        </div>
         <div className="flex items-center space-x-3">
           <span>Vol. {article.issue?.volume?.volumeNumber || 1}, No. {article.issue?.issueNumber || 1} ({publicationYear})</span>
           <span>•</span>

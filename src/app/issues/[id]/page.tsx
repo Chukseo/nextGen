@@ -44,13 +44,32 @@ export default async function IssueDetailPage({
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="bg-navy-950 text-white p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
           <div className="space-y-3 flex-1">
-            <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
-              <Link href={`/journals/${issue.journal.slug}`} className="hover:underline">
-                {issue.journal.title}
-              </Link>
-              <span>•</span>
-              <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
+            <div className="flex items-center gap-3">
+              {issue.journal.coverImageUrl && (
+                <Link href={`/journals/${issue.journal.slug}`} className="shrink-0" title={`View ${issue.journal.title}`}>
+                  <div className="w-10 h-14 rounded overflow-hidden border border-slate-700/80 shadow bg-navy-900 hover:opacity-90 transition-opacity">
+                    <img
+                      src={issue.journal.coverImageUrl}
+                      alt={issue.journal.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </Link>
+              )}
+              <div className="space-y-0.5">
+                <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
+                  <Link href={`/journals/${issue.journal.slug}`} className="hover:underline">
+                    {issue.journal.title}
+                  </Link>
+                  <span>•</span>
+                  <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  {issue.journal.abbreviation} • Open Access
+                </div>
+              </div>
             </div>
+
             <h1 className="text-3xl font-bold scholarly-heading">{issue.title}</h1>
             {issue.editorialIntroduction && (
               <p className="text-xs text-slate-300 max-w-3xl leading-relaxed italic pt-2">
@@ -64,15 +83,25 @@ export default async function IssueDetailPage({
             </div>
           </div>
 
-          {issue.coverImageUrl && (
-            <div className="w-32 sm:w-40 flex-shrink-0 rounded-lg overflow-hidden border-2 border-slate-700/60 shadow-xl bg-navy-900">
-              <img
-                src={issue.coverImageUrl}
-                alt={`${issue.title} cover`}
-                className="w-full h-auto aspect-[3/4] object-cover"
-              />
-            </div>
-          )}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {issue.coverImageUrl ? (
+              <div className="w-32 sm:w-40 rounded-lg overflow-hidden border-2 border-slate-700/60 shadow-xl bg-navy-900" title="Issue Cover">
+                <img
+                  src={issue.coverImageUrl}
+                  alt={`${issue.title} cover`}
+                  className="w-full h-auto aspect-[3/4] object-cover"
+                />
+              </div>
+            ) : issue.journal.coverImageUrl ? (
+              <div className="w-32 sm:w-40 rounded-lg overflow-hidden border-2 border-slate-700/60 shadow-xl bg-navy-900" title={`${issue.journal.title} Cover`}>
+                <img
+                  src={issue.journal.coverImageUrl}
+                  alt={`${issue.journal.title} cover`}
+                  className="w-full h-auto aspect-[3/4] object-cover"
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className="p-8 space-y-6">
