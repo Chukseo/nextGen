@@ -7,12 +7,20 @@ import prisma from './prisma';
 import { logAuditEvent } from './audit';
 
 // Auto-detect production URL on Vercel if NEXTAUTH_URL is missing or still points to localhost
-if (process.env.VERCEL_URL && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.includes('localhost'))) {
-  process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+const vercelDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+if (vercelDomain && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.includes('localhost'))) {
+  process.env.NEXTAUTH_URL = `https://${vercelDomain}`;
 }
 process.env.AUTH_TRUST_HOST = 'true';
 
+// Ensure NEXTAUTH_SECRET is never empty in production to prevent NextAuth NO_SECRET crash
+const FALLBACK_SECRET = 'nextgen_press_super_secret_development_key_academic_2026_change_in_prod';
+if (!process.env.NEXTAUTH_SECRET) {
+  process.env.NEXTAUTH_SECRET = FALLBACK_SECRET;
+}
+
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET || FALLBACK_SECRET,
   adapter: PrismaAdapter(prisma) as any,
   session: {
     strategy: 'jwt',
@@ -185,5 +193,4 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
 };

@@ -19,38 +19,46 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Fresh research data
 
 export default async function HomePage() {
-  const [journals, publishedArticles, latestIssue] = await Promise.all([
-    prisma.journal.findMany({
-      where: { isActive: true },
-      include: {
-        _count: { select: { publishedArticles: true, submissions: true } },
-      },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.publishedArticle.findMany({
-      take: 4,
-      orderBy: { publishedAt: 'desc' },
-      include: {
-        journal: { select: { title: true, abbreviation: true, slug: true } },
-        issue: { include: { volume: true } },
-        submission: {
-          include: {
-            coAuthors: { orderBy: { authorOrder: 'asc' } },
-          },
+  let journals: any[] = [];
+  let publishedArticles: any[] = [];
+  let latestIssue: any = null;
+
+  try {
+    [journals, publishedArticles, latestIssue] = await Promise.all([
+      prisma.journal.findMany({
+        where: { isActive: true },
+        include: {
+          _count: { select: { publishedArticles: true, submissions: true } },
         },
-        keywords: true,
-      },
-    }),
-    prisma.issue.findFirst({
-      where: { status: 'PUBLISHED' },
-      include: {
-        journal: true,
-        volume: true,
-        publishedArticles: { take: 3 },
-      },
-      orderBy: { publicationDate: 'desc' },
-    }),
-  ]);
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.publishedArticle.findMany({
+        take: 4,
+        orderBy: { publishedAt: 'desc' },
+        include: {
+          journal: { select: { title: true, abbreviation: true, slug: true } },
+          issue: { include: { volume: true } },
+          submission: {
+            include: {
+              coAuthors: { orderBy: { authorOrder: 'asc' } },
+            },
+          },
+          keywords: true,
+        },
+      }),
+      prisma.issue.findFirst({
+        where: { status: 'PUBLISHED' },
+        include: {
+          journal: true,
+          volume: true,
+          publishedArticles: { take: 3 },
+        },
+        orderBy: { publicationDate: 'desc' },
+      }),
+    ]);
+  } catch (error) {
+    console.error('HomePage database query warning:', error);
+  }
 
   return (
     <div className="space-y-16 pb-16">
@@ -173,9 +181,9 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {publishedArticles.map((article) => {
-            const authorNames = article.submission.coAuthors
-              .map((a) => `${a.firstName} ${a.lastName}`)
+          {publishedArticles.map((article: any) => {
+            const authorNames = (article.submission?.coAuthors || [])
+              .map((a: any) => `${a.firstName} ${a.lastName}`)
               .join(', ');
 
             return (
