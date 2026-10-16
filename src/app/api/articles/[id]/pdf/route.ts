@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateScholarlyArticlePdf } from '@/lib/pdfGenerator';
+import { generateScholarlyArticlePdf, extractDocxText } from '@/lib/pdfGenerator';
+import { getFileBuffer } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,9 +26,11 @@ export async function GET(
         submission: {
           include: {
             coAuthors: { orderBy: { authorOrder: 'asc' } },
+            files: { orderBy: { createdAt: 'desc' } },
             editorialDecisions: { orderBy: { decidedAt: 'desc' }, take: 1 },
           },
         },
+        references: { orderBy: { orderIndex: 'asc' } },
         keywords: true,
       },
     });
@@ -37,6 +40,29 @@ export async function GET(
     }
 
     const latestDecision = article.submission.editorialDecisions?.[0];
+
+    // Extract full text from submitted manuscript file if present
+    let manuscriptFullText: string | null = null;
+    const manuscriptFile = article.submission.files?.find(
+      (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
+    );
+
+    if (manuscriptFile?.storageKey) {
+      try {
+        const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
+        manuscriptFullText = await extractDocxText(fileBuffer);
+      } catch (fileErr) {
+        console.warn('Could not extract submitted manuscript full text:', fileErr);
+      }
+    }
+
+    const declarations = [
+      { label: 'Funding Information', text: article.submission.fundingInfo },
+      { label: 'Conflict of Interest', text: article.submission.conflictOfInterest },
+      { label: 'Data Availability', text: article.submission.dataAvailability },
+      { label: 'Ethical Approval & Consent', text: article.submission.ethicsStatement || article.submission.consentStatement },
+      { label: 'Acknowledgements', text: article.submission.acknowledgements },
+    ];
 
     const pdfBytes = await generateScholarlyArticlePdf({
       journalTitle: article.journal.title,
@@ -52,6 +78,9 @@ export async function GET(
       title: article.title,
       abstract: article.abstract,
       keywords: article.keywords.map(k => k.keyword),
+      manuscriptFullText,
+      declarations,
+      references: article.references,
       publishedAt: article.publishedAt,
       receivedAt: article.submission.createdAt,
       acceptedAt: latestDecision?.decidedAt || article.publishedAt,

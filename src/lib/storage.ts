@@ -86,6 +86,28 @@ export async function uploadFile({
   }
 }
 
+export async function getFileBuffer(storageKey: string, bucketName: string = 'manuscripts-private'): Promise<Buffer> {
+  if (isSupabaseConfigured && supabase) {
+    const { data, error } = await supabase.storage.from(bucketName).download(storageKey);
+    if (error || !data) {
+      throw new Error(`Supabase download error: ${error?.message || 'File not found'}`);
+    }
+    const arrayBuffer = await data.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } else {
+    const safeKey = path.normalize(storageKey).replace(/^(\.\.[\/\\])+/, '');
+    const fullPath = path.join(LOCAL_STORAGE_DIR, safeKey);
+    if (fs.existsSync(fullPath)) {
+      return fs.readFileSync(fullPath);
+    }
+    const altPath = path.join(process.cwd(), 'public', safeKey);
+    if (fs.existsSync(altPath)) {
+      return fs.readFileSync(altPath);
+    }
+    throw new Error(`File not found: ${storageKey}`);
+  }
+}
+
 export async function getFileStream(storageKey: string, bucketName: string = 'manuscripts-private'): Promise<{
   stream: NodeJS.ReadableStream | ReadableStream<Uint8Array>;
   mimeType: string;

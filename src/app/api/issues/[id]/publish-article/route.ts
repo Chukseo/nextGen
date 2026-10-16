@@ -7,8 +7,8 @@ import { logAuditEvent } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
-import { generateScholarlyArticlePdf } from '@/lib/pdfGenerator';
-import { uploadFile } from '@/lib/storage';
+import { generateScholarlyArticlePdf, extractDocxText } from '@/lib/pdfGenerator';
+import { uploadFile, getFileBuffer } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,6 +59,7 @@ export async function POST(
       where: { id: submissionId },
       include: {
         coAuthors: { orderBy: { authorOrder: 'asc' } },
+        files: { orderBy: { createdAt: 'desc' } },
         doiRecord: true,
         editorialDecisions: { orderBy: { decidedAt: 'desc' }, take: 1 },
       },
@@ -114,12 +115,36 @@ export async function POST(
       authors: submission.coAuthors.map((a) => ({ firstName: a.firstName, lastName: a.lastName })),
     });
 
-    // 2. Automatically generate the official typeset PDF with Journal & Issue branding
+    // 2. Automatically generate the official typeset PDF with Journal & Issue branding + Full Manuscript Text
     let resolvedPdfStorageKey = pdfStorageKey;
     let resolvedPdfUrl = pdfUrl;
 
     try {
       const latestDecision = submission.editorialDecisions?.[0];
+
+      // Extract full text from submitted manuscript file
+      let manuscriptFullText: string | null = null;
+      const manuscriptFile = submission.files?.find(
+        (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
+      );
+
+      if (manuscriptFile?.storageKey) {
+        try {
+          const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
+          manuscriptFullText = await extractDocxText(fileBuffer);
+        } catch (fileErr) {
+          console.warn('Could not extract submitted manuscript full text during publishing:', fileErr);
+        }
+      }
+
+      const declarations = [
+        { label: 'Funding Information', text: submission.fundingInfo },
+        { label: 'Conflict of Interest', text: submission.conflictOfInterest },
+        { label: 'Data Availability', text: submission.dataAvailability },
+        { label: 'Ethical Approval & Consent', text: submission.ethicsStatement || submission.consentStatement },
+        { label: 'Acknowledgements', text: submission.acknowledgements },
+      ];
+
       const pdfBytes = await generateScholarlyArticlePdf({
         journalTitle: issue.journal.title,
         journalAbbreviation: issue.journal.abbreviation,
@@ -133,6 +158,8 @@ export async function POST(
         articleType: submission.articleType,
         title: submission.title,
         abstract: submission.abstract,
+        manuscriptFullText,
+        declarations,
         publishedAt: publishedDate,
         receivedAt: submission.createdAt,
         acceptedAt: latestDecision?.decidedAt || publishedDate,
