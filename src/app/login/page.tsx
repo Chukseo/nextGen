@@ -3,7 +3,6 @@
 import React, { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { BookOpen, Shield, User, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -83,28 +82,6 @@ function LoginForm() {
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Registration failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async (demoEmail: string) => {
-    setLoading(true);
-    setErrorMsg('');
-    try {
-      const res = await signIn('credentials', {
-        redirect: false,
-        email: demoEmail,
-        password: 'NextGen2026!',
-      });
-      if (res?.error) {
-        setErrorMsg(res.error);
-      } else {
-        router.push(callbackUrl);
-        router.refresh();
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -253,7 +230,7 @@ function LoginForm() {
                   type="text"
                   value={affiliation}
                   onChange={(e) => setAffiliation(e.target.value)}
-                  placeholder="Department of Computer Science, University of Cambridge"
+                  placeholder="Department of Computer Science, University of Lagos"
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -292,52 +269,15 @@ function LoginForm() {
               </p>
             </form>
           )}
-
-          {/* Quick Role Tester Selector */}
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
-            <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-800 uppercase tracking-wider">
-              <Shield className="w-3.5 h-3.5 text-blue-700" />
-              <span>Role Switching (Dev & Testing)</span>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-tight">
-              Test end-to-end workflows by clicking any pre-seeded persona:
-            </p>
-            <div className="grid grid-cols-2 gap-1.5 pt-1">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('admin@nextgen-press.org')}
-                className="text-left text-[11px] p-2 bg-white hover:bg-amber-50 border border-amber-200 rounded text-amber-900 transition-colors"
-              >
-                <span className="font-bold block text-amber-800">Master Admin</span>
-                <span className="text-[10px] text-slate-500">Dr. Evelyn Vance</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('editor.chen@nextgen-press.org')}
-                className="text-left text-[11px] p-2 bg-white hover:bg-blue-50 border border-blue-200 rounded text-blue-900 transition-colors"
-              >
-                <span className="font-bold block text-blue-800">Editor-in-Chief</span>
-                <span className="text-[10px] text-slate-500">Prof. Marcus Chen</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('reviewer.turing@univ.edu')}
-                className="text-left text-[11px] p-2 bg-white hover:bg-emerald-50 border border-emerald-200 rounded text-emerald-900 transition-colors"
-              >
-                <span className="font-bold block text-emerald-800">Peer Reviewer</span>
-                <span className="text-[10px] text-slate-500">Dr. Alan Turing</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('author.lewis@research.org')}
-                className="text-left text-[11px] p-2 bg-white hover:bg-indigo-50 border border-indigo-200 rounded text-indigo-900 transition-colors"
-              >
-                <span className="font-bold block text-indigo-800">Author</span>
-                <span className="text-[10px] text-slate-500">Dr. David Lewis</span>
-              </button>
-            </div>
-          </div>
         </div>
+      </div>
+
+      {/* Institutional Reassurance Footer */}
+      <div className="mt-8 text-center text-xs text-slate-500 space-y-1">
+        <p className="font-medium text-slate-600">NextGen Research and Innovation Press &bull; Lagos, Nigeria</p>
+        <p className="text-[11px] text-slate-400">
+          Secure academic authentication for authors, peer reviewers, and editors.
+        </p>
       </div>
     </div>
   );

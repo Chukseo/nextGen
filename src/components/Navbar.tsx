@@ -39,9 +39,8 @@ export default function Navbar() {
             <span className="hidden sm:inline">Crossref Member & COPE Guidelines Compliant</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/admin/setup" className="hover:text-blue-300 flex items-center space-x-1">
-              <Shield className="w-3 h-3 text-amber-400" />
-              <span>Admin Setup</span>
+            <Link href="/contact" className="hover:text-blue-300">
+              Contact Office
             </Link>
             <span className="text-slate-600">|</span>
             <Link href="/editorial-policies" className="hover:text-white">Publication Ethics</Link>

@@ -203,7 +203,7 @@ export function renderScholarlyEmail({
           <tr>
             <td style="background-color: #f8fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.6;">
               <p style="margin: 0 0 6px 0; font-weight: 600; color: #334155;">
-                NextGen Research and Innovation Press • Cambridge, MA & London, UK
+                NextGen Research and Innovation Press • Lagos, Nigeria
               </p>
               <p style="margin: 0 0 10px 0;">
                 Crossref Digital Object Identifier (DOI) Member • Committee on Publication Ethics (COPE) Compliant

@@ -36,7 +36,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center space-x-2">
                 <Globe className="w-3.5 h-3.5 text-blue-400" />
-                <span>Cambridge, MA & London, UK</span>
+                <span>Lagos, Nigeria</span>
               </div>
             </div>
           </div>
