@@ -20,6 +20,7 @@ import CitationModal from '@/components/CitationModal';
 
 export default function ArticleDetailClient({ article }: { article: any }) {
   const [citationModalOpen, setCitationModalOpen] = useState(false);
+  const [downloadsCount, setDownloadsCount] = useState<number>(article.downloadsCount || 0);
 
   const publicationYear = new Date(article.publishedAt).getFullYear();
   const authors = article.submission.coAuthors;
@@ -36,6 +37,10 @@ export default function ArticleDetailClient({ article }: { article: any }) {
   };
 
   const downloadUrl = `/api/articles/${article.id}/pdf`;
+
+  const handleDownloadClick = () => {
+    setDownloadsCount((prev) => prev + 1);
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 space-y-10">
@@ -131,10 +136,19 @@ export default function ArticleDetailClient({ article }: { article: any }) {
                 </span>
               </div>
             )}
-            <div className="text-slate-500 flex items-center space-x-3">
+            <div className="text-slate-500 flex flex-wrap items-center gap-3">
               <span>Published: {new Date(article.publishedAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
               <span>•</span>
               <span>Peer-Reviewed</span>
+              <span>•</span>
+              <span className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                <Download className="w-3.5 h-3.5 text-blue-600" />
+                <span>{downloadsCount} {downloadsCount === 1 ? 'Download' : 'Downloads'}</span>
+              </span>
+              <span className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                <Eye className="w-3.5 h-3.5 text-slate-600" />
+                <span>{article.viewsCount || 0} {article.viewsCount === 1 ? 'View' : 'Views'}</span>
+              </span>
             </div>
           </div>
 
@@ -150,6 +164,7 @@ export default function ArticleDetailClient({ article }: { article: any }) {
             <a
               href={downloadUrl}
               download
+              onClick={handleDownloadClick}
               className="inline-flex items-center space-x-1.5 py-2 px-4 bg-blue-700 hover:bg-blue-800 text-white rounded-md font-semibold shadow-sm transition-colors"
             >
               <Download className="w-4 h-4" />

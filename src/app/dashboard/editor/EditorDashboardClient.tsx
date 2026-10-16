@@ -19,7 +19,9 @@ import {
   Plus,
   RefreshCw,
   Search,
-  BookOpen
+  BookOpen,
+  RotateCcw,
+  Trash2
 } from 'lucide-react';
 
 export default function EditorDashboardClient({
@@ -244,6 +246,73 @@ export default function EditorDashboardClient({
       setActionLoading(false);
     }
   };
+
+  const handleUnpublishArticle = async (subId: string) => {
+    if (!window.confirm('Are you sure you want to unpublish this article? It will be removed from the issue and returned to the Production stage where it can be modified and re-published.')) {
+      return;
+    }
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/articles/${subId}/unpublish`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to unpublish article');
+
+      setFeedback({ type: 'success', text: data.message });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteArticle = async (subId: string) => {
+    if (!window.confirm('Are you sure you want to permanently delete this article and submission? This action cannot be undone.')) {
+      return;
+    }
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/articles/${subId}?deleteSubmission=true`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete article');
+
+      setFeedback({ type: 'success', text: data.message });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteIssue = async (issueId: string, issueTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete issue "${issueTitle}"? Any articles currently assigned to this issue will be safely returned to the Production queue.`)) {
+      return;
+    }
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/issues/${issueId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete issue');
+
+      setFeedback({ type: 'success', text: data.message });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -548,6 +617,14 @@ export default function EditorDashboardClient({
                             >
                               Assign Articles
                             </button>
+                            <button
+                              onClick={() => handleDeleteIssue(iss.id, iss.title)}
+                              disabled={actionLoading}
+                              className="p-1.5 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                              title="Delete Issue"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -682,16 +759,38 @@ export default function EditorDashboardClient({
                         </button>
                       )}
 
-                      {/* Crossref DOI Deposit Trigger */}
+                      {/* Published Article Operations */}
                       {sub.status === 'PUBLISHED' && (
-                        <button
-                          onClick={() => handleTriggerDOI(sub.id)}
-                          disabled={actionLoading}
-                          className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-semibold px-3 py-1.5 rounded transition-colors flex items-center space-x-1"
-                        >
-                          <Award className="w-3.5 h-3.5" />
-                          <span>{sub.doiRecord?.status === 'REGISTERED' ? 'Crossref Verified' : 'Deposit Crossref DOI'}</span>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleTriggerDOI(sub.id)}
+                            disabled={actionLoading}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-semibold px-3 py-1.5 rounded transition-colors flex items-center space-x-1"
+                          >
+                            <Award className="w-3.5 h-3.5" />
+                            <span>{sub.doiRecord?.status === 'REGISTERED' ? 'Crossref Verified' : 'Deposit Crossref DOI'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleUnpublishArticle(sub.id)}
+                            disabled={actionLoading}
+                            className="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-semibold px-3 py-1.5 rounded transition-colors flex items-center space-x-1 shadow-xs"
+                            title="Unpublish article and return to Production stage"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Unpublish</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteArticle(sub.id)}
+                            disabled={actionLoading}
+                            className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold px-2.5 py-1.5 rounded transition-colors flex items-center space-x-1 shadow-xs"
+                            title="Permanently Delete Article"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>

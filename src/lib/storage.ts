@@ -151,6 +151,26 @@ export async function getFileStream(storageKey: string, bucketName: string = 'ma
   }
 }
 
+export async function deleteFile(storageKey: string, bucketName: string = 'manuscripts-private'): Promise<void> {
+  try {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.storage.from(bucketName).remove([storageKey]);
+    } else {
+      const safeKey = path.normalize(storageKey).replace(/^(\.\.[\/\\])+/, '');
+      const fullPath = path.join(LOCAL_STORAGE_DIR, safeKey);
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+      }
+      const altPath = path.join(process.cwd(), 'public', safeKey);
+      if (fs.existsSync(altPath)) {
+        fs.unlinkSync(altPath);
+      }
+    }
+  } catch (err) {
+    console.warn(`Failed to delete storage file ${storageKey}:`, err);
+  }
+}
+
 function getMimeTypeFromExt(filePath: string): string {
   const ext = path.extname(filePath).toLowerCase();
   switch (ext) {
@@ -169,3 +189,4 @@ function getMimeTypeFromExt(filePath: string): string {
       return 'application/octet-stream';
   }
 }
+
