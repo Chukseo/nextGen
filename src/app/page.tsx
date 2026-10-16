@@ -67,15 +67,15 @@ export default async function HomePage() {
         {/* Background Image Layer with Solid Hero Color Overlay */}
         <div className="absolute inset-0 pointer-events-none select-none z-0">
           <img
-            src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=2400&q=85"
+            src="/hero-bg.jpg"
             alt="Scholarly Research Library Architecture"
             aria-hidden="true"
-            className="w-full h-full object-cover object-center opacity-20 filter brightness-75 contrast-125"
+            className="w-full h-full object-cover object-center opacity-40 filter brightness-90 contrast-110"
           />
-          {/* Solid Hero Navy Overlay with subtle gradient blend */}
-          <div className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/85 to-navy-950/95" />
-          <div className="absolute inset-0 bg-gradient-to-b from-navy-950/90 via-transparent to-navy-950" />
-          <div className="absolute inset-0 bg-navy-950/40 mix-blend-multiply" />
+          {/* Solid Hero Navy Overlay - provides clear contrast while keeping the library clearly visible */}
+          <div className="absolute inset-0 bg-navy-950/65" />
+          <div className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/50 to-navy-950/80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-transparent to-navy-950/30" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto space-y-8">

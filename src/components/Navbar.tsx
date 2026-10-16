@@ -53,11 +53,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Brand Logo & Name */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-11 h-11 bg-navy-900 rounded-lg flex items-center justify-center text-white shadow-md group-hover:bg-blue-800 transition-colors">
-              <BookOpen className="w-6 h-6 text-blue-400" />
-            </div>
-            <div>
+          <Link href="/" className="flex items-center space-x-3.5 group">
+            <img
+              src="/logo.png"
+              alt="NextGen Research & Innovation Press"
+              className="h-11 sm:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+            />
+            <div className="hidden sm:block">
               <div className="text-lg font-bold text-navy-950 scholarly-heading tracking-tight leading-tight">
                 NextGen Research & Innovation Press
               </div>

@@ -68,8 +68,8 @@ function LoginForm() {
       <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
         {/* Header */}
         <div className="bg-navy-950 p-6 text-white text-center border-b border-navy-900">
-          <div className="inline-flex p-3 bg-blue-700 rounded-lg mb-3 shadow">
-            <BookOpen className="w-6 h-6 text-white" />
+          <div className="inline-flex p-3 bg-white rounded-xl mb-3 shadow">
+            <img src="/logo.png" alt="NextGen Press Logo" className="h-12 w-auto object-contain" />
           </div>
           <h2 className="text-xl font-bold scholarly-heading">NextGen Press Portal</h2>
           <p className="text-xs text-slate-300 mt-1">Scholarly Authentication & Author Submissions</p>

@@ -10,12 +10,21 @@ export default function Footer() {
           {/* Col 1: Publisher Info */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 bg-blue-700 rounded flex items-center justify-center text-white">
-                <BookOpen className="w-5 h-5" />
+              <div className="bg-white p-1 rounded-lg shadow-sm">
+                <img
+                  src="/logo.png"
+                  alt="NextGen Press Logo"
+                  className="h-9 w-auto object-contain"
+                />
               </div>
-              <span className="font-bold text-white text-base scholarly-heading">
-                NextGen Press
-              </span>
+              <div>
+                <span className="font-bold text-white text-base scholarly-heading block">
+                  NextGen Press
+                </span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-medium">
+                  Scholarly Publishing
+                </span>
+              </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
               NextGen Research and Innovation Press is an independent digital scholarly publisher committed to high-standard peer review, open access dissemination, and persistent scholarly infrastructure.

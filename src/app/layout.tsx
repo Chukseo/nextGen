@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   title: 'NextGen Research and Innovation Press | Peer-Reviewed Open Access Publishing',
   description: 'Digital scholarly academic journal publisher advancing science, technology, artificial intelligence, computing, engineering, and interdisciplinary research.',
   keywords: 'academic publishing, scholarly journals, peer review, open access, crossref doi, artificial intelligence research, nextgen press',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
