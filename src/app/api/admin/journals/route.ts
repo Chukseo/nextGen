@@ -58,21 +58,85 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Slug, title, and contact email are required' }, { status: 400 });
     }
 
-    const journal = await prisma.journal.create({
-      data: {
-        slug: slug.toLowerCase().trim(),
-        title,
-        abbreviation: abbreviation || title,
-        description: description || '',
-        aimsScope: aimsScope || '',
-        printIssn,
-        onlineIssn,
-        contactEmail,
-        peerReviewPolicy: peerReviewPolicy || 'Double-anonymous peer review',
-        openAccessPolicy: openAccessPolicy || 'Open Access under CC BY 4.0',
-        coverImageUrl: coverImageUrl || null,
-        logoUrl: logoUrl || null,
-      },
+    const currentYear = new Date().getFullYear();
+    const cleanSlug = slug
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const resolvedPublisher = body.publisher || 'NextGen Research and Innovation Press';
+    const resolvedPeerReview = peerReviewPolicy || 'Rigorous double-anonymous peer review conducted by independent domain experts. Minimum two review reports required prior to editorial decision.';
+    const resolvedOpenAccess = openAccessPolicy || 'Diamond Open Access: immediate and unrestricted global access with no fees for readers or authors under CC BY 4.0.';
+    const resolvedLicensing = body.licensingPolicy || 'Creative Commons Attribution 4.0 International (CC BY 4.0)';
+    const resolvedApc = body.apcInfo || 'All article processing charges (APCs) are fully sponsored by NextGen Press Foundation for the current publishing year.';
+    const resolvedAims = aimsScope || `${title} publishes original peer-reviewed research, comprehensive literature reviews, and technical notes spanning foundational theory, experimental benchmarks, and applied innovations.`;
+
+    const adminUser = session.user as any;
+
+    const journal = await prisma.$transaction(async (tx) => {
+      // 1. Create Journal
+      const createdJournal = await tx.journal.create({
+        data: {
+          slug: cleanSlug,
+          title,
+          abbreviation: abbreviation || title,
+          description: description || `Official peer-reviewed open access academic publication under NextGen Press.`,
+          aimsScope: resolvedAims,
+          publisher: resolvedPublisher,
+          licensingPolicy: resolvedLicensing,
+          openAccessPolicy: resolvedOpenAccess,
+          apcInfo: resolvedApc,
+          peerReviewPolicy: resolvedPeerReview,
+          printIssn: printIssn || null,
+          onlineIssn: onlineIssn || null,
+          contactEmail,
+          coverImageUrl: coverImageUrl || null,
+          logoUrl: logoUrl || null,
+        },
+      });
+
+      // 2. Initialize Volume 1
+      const volume1 = await tx.volume.create({
+        data: {
+          journalId: createdJournal.id,
+          volumeNumber: 1,
+          year: currentYear,
+          title: `Volume 1 (${currentYear}): Inaugural Scholarly Research`,
+          description: `Inaugural volume of ${title} presenting high-impact scholarly contributions.`,
+        },
+      });
+
+      // 3. Initialize Issue 1 (PUBLISHED)
+      await tx.issue.create({
+        data: {
+          journalId: createdJournal.id,
+          volumeId: volume1.id,
+          issueNumber: 1,
+          year: currentYear,
+          title: `Inaugural Issue: Advances in ${abbreviation || title}`,
+          description: `Premier issue featuring foundational peer-reviewed research and methodologies.`,
+          status: 'PUBLISHED',
+          publicationDate: new Date(),
+          editorialIntroduction: `Welcome to the inaugural issue of ${title}. All articles undergo rigorous double-anonymous peer review to ensure exceptional scientific merit and reproducible impact.`,
+          coverImageUrl: coverImageUrl || null,
+        },
+      });
+
+      // 4. Assign Admin as Editor-in-Chief in Editorial Board
+      if (adminUser?.id) {
+        await tx.editorialBoardMember.create({
+          data: {
+            journalId: createdJournal.id,
+            userId: adminUser.id,
+            roleTitle: 'Editor-in-Chief',
+            affiliation: adminUser.affiliation || 'NextGen Press Governance Board',
+            displayOrder: 1,
+          },
+        });
+      }
+
+      return createdJournal;
     });
 
     await logAuditEvent({
@@ -80,7 +144,7 @@ export async function POST(req: Request) {
       action: 'CREATE_JOURNAL',
       entityType: 'JOURNAL',
       entityId: journal.id,
-      details: { title, slug },
+      details: { title, slug: cleanSlug },
     });
 
     return NextResponse.json({ success: true, journal });

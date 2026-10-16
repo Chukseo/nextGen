@@ -25,6 +25,7 @@ import {
   Edit3,
   Image as ImageIcon
 } from 'lucide-react';
+import ImportArticleModal from '@/components/ImportArticleModal';
 
 export default function EditorDashboardClient({
   submissions,
@@ -48,6 +49,7 @@ export default function EditorDashboardClient({
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [doiModalOpen, setDoiModalOpen] = useState(false);
   const [createIssueModalOpen, setCreateIssueModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   // Form states
   const [reviewerId, setReviewerId] = useState(reviewers[0]?.id || '');
@@ -592,6 +594,13 @@ export default function EditorDashboardClient({
               <BookOpen className="w-3.5 h-3.5" />
               <span>Issues & Volumes ({issues.length})</span>
             </button>
+            <button
+              onClick={() => setImportModalOpen(true)}
+              className="px-3 py-1 rounded font-semibold transition-colors flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs"
+            >
+              <UploadCloud className="w-3.5 h-3.5" />
+              <span>Import Article (Bypass)</span>
+            </button>
           </div>
         </div>
 
@@ -605,7 +614,14 @@ export default function EditorDashboardClient({
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setImportModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition-colors"
+                >
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>Direct Import Article</span>
+                </button>
                 {journals.length > 1 && (
                   <select
                     value={filterIssueJournalId}
@@ -1563,6 +1579,14 @@ export default function EditorDashboardClient({
           </div>
         </div>
       )}
+
+      {/* DIRECT ARTICLE IMPORT MODAL */}
+      <ImportArticleModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        journals={journals}
+        onSuccess={(msg) => setFeedback({ type: 'success', text: msg })}
+      />
     </div>
   );
 }

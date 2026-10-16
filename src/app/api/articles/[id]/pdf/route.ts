@@ -39,6 +39,53 @@ export async function GET(
       return NextResponse.json({ error: 'Published article not found' }, { status: 404 });
     }
 
+    // 1. If an uploaded publication PDF exists (e.g. from direct import or typeset upload), serve it directly
+    if (article.pdfUrl && (article.pdfUrl.startsWith('http://') || article.pdfUrl.startsWith('https://'))) {
+      try {
+        const response = await fetch(article.pdfUrl);
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          prisma.publishedArticle.update({
+            where: { id: article.id },
+            data: { downloadsCount: { increment: 1 } },
+          }).catch(() => {});
+
+          return new Response(new Uint8Array(buffer), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `inline; filename="${article.journal.abbreviation || 'Article'}_${article.articleNumber || 'publication'}.pdf"`,
+              'Cache-Control': 'public, max-age=3600',
+            },
+          });
+        }
+      } catch (err) {
+        console.warn('Could not stream direct pdfUrl, falling back to generator:', err);
+      }
+    }
+
+    if (article.pdfStorageKey) {
+      try {
+        const directBuffer = await getFileBuffer(article.pdfStorageKey, 'published-articles');
+        if (directBuffer && directBuffer.length > 0) {
+          prisma.publishedArticle.update({
+            where: { id: article.id },
+            data: { downloadsCount: { increment: 1 } },
+          }).catch(() => {});
+
+          return new Response(new Uint8Array(directBuffer), {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `inline; filename="${article.journal.abbreviation || 'Article'}_${article.articleNumber || 'publication'}.pdf"`,
+              'Cache-Control': 'public, max-age=3600',
+            },
+          });
+        }
+      } catch (err) {}
+    }
+
     const latestDecision = article.submission.editorialDecisions?.[0];
 
     // Extract full text from submitted manuscript file if present
@@ -68,9 +115,9 @@ export async function GET(
       journalTitle: article.journal.title,
       journalAbbreviation: article.journal.abbreviation,
       onlineIssn: article.journal.onlineIssn,
-      volumeNumber: article.issue.volume.volumeNumber,
-      issueNumber: article.issue.issueNumber,
-      year: article.issue.year,
+      volumeNumber: article.issue?.volume?.volumeNumber || 1,
+      issueNumber: article.issue?.issueNumber || 1,
+      year: article.issue?.year || new Date().getFullYear(),
       articleNumber: article.articleNumber,
       pageRange: article.pageRange,
       doi: article.doi || '',

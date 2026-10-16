@@ -25,7 +25,9 @@ import {
   RotateCcw,
   ArrowRight,
   Eye,
+  UploadCloud,
 } from 'lucide-react';
+import ImportArticleModal from '@/components/ImportArticleModal';
 
 export default function AdminDashboardClient({
   metrics,
@@ -85,6 +87,7 @@ export default function AdminDashboardClient({
   const [editJournalEmail, setEditJournalEmail] = useState('');
   const [editJournalCoverFile, setEditJournalCoverFile] = useState<File | null>(null);
   const [editJournalExistingCoverUrl, setEditJournalExistingCoverUrl] = useState('');
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -471,6 +474,14 @@ export default function AdminDashboardClient({
                 <Plus className="w-4 h-4" />
                 <span>Launch New Journal</span>
               </button>
+
+              <button
+                onClick={() => setImportModalOpen(true)}
+                className="bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs px-4 py-2.5 rounded-lg flex items-center space-x-2 shadow-sm transition-colors"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>Import Article to Issue (Bypass Workflow)</span>
+              </button>
             </div>
           </div>
         </div>
@@ -665,13 +676,22 @@ export default function AdminDashboardClient({
                 Unpublish live articles or re-publish articles that have been returned to Production across all journals.
               </p>
             </div>
-            <input
-              type="text"
-              placeholder="Search by title, author, journal…"
-              value={articleSearch}
-              onChange={(e) => setArticleSearch(e.target.value)}
-              className="text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none w-full sm:w-64"
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setImportModalOpen(true)}
+                className="bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs px-3 py-2 rounded-lg transition-colors flex items-center space-x-1 shadow-xs shrink-0"
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Import Article (Bypass Workflow)</span>
+              </button>
+              <input
+                type="text"
+                placeholder="Search by title, author, journal…"
+                value={articleSearch}
+                onChange={(e) => setArticleSearch(e.target.value)}
+                className="text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none w-full sm:w-64"
+              />
+            </div>
           </div>
 
           {/* Sub-tab switcher */}
@@ -1507,6 +1527,14 @@ export default function AdminDashboardClient({
           </div>
         </div>
       )}
+
+      {/* DIRECT ARTICLE IMPORT MODAL */}
+      <ImportArticleModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        journals={journals}
+        onSuccess={(msg) => setFeedback({ type: 'success', text: msg })}
+      />
     </div>
   );
 }
