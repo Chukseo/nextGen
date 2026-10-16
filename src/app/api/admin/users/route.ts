@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { isMasterAdmin } from '@/lib/permissions';
 import { logAuditEvent } from '@/lib/audit';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,15 @@ export async function POST(req: Request) {
       entityId: user.id,
       details: { email: user.email, role, journalId },
     });
+
+    try {
+      await sendWelcomeEmail({
+        toEmail: user.email,
+        name: user.name || undefined,
+      });
+    } catch (emailErr) {
+      console.error('Failed to send welcome email to admin-created user:', emailErr);
+    }
 
     return NextResponse.json({ success: true, user });
   } catch (error: any) {

@@ -1,4 +1,5 @@
 import prisma from './prisma';
+import { sendEmail, renderScholarlyEmail } from './email';
 
 export async function createNotification({
   userId,
@@ -24,25 +25,62 @@ export async function createNotification({
       },
     });
 
-    // Also dispatch email simulation
-    await sendTransactionalEmail({
-      toUserId: userId,
-      subject: title,
-      htmlBody: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <h2 style="color: #0c1a2d; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">NextGen Research and Innovation Press</h2>
-          <p style="font-size: 16px; color: #1e293b;"><strong>${title}</strong></p>
-          <p style="font-size: 14px; color: #475569; line-height: 1.6;">${message}</p>
-          ${linkUrl ? `<p style="margin-top: 24px;"><a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}${linkUrl}" style="background-color: #1e40af; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View in Portal</a></p>` : ''}
-          <hr style="margin-top: 32px; border: none; border-top: 1px solid #cbd5e1;" />
-          <p style="font-size: 12px; color: #94a3b8;">NextGen Research and Innovation Press • Scholarly Editorial Office • Automated Notification</p>
-        </div>
-      `,
+    // Lookup user to get name & email
+    const recipient = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
     });
+
+    if (recipient?.email) {
+      // Determine badge and color based on notification type
+      let badgeText = 'Scholarly Notification';
+      let badgeColor = '#2563eb';
+
+      if (type.includes('SUBMISSION_CONFIRMED')) {
+        badgeText = 'Manuscript Logged';
+        badgeColor = '#4f46e5';
+      } else if (type.includes('NEW_SUBMISSION') || type.includes('EDITOR')) {
+        badgeText = 'Editorial Desk Action';
+        badgeColor = '#d97706';
+      } else if (type.includes('DECISION')) {
+        badgeText = 'Editorial Determination';
+        badgeColor = title.toLowerCase().includes('accept') ? '#059669' : '#ea580c';
+      } else if (type.includes('REVIEWER') || type.includes('INVITATION')) {
+        badgeText = 'Peer Review Assignment';
+        badgeColor = '#0284c7';
+      } else if (type.includes('PUBLISHED')) {
+        badgeText = 'Article Published & DOI Active';
+        badgeColor = '#0d9488';
+      } else if (type.includes('REVISION')) {
+        badgeText = 'Manuscript Revision Received';
+        badgeColor = '#ea580c';
+      }
+
+      const htmlBody = renderScholarlyEmail({
+        title,
+        preheader: message.slice(0, 100),
+        badgeText,
+        badgeColor,
+        recipientName: recipient.name || 'Scholar',
+        introParagraphs: [message],
+        actionButton: linkUrl
+          ? {
+              text: 'Open in Portal',
+              url: linkUrl,
+            }
+          : undefined,
+      });
+
+      await sendEmail({
+        to: recipient.email,
+        subject: title,
+        html: htmlBody,
+      });
+    }
 
     return notification;
   } catch (error) {
-    console.error('Failed to create notification:', error);
+    console.error('Failed to create notification or dispatch email:', error);
   }
 }
 
@@ -66,7 +104,14 @@ export async function sendTransactionalEmail({
     }
   }
 
-  // If external SMTP is configured, we can dispatch via nodemailer, or log to console
-  console.log(`[EMAIL DISPATCH] To: ${recipientEmail} | Subject: "${subject}"`);
-  return { success: true, deliveredAt: new Date().toISOString() };
+  if (!recipientEmail) {
+    console.warn('[EMAIL WARNING] Cannot send email: No recipient email found.');
+    return { success: false, error: 'Recipient email missing' };
+  }
+
+  return sendEmail({
+    to: recipientEmail,
+    subject,
+    html: htmlBody,
+  });
 }

@@ -5,6 +5,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import prisma from './prisma';
 import { logAuditEvent } from './audit';
+import { sendWelcomeEmail } from './email';
 
 // Auto-detect production URL on Vercel if NEXTAUTH_URL is missing or still points to localhost
 const vercelDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
@@ -103,6 +104,17 @@ export const authOptions: NextAuthOptions = {
             entityId: user.id,
             details: { email: user.email, method: 'Google OAuth first-run' },
           });
+        }
+
+        if (user.email) {
+          try {
+            await sendWelcomeEmail({
+              toEmail: user.email,
+              name: user.name || undefined,
+            });
+          } catch (emailErr) {
+            console.error('Failed to dispatch welcome email in events.createUser:', emailErr);
+          }
         }
       } catch (err) {
         console.error('Failed to create default roles for new Google user in events.createUser:', err);
