@@ -17,18 +17,23 @@ export default async function AuthorDashboardPage() {
 
   const user = session.user as any;
 
-  const submissions = await prisma.submission.findMany({
-    where: { authorId: user.id },
-    include: {
-      journal: true,
-      coAuthors: { orderBy: { authorOrder: 'asc' } },
-      files: { orderBy: { createdAt: 'desc' } },
-      editorialDecisions: { orderBy: { decidedAt: 'desc' }, take: 1 },
-      doiRecord: true,
-      publishedArticle: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  let submissions: any[] = [];
+  try {
+    submissions = await prisma.submission.findMany({
+      where: { authorId: user.id },
+      include: {
+        journal: true,
+        coAuthors: { orderBy: { authorOrder: 'asc' } },
+        files: { orderBy: { createdAt: 'desc' } },
+        editorialDecisions: { orderBy: { decidedAt: 'desc' }, take: 1 },
+        doiRecord: true,
+        publishedArticle: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (error) {
+    console.error('AuthorDashboard database query warning:', error);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 space-y-6">

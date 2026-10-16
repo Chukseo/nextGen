@@ -17,19 +17,24 @@ export default async function ReviewerDashboardPage() {
 
   const user = session.user as any;
 
-  const assignments = await prisma.reviewAssignment.findMany({
-    where: { reviewerId: user.id },
-    include: {
-      submission: {
-        include: {
-          journal: true,
-          files: true,
+  let assignments: any[] = [];
+  try {
+    assignments = await prisma.reviewAssignment.findMany({
+      where: { reviewerId: user.id },
+      include: {
+        submission: {
+          include: {
+            journal: true,
+            files: true,
+          },
         },
+        report: true,
       },
-      report: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (error) {
+    console.error('ReviewerDashboard database query warning:', error);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-10 space-y-6">

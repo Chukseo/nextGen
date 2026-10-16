@@ -42,49 +42,58 @@ export default async function EditorDashboardPage() {
     }
   }
 
-  const [submissions, allJournals, reviewers, issues] = await Promise.all([
-    prisma.submission.findMany({
-      where: whereSub,
-      include: {
-        journal: true,
-        coAuthors: { orderBy: { authorOrder: 'asc' } },
-        files: { orderBy: { createdAt: 'desc' } },
-        editorialDecisions: {
-          include: { editor: { select: { name: true } } },
-          orderBy: { decidedAt: 'desc' },
+  let submissions: any[] = [];
+  let allJournals: any[] = [];
+  let reviewers: any[] = [];
+  let issues: any[] = [];
+
+  try {
+    [submissions, allJournals, reviewers, issues] = await Promise.all([
+      prisma.submission.findMany({
+        where: whereSub,
+        include: {
+          journal: true,
+          coAuthors: { orderBy: { authorOrder: 'asc' } },
+          files: { orderBy: { createdAt: 'desc' } },
+          editorialDecisions: {
+            include: { editor: { select: { name: true } } },
+            orderBy: { decidedAt: 'desc' },
+          },
+          reviewAssignments: {
+            include: {
+              reviewer: { select: { id: true, name: true, email: true, affiliation: true } },
+              report: true,
+            },
+          },
+          doiRecord: true,
+          publishedArticle: true,
         },
-        reviewAssignments: {
-          include: {
-            reviewer: { select: { id: true, name: true, email: true, affiliation: true } },
-            report: true,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.journal.findMany({
+        orderBy: { title: 'asc' },
+      }),
+      prisma.user.findMany({
+        where: {
+          roleAssignments: { some: { role: 'REVIEWER' } },
+        },
+        select: { id: true, name: true, email: true, affiliation: true },
+      }),
+      prisma.issue.findMany({
+        where: whereIssues,
+        include: {
+          journal: true,
+          volume: true,
+          publishedArticles: {
+            select: { id: true, title: true, articleNumber: true },
           },
         },
-        doiRecord: true,
-        publishedArticle: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
-    prisma.journal.findMany({
-      orderBy: { title: 'asc' },
-    }),
-    prisma.user.findMany({
-      where: {
-        roleAssignments: { some: { role: 'REVIEWER' } },
-      },
-      select: { id: true, name: true, email: true, affiliation: true },
-    }),
-    prisma.issue.findMany({
-      where: whereIssues,
-      include: {
-        journal: true,
-        volume: true,
-        publishedArticles: {
-          select: { id: true, title: true, articleNumber: true },
-        },
-      },
-      orderBy: [{ year: 'desc' }, { issueNumber: 'desc' }],
-    }),
-  ]);
+        orderBy: [{ year: 'desc' }, { issueNumber: 'desc' }],
+      }),
+    ]);
+  } catch (error) {
+    console.error('EditorDashboard database query warning:', error);
+  }
 
   const permittedJournals = isMasterAdmin(user) || journalIds.length === 0
     ? allJournals
