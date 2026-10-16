@@ -7,6 +7,8 @@ import { logAuditEvent } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
+import { generateScholarlyArticlePdf } from '@/lib/pdfGenerator';
+import { uploadFile } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,9 +35,9 @@ export async function POST(
       license = 'CC BY 4.0',
     } = body;
 
-    if (!submissionId || !pdfStorageKey) {
+    if (!submissionId) {
       return NextResponse.json(
-        { error: 'Submission ID and Final Typeset PDF are required to publish an article.' },
+        { error: 'Submission ID is required to publish an article.' },
         { status: 400 }
       );
     }
@@ -58,6 +60,7 @@ export async function POST(
       include: {
         coAuthors: { orderBy: { authorOrder: 'asc' } },
         doiRecord: true,
+        editorialDecisions: { orderBy: { decidedAt: 'desc' }, take: 1 },
       },
     });
 
@@ -73,10 +76,30 @@ export async function POST(
       );
     }
 
+    // 1. Calculate collision-free unique DOI
     const prefix = process.env.CROSSREF_DOI_PREFIX || '10.5555';
-    const sequence = articleNumber || submission.submissionNumber.split('-').pop() || '001';
-    const suffix = submission.doiRecord?.suffix || formatDOISuffix(issue.journal.slug, issue.year, sequence);
-    const fullDoi = submission.doiRecord?.doi || `${prefix}/${suffix}`;
+    let seqNum = parseInt(articleNumber || submission.submissionNumber.split('-').pop() || '1', 10);
+    if (isNaN(seqNum) || seqNum <= 0) seqNum = 1;
+
+    let finalSuffix = submission.doiRecord?.suffix || formatDOISuffix(issue.journal.slug, issue.year, seqNum);
+    let finalDoi = submission.doiRecord?.doi || `${prefix}/${finalSuffix}`;
+
+    if (!submission.doiRecord) {
+      let candidateDoi = finalDoi;
+      let existingRecord = await prisma.dOIRecord.findUnique({
+        where: { doi: candidateDoi },
+      });
+
+      while (existingRecord && existingRecord.submissionId !== submission.id) {
+        seqNum += 1;
+        finalSuffix = formatDOISuffix(issue.journal.slug, issue.year, seqNum);
+        candidateDoi = `${prefix}/${finalSuffix}`;
+        existingRecord = await prisma.dOIRecord.findUnique({
+          where: { doi: candidateDoi },
+        });
+      }
+      finalDoi = candidateDoi;
+    }
 
     const publishedDate = new Date();
 
@@ -87,11 +110,65 @@ export async function POST(
       issueNumber: issue.issueNumber,
       year: issue.year,
       pages: pageRange,
-      doi: fullDoi,
+      doi: finalDoi,
       authors: submission.coAuthors.map((a) => ({ firstName: a.firstName, lastName: a.lastName })),
     });
 
-    // Transaction to publish article
+    // 2. Automatically generate the official typeset PDF with Journal & Issue branding
+    let resolvedPdfStorageKey = pdfStorageKey;
+    let resolvedPdfUrl = pdfUrl;
+
+    try {
+      const latestDecision = submission.editorialDecisions?.[0];
+      const pdfBytes = await generateScholarlyArticlePdf({
+        journalTitle: issue.journal.title,
+        journalAbbreviation: issue.journal.abbreviation,
+        onlineIssn: issue.journal.onlineIssn,
+        volumeNumber: issue.volume.volumeNumber,
+        issueNumber: issue.issueNumber,
+        year: issue.year,
+        articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
+        pageRange,
+        doi: finalDoi,
+        articleType: submission.articleType,
+        title: submission.title,
+        abstract: submission.abstract,
+        publishedAt: publishedDate,
+        receivedAt: submission.createdAt,
+        acceptedAt: latestDecision?.decidedAt || publishedDate,
+        citationString,
+        license,
+        authors: submission.coAuthors.map((a) => ({
+          firstName: a.firstName,
+          lastName: a.lastName,
+          affiliation: a.affiliation,
+          orcid: a.orcid,
+          isCorresponding: a.isCorresponding,
+          email: a.email,
+        })),
+      });
+
+      const fileName = `${issue.journal.abbreviation}_${issue.year}_${articleNumber || String(seqNum).padStart(3, '0')}.pdf`;
+      const uploadRes = await uploadFile({
+        fileBuffer: Buffer.from(pdfBytes),
+        originalFileName: fileName,
+        mimeType: 'application/pdf',
+        bucketName: 'published-articles',
+      });
+
+      resolvedPdfStorageKey = uploadRes.storageKey;
+      resolvedPdfUrl = uploadRes.publicUrl || `/api/articles/${submission.id}/pdf`;
+    } catch (pdfErr) {
+      console.error('Automated PDF generation fallback warning:', pdfErr);
+      if (!resolvedPdfStorageKey) {
+        resolvedPdfStorageKey = `published/${submission.submissionNumber}.pdf`;
+      }
+      if (!resolvedPdfUrl) {
+        resolvedPdfUrl = `/api/articles/${submission.id}/pdf`;
+      }
+    }
+
+    // 3. Atomic transaction to publish article & record DOI
     const published = await prisma.$transaction(async (tx) => {
       // 1. Create or update PublishedArticle
       const pubArt = await tx.publishedArticle.upsert({
@@ -101,12 +178,12 @@ export async function POST(
           journalId: issue.journalId,
           title: submission.title,
           abstract: submission.abstract,
-          doi: fullDoi,
+          doi: finalDoi,
           doiStatus: submission.doiRecord?.status || 'DRAFT',
-          articleNumber,
+          articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
           pageRange,
-          pdfStorageKey,
-          pdfUrl: pdfUrl || `/storage/published/${pdfStorageKey.split('/').pop()}`,
+          pdfStorageKey: resolvedPdfStorageKey,
+          pdfUrl: resolvedPdfUrl,
           license,
           citationString,
           publishedAt: publishedDate,
@@ -117,12 +194,12 @@ export async function POST(
           journalId: issue.journalId,
           title: submission.title,
           abstract: submission.abstract,
-          doi: fullDoi,
+          doi: finalDoi,
           doiStatus: submission.doiRecord?.status || 'DRAFT',
-          articleNumber,
+          articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
           pageRange,
-          pdfStorageKey,
-          pdfUrl: pdfUrl || `/storage/published/${pdfStorageKey.split('/').pop()}`,
+          pdfStorageKey: resolvedPdfStorageKey,
+          pdfUrl: resolvedPdfUrl,
           license,
           citationString,
           publishedAt: publishedDate,
@@ -135,9 +212,9 @@ export async function POST(
           submissionId: submission.id,
           versionNumber: 1,
           fileType: 'FINAL_TYPESET_PDF',
-          originalFileName: `${issue.journal.abbreviation}_${issue.year}_${articleNumber || 'art'}.pdf`,
-          storageKey: pdfStorageKey,
-          storageUrl: pdfUrl,
+          originalFileName: `${issue.journal.abbreviation}_${issue.year}_${articleNumber || String(seqNum).padStart(3, '0')}.pdf`,
+          storageKey: resolvedPdfStorageKey,
+          storageUrl: resolvedPdfUrl,
           mimeType: 'application/pdf',
           fileSize: 1024 * 1024,
           isConfidential: false,
@@ -154,18 +231,23 @@ export async function POST(
         },
       });
 
-      // 4. Ensure DOI record exists in DRAFT
-      if (!submission.doiRecord) {
-        await tx.dOIRecord.create({
-          data: {
-            submissionId: submission.id,
-            doi: fullDoi,
-            prefix,
-            suffix,
-            status: 'DRAFT',
-          },
-        });
-      }
+      // 4. Ensure DOI record exists or updates safely (collision-free)
+      await tx.dOIRecord.upsert({
+        where: { submissionId: submission.id },
+        update: {
+          doi: finalDoi,
+          prefix,
+          suffix: finalSuffix,
+          status: submission.doiRecord?.status || 'DRAFT',
+        },
+        create: {
+          submissionId: submission.id,
+          doi: finalDoi,
+          prefix,
+          suffix: finalSuffix,
+          status: 'DRAFT',
+        },
+      });
 
       return pubArt;
     });
@@ -175,7 +257,7 @@ export async function POST(
       userId: submission.authorId,
       type: 'ARTICLE_PUBLISHED',
       title: `Article Published: ${submission.title}`,
-      message: `Your article has been officially published in ${issue.journal.title}, Volume ${issue.volume.volumeNumber}, Issue ${issue.issueNumber}. Assigned DOI: ${fullDoi}.`,
+      message: `Your article has been officially published in ${issue.journal.title}, Volume ${issue.volume.volumeNumber}, Issue ${issue.issueNumber}. Assigned DOI: ${finalDoi}.`,
       linkUrl: `/articles/${published.id}`,
     });
 
@@ -187,7 +269,7 @@ export async function POST(
       details: {
         publishedArticleId: published.id,
         issueId: issue.id,
-        doi: fullDoi,
+        doi: finalDoi,
       },
     });
 

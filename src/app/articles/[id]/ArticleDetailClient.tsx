@@ -35,13 +35,7 @@ export default function ArticleDetailClient({ article }: { article: any }) {
     authors: authors.map((a: any) => ({ firstName: a.firstName, lastName: a.lastName })),
   };
 
-  const pdfFile = article.submission.files.find(
-    (f: any) => f.fileType === 'FINAL_TYPESET_PDF'
-  );
-
-  const downloadUrl = pdfFile
-    ? `/api/files/download/${pdfFile.id}`
-    : article.pdfUrl || '#';
+  const downloadUrl = `/api/articles/${article.id}/pdf`;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 space-y-10">

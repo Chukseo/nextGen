@@ -170,13 +170,38 @@ export async function depositDOI({
   // Calculate or find DOI
   let doiRecord = submission.doiRecord;
   const publishedYear = submission.publishedArticle?.publishedAt?.getFullYear() || new Date().getFullYear();
-  const sequence = submission.publishedArticle?.articleNumber || submission.submissionNumber.split('-').pop() || '001';
-  const suffix = formatDOISuffix(submission.journal.slug, publishedYear, sequence);
-  const fullDoi = `${prefix}/${suffix}`;
+  let sequence = submission.publishedArticle?.articleNumber || submission.submissionNumber.split('-').pop() || '001';
+  let seqNum = parseInt(sequence, 10) || 1;
+  let suffix = doiRecord?.suffix || formatDOISuffix(submission.journal.slug, publishedYear, seqNum);
+  let fullDoi = doiRecord?.doi || `${prefix}/${suffix}`;
 
   if (!doiRecord) {
-    doiRecord = await prisma.dOIRecord.create({
-      data: {
+    let candidateDoi = fullDoi;
+    let existingRecord = await prisma.dOIRecord.findUnique({
+      where: { doi: candidateDoi },
+    });
+
+    while (existingRecord && existingRecord.submissionId !== submission.id) {
+      seqNum += 1;
+      suffix = formatDOISuffix(submission.journal.slug, publishedYear, seqNum);
+      candidateDoi = `${prefix}/${suffix}`;
+      existingRecord = await prisma.dOIRecord.findUnique({
+        where: { doi: candidateDoi },
+      });
+    }
+    fullDoi = candidateDoi;
+
+    doiRecord = await prisma.dOIRecord.upsert({
+      where: { submissionId: submission.id },
+      update: {
+        doi: fullDoi,
+        prefix,
+        suffix,
+        status: 'PENDING',
+        lastAttemptAt: new Date(),
+        retryCount: { increment: 1 },
+      },
+      create: {
         submissionId: submission.id,
         doi: fullDoi,
         prefix,
