@@ -78,19 +78,127 @@ export interface ScholarlyPdfData {
   }[];
 }
 
+// Set of valid Windows-1252 code points outside 0x20..0x7E and 0xA0..0xFF
+const WIN1252_EXTRA_CODES = new Set([
+  0x20AC, // €
+  0x201A, // ‚
+  0x0192, // ƒ
+  0x201E, // „
+  0x2026, // …
+  0x2020, // †
+  0x2021, // ‡
+  0x02C6, // ˆ
+  0x2030, // ‰
+  0x0160, // Š
+  0x2039, // ‹
+  0x0152, // Œ
+  0x017D, // Ž
+  0x2018, // ‘
+  0x2019, // ’
+  0x201C, // “
+  0x201D, // ”
+  0x2022, // •
+  0x2013, // –
+  0x2014, // —
+  0x02DC, // ˜
+  0x2122, // ™
+  0x0161, // š
+  0x203A, // ›
+  0x0153, // œ
+  0x017E, // ž
+  0x0178, // Ÿ
+]);
+
+// Thoroughly sanitize text for PDF-lib StandardFonts (WinAnsi / Windows-1252 encoding)
+export function sanitizeForPdf(text: string): string {
+  if (!text) return '';
+
+  // 1. Map common Cyrillic homoglyphs and transliterations that often get pasted from Word
+  let s = text
+    .replace(/\u0430/g, 'a').replace(/\u0410/g, 'A')
+    .replace(/\u0435/g, 'e').replace(/\u0415/g, 'E')
+    .replace(/\u043e/g, 'o').replace(/\u041e/g, 'O')
+    .replace(/\u0440/g, 'p').replace(/\u0420/g, 'P')
+    .replace(/\u0441/g, 'c').replace(/\u0421/g, 'C')
+    .replace(/\u0443/g, 'y').replace(/\u0423/g, 'Y')
+    .replace(/\u0445/g, 'x').replace(/\u0425/g, 'X')
+    .replace(/\u0456/g, 'i').replace(/\u0406/g, 'I')
+    .replace(/\u0458/g, 'j').replace(/\u0408/g, 'J')
+    .replace(/\u0455/g, 's').replace(/\u0405/g, 'S')
+    .replace(/\u0412/g, 'B').replace(/\u041d/g, 'H')
+    .replace(/\u041a/g, 'K').replace(/\u041c/g, 'M')
+    .replace(/\u0422/g, 'T');
+
+  // 2. Map typographic symbols, smart quotes, dashes, and mathematical operators
+  s = s
+    .replace(/[\u2018\u2019\u201A\u201B\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F\u2033]/g, '"')
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212]/g, '-')
+    .replace(/\u2026/g, '...')
+    .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/[\u2264]/g, '<=')
+    .replace(/[\u2265]/g, '>=')
+    .replace(/[\u2260]/g, '!=')
+    .replace(/[\u00D7]/g, 'x')
+    .replace(/[\u00F7]/g, '/')
+    .replace(/[\u2248\u223C]/g, '~')
+    .replace(/[\u2192]/g, '->')
+    .replace(/[\u2190]/g, '<-')
+    .replace(/[\u2022\u2023\u25E6\u2043\u2219]/g, '-');
+
+  // 3. Scan characters and verify against WinAnsi
+  let result = '';
+  for (let i = 0; i < s.length; i++) {
+    const char = s[i];
+    const code = char.charCodeAt(0);
+
+    // Standard printable ASCII
+    if (code >= 0x20 && code <= 0x7E) {
+      result += char;
+      continue;
+    }
+    // Newline / Tab
+    if (code === 0x0A || code === 0x0D || code === 0x09) {
+      result += ' ';
+      continue;
+    }
+    // Latin-1 Supplement (0xA0 - 0xFF)
+    if (code >= 0x00A0 && code <= 0x00FF) {
+      result += char;
+      continue;
+    }
+    // Extra WinAnsi codes
+    if (WIN1252_EXTRA_CODES.has(code)) {
+      result += char;
+      continue;
+    }
+
+    // Try NFKD decomposition to map diacritics
+    const decomposed = char.normalize('NFKD');
+    let mapped = false;
+    for (let j = 0; j < decomposed.length; j++) {
+      const dCode = decomposed.charCodeAt(j);
+      if (dCode >= 0x20 && dCode <= 0x7E) {
+        result += decomposed[j];
+        mapped = true;
+        break;
+      }
+    }
+    if (!mapped) {
+      result += ' '; // Safely replace unknown glyph with space
+    }
+  }
+
+  return result.replace(/\s+/g, ' ').trim();
+}
+
 // Utility to wrap text into lines fitting a maxWidth
 function wrapText(text: string, maxWidth: number, font: any, fontSize: number): string[] {
   if (!text) return [];
-  const sanitized = text
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/[\u2013\u2014]/g, '-')
-    .replace(/\u2026/g, '...')
-    .replace(/\u00A0/g, ' ')
-    .replace(/[\u200B-\u200D\uFEFF]/g, '')
-    .trim();
+  const sanitized = sanitizeForPdf(text);
 
-  const words = sanitized.replace(/\s+/g, ' ').split(' ');
+  const words = sanitized.split(' ');
   const lines: string[] = [];
   let currentLine = '';
 
@@ -402,6 +510,24 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
     const page = pdfDoc.addPage([pageWidth, pageHeight]);
     pages.push(page);
     currentPageIndex += 1;
+
+    // Intercept drawText to make sure no unencodable character crashes the generator
+    const originalDrawText = page.drawText.bind(page);
+    (page as any).drawText = (text: string, options?: any) => {
+      if (!text) return page;
+      const clean = sanitizeForPdf(text);
+      try {
+        return originalDrawText(clean, options);
+      } catch (err) {
+        // Fallback: strip to pure 7-bit printable ASCII
+        const ascii = clean.replace(/[^\x20-\x7E]/g, ' ');
+        try {
+          return originalDrawText(ascii, options);
+        } catch {
+          return page;
+        }
+      }
+    };
 
     let y = pageHeight - 45;
 
@@ -958,7 +1084,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
             currentY = next.startY;
           }
           if (firstLine) {
-            activePage.drawText('•', {
+            activePage.drawText('-', {
               x: marginX + 4,
               y: currentY,
               size: 9.5,
