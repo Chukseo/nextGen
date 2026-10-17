@@ -57,12 +57,17 @@ export default async function IssueDetailPage({
                 </Link>
               )}
               <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 text-xs text-blue-400 font-semibold uppercase">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-blue-400 font-semibold uppercase">
                   <Link href={`/journals/${issue.journal.slug}`} className="hover:underline">
                     {issue.journal.title}
                   </Link>
                   <span>•</span>
                   <span>Vol. {issue.volume.volumeNumber}, No. {issue.issueNumber} ({issue.year})</span>
+                  {issue.isCurrent && (
+                    <span className="bg-amber-400 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow-sm normal-case">
+                      ⭐ CURRENT ISSUE
+                    </span>
+                  )}
                 </div>
                 <div className="text-[11px] text-slate-400">
                   {issue.journal.abbreviation} • Open Access
@@ -109,7 +114,24 @@ export default async function IssueDetailPage({
             Articles in this Issue ({issue.publishedArticles.length})
           </h2>
 
-          <div className="divide-y divide-slate-100">
+          {issue.publishedArticles.length === 0 ? (
+            <div className="py-12 text-center space-y-3">
+              <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
+              <p className="text-sm font-semibold text-slate-700">No Articles Published Yet</p>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Articles scheduled for this volume and issue are completing editorial review and production. Check back soon or browse other published issues.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href={`/journals/${issue.journal.slug}`}
+                  className="text-xs font-semibold text-blue-700 hover:text-blue-900"
+                >
+                  &larr; View {issue.journal.title} Overview
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
             {issue.publishedArticles.map((article) => {
               const authors = article.submission.coAuthors
                 .map((a) => `${a.firstName} ${a.lastName}`)
@@ -144,6 +166,7 @@ export default async function IssueDetailPage({
               );
             })}
           </div>
+          )}
         </div>
       </div>
     </div>

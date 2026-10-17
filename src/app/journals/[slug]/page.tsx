@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
-import { BookOpen, UploadCloud, ArrowRight, ShieldCheck, FileText, CheckCircle, ExternalLink } from 'lucide-react';
+import JournalHeader from '@/components/JournalHeader';
+import { BookOpen, UploadCloud, ArrowRight, ShieldCheck, FileText, CheckCircle, ExternalLink, Star, Layers, Users } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -30,12 +31,13 @@ export default async function JournalSlugPage({
                     include: { coAuthors: { orderBy: { authorOrder: 'asc' } } },
                   },
                 },
+                orderBy: { publishedAt: 'desc' },
               },
             },
-            orderBy: { issueNumber: 'desc' },
+            orderBy: [{ issueNumber: 'desc' }],
           },
         },
-        orderBy: { volumeNumber: 'desc' },
+        orderBy: [{ volumeNumber: 'desc' }],
       },
     },
   });
@@ -48,66 +50,19 @@ export default async function JournalSlugPage({
     v.issues.map((i) => ({ ...i, volumeNumber: v.volumeNumber }))
   );
 
+  const currentIssue = publishedIssues.find((i) => i.isCurrent) || publishedIssues[0];
+
   const allPublishedArticles = journal.volumes.flatMap((v) =>
     v.issues.flatMap((i) => i.publishedArticles)
   );
 
   return (
-    <div className="space-y-12 pb-16">
-      {/* Journal Masthead */}
-      <div className="bg-navy-950 text-white py-12 px-4 sm:px-8 border-b border-navy-900">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
-          <div className="space-y-4 flex-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="bg-blue-600 text-white font-bold text-xs px-2.5 py-1 rounded">
-                {journal.slug.toUpperCase()}
-              </span>
-              <span className="text-xs text-slate-300 font-medium">
-                {journal.abbreviation}
-              </span>
-              <span className="text-xs text-emerald-300 bg-emerald-950/70 border border-emerald-800 px-2 py-0.5 rounded font-medium">
-                Open Access (CC BY 4.0)
-              </span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl font-bold scholarly-heading leading-tight">
-              {journal.title}
-            </h1>
-
-            <p className="text-sm sm:text-base text-slate-300 max-w-4xl leading-relaxed font-light">
-              {journal.description}
-            </p>
-
-            <div className="pt-4 flex flex-wrap items-center gap-4">
-              <Link
-                href={`/submit?journal=${journal.id}`}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2.5 rounded shadow transition-colors flex items-center space-x-2"
-              >
-                <UploadCloud className="w-4 h-4" />
-                <span>Submit to {journal.abbreviation}</span>
-              </Link>
-              <div className="text-xs text-slate-400 flex items-center space-x-4">
-                <span><strong>Print ISSN:</strong> {journal.printIssn || 'N/A'}</span>
-                <span>•</span>
-                <span><strong>Online ISSN:</strong> {journal.onlineIssn || 'N/A'}</span>
-              </div>
-            </div>
-          </div>
-
-          {journal.coverImageUrl && (
-            <div className="flex-shrink-0 w-36 sm:w-44 md:w-52 rounded-xl overflow-hidden shadow-2xl border-2 border-slate-700/60 bg-navy-900 group">
-              <img
-                src={journal.coverImageUrl}
-                alt={`${journal.title} cover`}
-                className="w-full h-auto aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="space-y-10 pb-16">
+      {/* Journal Masthead & Unified Navigation Menu */}
+      <JournalHeader journal={journal} activeTab="about" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Main Content: Aims, Issues & Published Articles */}
+        {/* Main Column: Aims & Scope, Current Issue Spotlight, Published Research */}
         <div className="lg:col-span-2 space-y-10">
           {/* Aims and Scope */}
           <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-3">
@@ -119,57 +74,37 @@ export default async function JournalSlugPage({
             </div>
           </section>
 
-          {/* Published Issues Section */}
-          {publishedIssues.length > 0 && (
-            <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h2 className="text-xl font-bold text-slate-900 scholarly-heading">
-                  Issues & Volumes
-                </h2>
-                <span className="text-xs text-slate-500 font-medium">
-                  {publishedIssues.length} {publishedIssues.length === 1 ? 'Issue' : 'Issues'}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {publishedIssues.map((issue) => (
+          {/* Current Issue Spotlight Card */}
+          {currentIssue && (
+            <section className="bg-gradient-to-r from-navy-950 to-slate-900 text-white p-6 sm:p-8 rounded-xl shadow-md space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-amber-400 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow-sm inline-flex items-center gap-1">
+                      <Star className="w-2.5 h-2.5 fill-current" />
+                      <span>CURRENT ISSUE</span>
+                    </span>
+                    <span className="text-xs text-blue-400 font-semibold uppercase">
+                      Vol. {currentIssue.volumeNumber}, No. {currentIssue.issueNumber} ({currentIssue.year})
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold scholarly-heading text-white">
+                    {currentIssue.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 max-w-xl line-clamp-2">
+                    {currentIssue.description || currentIssue.editorialIntroduction || 'Explore the latest peer-reviewed research and scholarly articles in this issue.'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
                   <Link
-                    key={issue.id}
-                    href={`/issues/${issue.id}`}
-                    className="group border border-slate-200 rounded-lg overflow-hidden hover:border-blue-400 hover:shadow-md transition-all flex flex-col bg-slate-50/40"
+                    href={`/journals/${journal.slug}/current`}
+                    className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow transition-colors inline-flex items-center space-x-1.5"
                   >
-                    {issue.coverImageUrl ? (
-                      <div className="w-full aspect-[4/3] overflow-hidden bg-slate-100">
-                        <img
-                          src={issue.coverImageUrl}
-                          alt={issue.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full aspect-[4/3] bg-navy-950 flex flex-col items-center justify-center p-4 text-center text-white">
-                        <BookOpen className="w-8 h-8 text-blue-400 mb-1" />
-                        <span className="text-[11px] font-bold text-slate-300">Vol. {issue.volumeNumber}, No. {issue.issueNumber}</span>
-                        <span className="text-[10px] text-slate-400">({issue.year})</span>
-                      </div>
-                    )}
-                    <div className="p-3 flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                          Vol. {issue.volumeNumber}, No. {issue.issueNumber} ({issue.year})
-                        </div>
-                        <h4 className="font-bold text-xs text-slate-900 group-hover:text-blue-700 line-clamp-2 mt-0.5">
-                          {issue.title}
-                        </h4>
-                      </div>
-                      <div className="text-[10px] text-slate-500 mt-2 flex items-center justify-between">
-                        <span>{issue.publishedArticles.length} Articles</span>
-                        <span className="text-blue-600 font-medium group-hover:translate-x-0.5 transition-transform flex items-center">
-                          View &rarr;
-                        </span>
-                      </div>
-                    </div>
+                    <span>View Current Issue</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
-                ))}
+                </div>
               </div>
             </section>
           )}
@@ -180,7 +115,7 @@ export default async function JournalSlugPage({
               <h2 className="text-xl font-bold text-slate-900 scholarly-heading">
                 Published Research
               </h2>
-              <span className="text-xs text-slate-500">{allPublishedArticles.length} Articles</span>
+              <span className="text-xs text-slate-500 font-medium">{allPublishedArticles.length} Articles</span>
             </div>
 
             {allPublishedArticles.length === 0 ? (
@@ -237,19 +172,28 @@ export default async function JournalSlugPage({
           </section>
         </div>
 
-        {/* Sidebar: Editorial Board & Policies */}
+        {/* Sidebar: Editorial Board Preview, Archive Navigation & Publishing Info */}
         <div className="space-y-8">
-          {/* Editorial Board */}
+          {/* Editorial Board Preview */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900 scholarly-heading border-b border-slate-100 pb-2">
-              Editorial Board
-            </h3>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-base font-bold text-slate-900 scholarly-heading">
+                Editorial Board
+              </h3>
+              <Link
+                href={`/journals/${journal.slug}/editorial-board`}
+                className="text-xs font-semibold text-blue-700 hover:text-blue-900"
+              >
+                View All &rarr;
+              </Link>
+            </div>
+
             {journal.editorialBoard.length === 0 ? (
               <p className="text-xs text-slate-500">Board members under appointment.</p>
             ) : (
-              <ul className="space-y-4">
-                {journal.editorialBoard.map((member) => (
-                  <li key={member.id} className="text-xs space-y-0.5 border-b border-slate-50 pb-3 last:border-none">
+              <ul className="space-y-3">
+                {journal.editorialBoard.slice(0, 4).map((member) => (
+                  <li key={member.id} className="text-xs space-y-0.5 border-b border-slate-50 pb-2.5 last:border-none">
                     <div className="font-bold text-slate-900">{member.user.name}</div>
                     <div className="text-blue-700 font-semibold">{member.roleTitle}</div>
                     <div className="text-slate-500">{member.affiliation}</div>
@@ -257,6 +201,43 @@ export default async function JournalSlugPage({
                 ))}
               </ul>
             )}
+
+            <div className="pt-2">
+              <Link
+                href={`/journals/${journal.slug}/editorial-board`}
+                className="text-xs text-center block w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium rounded-lg border border-slate-200 transition-colors"
+              >
+                Full Editorial Board & Review Policies
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick Issue Archive Navigation */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-base font-bold text-slate-900 scholarly-heading">
+                Issue Archive
+              </h3>
+              <Link
+                href={`/journals/${journal.slug}/archive`}
+                className="text-xs font-semibold text-blue-700 hover:text-blue-900"
+              >
+                All Volumes &rarr;
+              </Link>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              Browse previously published issues, special thematic collections, and complete issue tables of contents.
+            </p>
+
+            <div className="pt-2">
+              <Link
+                href={`/journals/${journal.slug}/archive`}
+                className="text-xs text-center block w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-lg border border-blue-200 transition-colors"
+              >
+                Explore {publishedIssues.length} Published {publishedIssues.length === 1 ? 'Issue' : 'Issues'}
+              </Link>
+            </div>
           </div>
 
           {/* Publishing Information */}

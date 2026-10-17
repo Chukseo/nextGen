@@ -67,6 +67,7 @@ export async function PATCH(
       title,
       description,
       status,
+      isCurrent,
       scheduledPublishDate,
       editorialIntroduction,
       issueNumber,
@@ -74,12 +75,20 @@ export async function PATCH(
       coverImageUrl,
     } = body;
 
+    if (isCurrent === true) {
+      await prisma.issue.updateMany({
+        where: { journalId: issue.journalId },
+        data: { isCurrent: false },
+      });
+    }
+
     const updatedIssue = await prisma.issue.update({
       where: { id: params.id },
       data: {
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(coverImageUrl !== undefined && { coverImageUrl }),
+        ...(isCurrent !== undefined && { isCurrent: Boolean(isCurrent) }),
         ...(status && {
           status,
           ...(status === 'PUBLISHED' ? { publicationDate: new Date() } : {}),

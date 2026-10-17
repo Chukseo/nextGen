@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       title,
       description,
       status = 'DRAFT',
+      isCurrent = false,
       scheduledPublishDate,
       editorialIntroduction,
       coverImageUrl,
@@ -71,6 +72,14 @@ export async function POST(req: Request) {
 
     if (!isMasterAdmin(user) && !isEditor(user, journalId)) {
       return NextResponse.json({ error: 'Unauthorized to manage issues for this journal' }, { status: 403 });
+    }
+
+    if (isCurrent) {
+      // Unset previous current issue for this journal
+      await prisma.issue.updateMany({
+        where: { journalId },
+        data: { isCurrent: false },
+      });
     }
 
     // Find or create volume
@@ -103,6 +112,7 @@ export async function POST(req: Request) {
         description,
         coverImageUrl: coverImageUrl || null,
         status,
+        isCurrent: Boolean(isCurrent),
         scheduledPublishDate: scheduledPublishDate ? new Date(scheduledPublishDate) : null,
         publicationDate: status === 'PUBLISHED' ? new Date() : null,
         editorialIntroduction,

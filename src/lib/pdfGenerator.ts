@@ -1,6 +1,43 @@
 import { PDFDocument, rgb, StandardFonts, PDFPage } from 'pdf-lib';
 import mammoth from 'mammoth';
 
+export interface TableCell {
+  text: string;
+  isHeader?: boolean;
+}
+
+export interface TableRow {
+  cells: TableCell[];
+}
+
+export interface TableBlock {
+  type: 'table';
+  caption?: string;
+  rows: TableRow[];
+}
+
+export interface HeadingBlock {
+  type: 'heading';
+  level: number;
+  text: string;
+}
+
+export interface ParagraphBlock {
+  type: 'paragraph';
+  text: string;
+}
+
+export interface ListItemBlock {
+  type: 'list_item';
+  text: string;
+}
+
+export type ManuscriptContentBlock =
+  | HeadingBlock
+  | ParagraphBlock
+  | TableBlock
+  | ListItemBlock;
+
 export interface ScholarlyPdfData {
   journalTitle: string;
   journalAbbreviation: string;
@@ -16,6 +53,7 @@ export interface ScholarlyPdfData {
   abstract: string;
   keywords?: string[];
   manuscriptFullText?: string | null;
+  manuscriptBlocks?: ManuscriptContentBlock[] | null;
   declarations?: {
     label: string;
     text?: string | null;
@@ -72,7 +110,223 @@ function isSectionHeading(text: string): boolean {
   return false;
 }
 
-// Extract plain text from DOCX file buffer
+// Clean HTML tags and decode HTML entities
+function cleanHtmlText(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+}
+
+// Parse HTML output from Mammoth into structured document blocks
+export function parseHtmlToBlocks(html: string): ManuscriptContentBlock[] {
+  const blocks: ManuscriptContentBlock[] = [];
+  if (!html || !html.trim()) return blocks;
+
+  // Match top-level tags: table, p, h1-h6, ul, ol, blockquote
+  const tagRegex = /<(table|p|h[1-6]|ul|ol|blockquote)[^>]*>([\s\S]*?)<\/\1>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(html)) !== null) {
+    const tag = match[1].toLowerCase();
+    const inner = match[2];
+
+    if (tag === 'table') {
+      const rows: TableRow[] = [];
+      const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+      let trMatch: RegExpExecArray | null;
+
+      while ((trMatch = trRegex.exec(inner)) !== null) {
+        const trInner = trMatch[1];
+        const cells: TableCell[] = [];
+        const cellRegex = /<(th|td)[^>]*>([\s\S]*?)<\/\1>/gi;
+        let cellMatch: RegExpExecArray | null;
+
+        while ((cellMatch = cellRegex.exec(trInner)) !== null) {
+          const isHeader = cellMatch[1].toLowerCase() === 'th';
+          const cellText = cleanHtmlText(cellMatch[2]);
+          cells.push({ text: cellText, isHeader });
+        }
+
+        if (cells.length > 0) {
+          rows.push({ cells });
+        }
+      }
+
+      if (rows.length > 0) {
+        blocks.push({ type: 'table', rows });
+      }
+    } else if (tag.startsWith('h')) {
+      const level = parseInt(tag[1], 10) || 2;
+      const text = cleanHtmlText(inner);
+      if (text) {
+        blocks.push({ type: 'heading', level, text });
+      }
+    } else if (tag === 'ul' || tag === 'ol') {
+      const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+      let liMatch: RegExpExecArray | null;
+      while ((liMatch = liRegex.exec(inner)) !== null) {
+        const text = cleanHtmlText(liMatch[1]);
+        if (text) {
+          blocks.push({ type: 'list_item', text });
+        }
+      }
+    } else if (tag === 'p' || tag === 'blockquote') {
+      const text = cleanHtmlText(inner);
+      if (text) {
+        // If it's a table caption (e.g. "Table 1: Overall Results")
+        if (/^(table|tab\.)\s+\d+[:.]/i.test(text)) {
+          const lastBlock = blocks[blocks.length - 1];
+          if (lastBlock && lastBlock.type === 'table' && !lastBlock.caption) {
+            lastBlock.caption = text;
+            continue;
+          }
+        }
+
+        if (isSectionHeading(text)) {
+          blocks.push({ type: 'heading', level: 2, text });
+        } else {
+          blocks.push({ type: 'paragraph', text });
+        }
+      }
+    }
+  }
+
+  // Associate preceding table caption with subsequent table
+  for (let i = 0; i < blocks.length - 1; i++) {
+    const cur = blocks[i];
+    const next = blocks[i + 1];
+    if (cur.type === 'paragraph' && /^(table|tab\.)\s+\d+[:.]/i.test(cur.text) && next.type === 'table' && !next.caption) {
+      next.caption = cur.text;
+      blocks.splice(i, 1);
+      i--;
+    }
+  }
+
+  return blocks;
+}
+
+// Parse plain text or markdown tables into structured document blocks
+export function parseTextToBlocks(rawText: string): ManuscriptContentBlock[] {
+  const blocks: ManuscriptContentBlock[] = [];
+  if (!rawText || !rawText.trim()) return blocks;
+
+  const lines = rawText.split(/\r?\n/).map(l => l.trim());
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (!line) {
+      i++;
+      continue;
+    }
+
+    // Check for markdown table: e.g. | col1 | col2 |
+    if (line.startsWith('|') && line.endsWith('|')) {
+      const tableRows: TableRow[] = [];
+      let caption: string | undefined;
+
+      // Check if previous block was a table caption
+      const prevBlock = blocks[blocks.length - 1];
+      if (prevBlock && prevBlock.type === 'paragraph' && /^(table|tab\.)\s+\d+[:.]/i.test(prevBlock.text)) {
+        caption = prevBlock.text;
+        blocks.pop();
+      }
+
+      while (i < lines.length && lines[i].startsWith('|') && lines[i].endsWith('|')) {
+        const curLine = lines[i];
+        // Skip markdown separator line: |---|---|
+        if (/^\|(\s*[-:]+[-|\s:]*)\|$/.test(curLine)) {
+          i++;
+          continue;
+        }
+
+        const rawCells = curLine
+          .slice(1, -1)
+          .split('|')
+          .map(c => c.trim());
+
+        const isHeader = tableRows.length === 0;
+        tableRows.push({
+          cells: rawCells.map(text => ({ text, isHeader })),
+        });
+        i++;
+      }
+
+      if (tableRows.length > 0) {
+        blocks.push({ type: 'table', rows: tableRows, caption });
+      }
+      continue;
+    }
+
+    // Check for tab-separated table lines: 2 or more consecutive lines with >= 2 tabs
+    if (line.includes('\t') && i + 1 < lines.length && lines[i + 1].includes('\t')) {
+      const tableRows: TableRow[] = [];
+      while (i < lines.length && lines[i].includes('\t')) {
+        const rawCells = lines[i].split('\t').map(c => c.trim());
+        const isHeader = tableRows.length === 0;
+        tableRows.push({
+          cells: rawCells.map(text => ({ text, isHeader })),
+        });
+        i++;
+      }
+      if (tableRows.length > 0) {
+        blocks.push({ type: 'table', rows: tableRows });
+      }
+      continue;
+    }
+
+    // Check for section heading
+    if (isSectionHeading(line)) {
+      blocks.push({ type: 'heading', level: 2, text: line });
+      i++;
+      continue;
+    }
+
+    // List item
+    if (/^[-*•]\s+/.test(line)) {
+      blocks.push({ type: 'list_item', text: line.replace(/^[-*•]\s+/, '') });
+      i++;
+      continue;
+    }
+
+    // Regular paragraph
+    blocks.push({ type: 'paragraph', text: line });
+    i++;
+  }
+
+  return blocks;
+}
+
+// Extract both plain text and structured blocks (with tables) from DOCX file buffer
+export async function parseManuscriptDocx(buffer: Buffer): Promise<{ fullText: string; blocks: ManuscriptContentBlock[] }> {
+  try {
+    const htmlResult = await mammoth.convertToHtml({ buffer });
+    const html = htmlResult.value || '';
+    const rawResult = await mammoth.extractRawText({ buffer });
+    const fullText = rawResult.value || '';
+    const blocks = parseHtmlToBlocks(html);
+
+    // If HTML blocks were empty or mammoth produced minimal tags, fall back to text parsing
+    if (blocks.length === 0 && fullText.trim()) {
+      return { fullText, blocks: parseTextToBlocks(fullText) };
+    }
+
+    return { fullText, blocks };
+  } catch (err) {
+    console.warn('Docx parsing error, fallback to raw text:', err);
+    const rawText = buffer.toString('utf-8');
+    return { fullText: rawText, blocks: parseTextToBlocks(rawText) };
+  }
+}
+
+// Extract plain text from DOCX file buffer (kept for backwards compatibility)
 export async function extractDocxText(buffer: Buffer): Promise<string> {
   try {
     const result = await mammoth.extractRawText({ buffer });
@@ -460,51 +714,232 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
     currentY -= 40;
   }
 
-  // ===================== FULL MANUSCRIPT TEXT =====================
-  // Process raw manuscript text if provided
-  let bodyParagraphs: string[] = [];
+  // ===================== FULL MANUSCRIPT TEXT & TABLES =====================
+  // Resolve structured manuscript blocks (either provided directly or parsed from text)
+  let blocksToRender: ManuscriptContentBlock[] = [];
 
-  if (data.manuscriptFullText && data.manuscriptFullText.trim().length > 50) {
-    // Split on double newlines or single newlines with non-empty text
-    bodyParagraphs = data.manuscriptFullText
-      .split(/\r?\n\r?\n|\r?\n/)
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
+  if (data.manuscriptBlocks && data.manuscriptBlocks.length > 0) {
+    blocksToRender = data.manuscriptBlocks;
+  } else if (data.manuscriptFullText && data.manuscriptFullText.trim().length > 30) {
+    blocksToRender = parseTextToBlocks(data.manuscriptFullText);
   }
 
-  if (bodyParagraphs.length > 0) {
+  if (blocksToRender.length > 0) {
     currentY -= 8;
 
-    for (const paragraph of bodyParagraphs) {
-      const isHeading = isSectionHeading(paragraph);
-
-      if (isHeading) {
-        currentY -= 10;
-        // Avoid orphaned heading at bottom of page
+    for (const block of blocksToRender) {
+      if (block.type === 'heading') {
+        currentY -= 12;
         if (currentY < bottomMargin + 60) {
           const next = createPage(true);
           activePage = next.page;
           currentY = next.startY;
         }
 
-        activePage.drawText(paragraph.toUpperCase(), {
+        activePage.drawText(block.text.toUpperCase(), {
           x: marginX,
           y: currentY,
-          size: 10,
+          size: block.level === 1 ? 10.5 : 9.5,
           font: helveticaBold,
           color: navyDark,
         });
 
         currentY -= 14;
+      } else if (block.type === 'table') {
+        if (!block.rows || block.rows.length === 0) continue;
+
+        const numCols = Math.max(...block.rows.map(r => r.cells.length));
+        if (numCols === 0) continue;
+
+        // Calculate column widths
+        const rawColLengths: number[] = new Array(numCols).fill(0);
+        block.rows.forEach(r => {
+          r.cells.forEach((c, idx) => {
+            rawColLengths[idx] = Math.max(rawColLengths[idx], (c.text || '').length);
+          });
+        });
+
+        const totalLength = rawColLengths.reduce((a, b) => a + b, 0) || 1;
+        const minColWidth = Math.min(45, contentWidth / numCols);
+        let colWidths: number[] = [];
+
+        const isUniform = rawColLengths.every(len => Math.abs(len - rawColLengths[0]) < 8);
+        if (isUniform || numCols <= 2) {
+          colWidths = new Array(numCols).fill(contentWidth / numCols);
+        } else {
+          const remainingWidth = contentWidth - minColWidth * numCols;
+          colWidths = rawColLengths.map(len => minColWidth + (len / totalLength) * remainingWidth);
+        }
+
+        currentY -= 8;
+
+        // Render table caption if available
+        if (block.caption) {
+          if (currentY < bottomMargin + 40) {
+            const next = createPage(true);
+            activePage = next.page;
+            currentY = next.startY;
+          }
+          activePage.drawText(block.caption, {
+            x: marginX,
+            y: currentY,
+            size: 8.5,
+            font: helveticaBold,
+            color: navyDark,
+          });
+          currentY -= 12;
+        }
+
+        // Top table rule (scholarly heavy rule)
+        if (currentY < bottomMargin + 40) {
+          const next = createPage(true);
+          activePage = next.page;
+          currentY = next.startY;
+        }
+
+        activePage.drawLine({
+          start: { x: marginX, y: currentY },
+          end: { x: marginX + contentWidth, y: currentY },
+          thickness: 1.2,
+          color: navyDark,
+        });
+        currentY -= 2;
+
+        // Render each row of table
+        block.rows.forEach((row, rowIndex) => {
+          const isFirstRow = rowIndex === 0;
+          const isHeaderRow = isFirstRow || row.cells.some(c => c.isHeader);
+          const cellFont = isHeaderRow ? helveticaBold : timesRoman;
+          const cellFontSize = 7.5;
+          const cellTextColor = isHeaderRow ? navyDark : slateDark;
+
+          const cellLines = row.cells.map((cell, colIdx) => {
+            const width = colWidths[colIdx] || (contentWidth / numCols);
+            return wrapText(cell.text || '', width - 8, cellFont, cellFontSize);
+          });
+
+          const maxLines = Math.max(1, ...cellLines.map(l => l.length));
+          const rowHeight = maxLines * 10 + 8;
+
+          // Check for page break
+          if (currentY - rowHeight < bottomMargin + 20) {
+            activePage.drawLine({
+              start: { x: marginX, y: currentY + 2 },
+              end: { x: marginX + contentWidth, y: currentY + 2 },
+              thickness: 0.5,
+              color: slateMuted,
+            });
+
+            const next = createPage(true);
+            activePage = next.page;
+            currentY = next.startY;
+
+            activePage.drawLine({
+              start: { x: marginX, y: currentY },
+              end: { x: marginX + contentWidth, y: currentY },
+              thickness: 1.2,
+              color: navyDark,
+            });
+            currentY -= 2;
+          }
+
+          // Header background fill
+          if (isHeaderRow) {
+            activePage.drawRectangle({
+              x: marginX,
+              y: currentY - rowHeight + 2,
+              width: contentWidth,
+              height: rowHeight,
+              color: rgb(241 / 255, 245 / 255, 249 / 255),
+            });
+          }
+
+          // Draw cell texts
+          let cellStartX = marginX;
+          row.cells.forEach((cell, colIdx) => {
+            const width = colWidths[colIdx] || (contentWidth / numCols);
+            let textY = currentY - 9;
+            const lines = cellLines[colIdx] || [];
+            for (const line of lines) {
+              activePage.drawText(line, {
+                x: cellStartX + 4,
+                y: textY,
+                size: cellFontSize,
+                font: cellFont,
+                color: cellTextColor,
+              });
+              textY -= 10;
+            }
+            cellStartX += width;
+          });
+
+          currentY -= rowHeight;
+
+          // Header bottom rule vs data divider
+          if (isHeaderRow) {
+            activePage.drawLine({
+              start: { x: marginX, y: currentY + 2 },
+              end: { x: marginX + contentWidth, y: currentY + 2 },
+              thickness: 0.8,
+              color: navyDark,
+            });
+          } else {
+            activePage.drawLine({
+              start: { x: marginX, y: currentY + 2 },
+              end: { x: marginX + contentWidth, y: currentY + 2 },
+              thickness: 0.4,
+              color: rgb(226 / 255, 232 / 255, 240 / 255),
+            });
+          }
+        });
+
+        // Bottom Table Rule
+        activePage.drawLine({
+          start: { x: marginX, y: currentY + 2 },
+          end: { x: marginX + contentWidth, y: currentY + 2 },
+          thickness: 1.2,
+          color: navyDark,
+        });
+
+        currentY -= 12;
+      } else if (block.type === 'list_item') {
+        const itemLines = wrapText(block.text, contentWidth - 14, timesRoman, 9.5);
+        let firstLine = true;
+        for (const line of itemLines) {
+          if (currentY < bottomMargin + 20) {
+            const next = createPage(true);
+            activePage = next.page;
+            currentY = next.startY;
+          }
+          if (firstLine) {
+            activePage.drawText('•', {
+              x: marginX + 4,
+              y: currentY,
+              size: 9.5,
+              font: helveticaBold,
+              color: bluePrimary,
+            });
+            firstLine = false;
+          }
+          activePage.drawText(line, {
+            x: marginX + 14,
+            y: currentY,
+            size: 9.5,
+            font: timesRoman,
+            color: slateDark,
+          });
+          currentY -= 13;
+        }
+        currentY -= 3;
       } else {
-        const pLines = wrapText(paragraph, contentWidth, timesRoman, 9.5);
+        // Regular paragraph
+        const pLines = wrapText(block.text, contentWidth, timesRoman, 9.5);
         for (const line of pLines) {
           if (currentY < bottomMargin + 20) {
             const next = createPage(true);
             activePage = next.page;
             currentY = next.startY;
           }
-
           activePage.drawText(line, {
             x: marginX,
             y: currentY,
@@ -514,7 +949,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
           });
           currentY -= 13;
         }
-        currentY -= 5; // Paragraph spacing
+        currentY -= 6; // Paragraph spacing
       }
     }
   }

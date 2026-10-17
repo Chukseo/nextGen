@@ -23,7 +23,8 @@ import {
   RotateCcw,
   Trash2,
   Edit3,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Star,
 } from 'lucide-react';
 import ImportArticleModal from '@/components/ImportArticleModal';
 
@@ -441,6 +442,22 @@ export default function EditorDashboardClient({
     }
   };
 
+  const handleSetCurrentIssue = async (issueId: string, issueTitle: string) => {
+    setActionLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/set-current`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to designate current issue');
+      setFeedback({ type: 'success', text: data.message || `Issue "${issueTitle}" set as Current Issue.` });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
 
 
   return (
@@ -701,17 +718,25 @@ export default function EditorDashboardClient({
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                               {iss.journal?.abbreviation || 'JOURNAL'}
                             </span>
-                            <span
-                              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                                iss.status === 'PUBLISHED'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : iss.status === 'SCHEDULED'
-                                  ? 'bg-purple-100 text-purple-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {iss.status}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              {iss.isCurrent && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1">
+                                  <Star className="w-2.5 h-2.5 fill-current text-amber-600" />
+                                  <span>CURRENT</span>
+                                </span>
+                              )}
+                              <span
+                                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                                  iss.status === 'PUBLISHED'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : iss.status === 'SCHEDULED'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-amber-100 text-amber-800'
+                                }`}
+                              >
+                                {iss.status}
+                              </span>
+                            </div>
                           </div>
 
                           <div>
@@ -752,10 +777,27 @@ export default function EditorDashboardClient({
                             </div>
                           )}
 
-                          <div className="flex items-center gap-1.5 pt-2 flex-wrap">
+                          <div className="pt-1">
+                            {!iss.isCurrent ? (
+                              <button
+                                onClick={() => handleSetCurrentIssue(iss.id, iss.title)}
+                                disabled={actionLoading}
+                                className="w-full text-center py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold text-[11px] transition-colors inline-flex items-center justify-center space-x-1"
+                              >
+                                <Star className="w-3 h-3 text-amber-600" />
+                                <span>Set as Current Issue</span>
+                              </button>
+                            ) : (
+                              <div className="w-full text-center py-1 rounded bg-amber-50 text-amber-800 font-bold text-[11px] border border-amber-200">
+                                ⭐ Designated Current Issue
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 pt-1 flex-wrap">
                             {iss.journal?.slug && (
                               <Link
-                                href={`/journals/${iss.journal.slug}`}
+                                href={`/issues/${iss.id}`}
                                 className="flex-1 text-center py-1.5 px-2 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px] transition-colors"
                               >
                                 Catalog

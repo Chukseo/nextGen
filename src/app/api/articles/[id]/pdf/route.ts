@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateScholarlyArticlePdf, extractDocxText } from '@/lib/pdfGenerator';
+import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } from '@/lib/pdfGenerator';
 import { getFileBuffer } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
@@ -88,8 +88,9 @@ export async function GET(
 
     const latestDecision = article.submission.editorialDecisions?.[0];
 
-    // Extract full text from submitted manuscript file if present
+    // Extract full text and tables from submitted manuscript file if present
     let manuscriptFullText: string | null = null;
+    let manuscriptBlocks: any = null;
     const manuscriptFile = article.submission.files?.find(
       (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
     );
@@ -97,7 +98,9 @@ export async function GET(
     if (manuscriptFile?.storageKey) {
       try {
         const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
-        manuscriptFullText = await extractDocxText(fileBuffer);
+        const parsed = await parseManuscriptDocx(fileBuffer);
+        manuscriptFullText = parsed.fullText;
+        manuscriptBlocks = parsed.blocks;
       } catch (fileErr) {
         console.warn('Could not extract submitted manuscript full text:', fileErr);
       }
@@ -126,6 +129,7 @@ export async function GET(
       abstract: article.abstract,
       keywords: article.keywords.map(k => k.keyword),
       manuscriptFullText,
+      manuscriptBlocks,
       declarations,
       references: article.references,
       publishedAt: article.publishedAt,

@@ -26,6 +26,9 @@ import {
   ArrowRight,
   Eye,
   UploadCloud,
+  Star,
+  Layers,
+  Calendar,
 } from 'lucide-react';
 import ImportArticleModal from '@/components/ImportArticleModal';
 
@@ -33,6 +36,7 @@ export default function AdminDashboardClient({
   metrics,
   users,
   journals,
+  issues = [],
   doiRecords,
   auditEvents,
   publishedArticles,
@@ -42,13 +46,14 @@ export default function AdminDashboardClient({
   metrics: any;
   users: any[];
   journals: any[];
+  issues?: any[];
   doiRecords: any[];
   auditEvents: any[];
   publishedArticles: any[];
   productionSubmissions?: any[];
   currentUser?: any;
 }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'journals' | 'articles' | 'doi' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'journals' | 'issues' | 'articles' | 'doi' | 'audit'>('overview');
 
   // User modal
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -88,6 +93,37 @@ export default function AdminDashboardClient({
   const [editJournalCoverFile, setEditJournalCoverFile] = useState<File | null>(null);
   const [editJournalExistingCoverUrl, setEditJournalExistingCoverUrl] = useState('');
   const [importModalOpen, setImportModalOpen] = useState(false);
+
+  // Issue Management state
+  const [filterIssueJournalId, setFilterIssueJournalId] = useState('ALL');
+  const [createIssueModalOpen, setCreateIssueModalOpen] = useState(false);
+  const [editIssueModalOpen, setEditIssueModalOpen] = useState(false);
+  const [editingIssue, setEditingIssue] = useState<any | null>(null);
+
+  // Create issue form
+  const [newIssueJournalId, setNewIssueJournalId] = useState(journals[0]?.id || '');
+  const [newIssueVolumeNumber, setNewIssueVolumeNumber] = useState(1);
+  const [newIssueYear, setNewIssueYear] = useState(new Date().getFullYear());
+  const [newIssueNumber, setNewIssueNumber] = useState(1);
+  const [newIssueTitle, setNewIssueTitle] = useState('');
+  const [newIssueDescription, setNewIssueDescription] = useState('');
+  const [newIssueStatus, setNewIssueStatus] = useState('DRAFT');
+  const [newIssueIsCurrent, setNewIssueIsCurrent] = useState(false);
+  const [newIssueScheduledDate, setNewIssueScheduledDate] = useState('');
+  const [newIssueEditorialIntro, setNewIssueEditorialIntro] = useState('');
+  const [newIssueCoverFile, setNewIssueCoverFile] = useState<File | null>(null);
+
+  // Edit issue form
+  const [editIssueTitle, setEditIssueTitle] = useState('');
+  const [editIssueNumber, setEditIssueNumber] = useState(1);
+  const [editIssueYear, setEditIssueYear] = useState(new Date().getFullYear());
+  const [editIssueStatus, setEditIssueStatus] = useState('DRAFT');
+  const [editIssueIsCurrent, setEditIssueIsCurrent] = useState(false);
+  const [editIssueScheduledDate, setEditIssueScheduledDate] = useState('');
+  const [editIssueCoverFile, setEditIssueCoverFile] = useState<File | null>(null);
+  const [editIssueExistingCoverUrl, setEditIssueExistingCoverUrl] = useState('');
+  const [editIssueDescription, setEditIssueDescription] = useState('');
+  const [editIssueEditorialIntro, setEditIssueEditorialIntro] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -366,14 +402,170 @@ export default function AdminDashboardClient({
     }
   };
 
+  const handleSetCurrentIssue = async (issueId: string, issueTitle: string) => {
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/set-current`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to designate current issue');
+      setFeedback({ type: 'success', text: data.message || `Issue "${issueTitle}" set as Current Issue.` });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteIssue = async (issueId: string, issueTitle: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete issue "${issueTitle}"? Any articles currently assigned to this issue will be safely returned to the Production queue.`)) {
+      return;
+    }
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/issues/${issueId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete issue');
+      setFeedback({ type: 'success', text: data.message || `Issue "${issueTitle}" deleted successfully.` });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
+  const handleTogglePublishIssue = async (issueId: string, isPublished: boolean, issueTitle: string) => {
+    const endpoint = isPublished ? `/api/issues/${issueId}/unpublish` : `/api/issues/${issueId}/republish`;
+    const actionName = isPublished ? 'unpublish' : 'publish';
+    if (!window.confirm(`Are you sure you want to ${actionName} issue "${issueTitle}"?`)) {
+      return;
+    }
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(endpoint, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Failed to ${actionName} issue`);
+      setFeedback({ type: 'success', text: data.message || `Issue "${issueTitle}" updated successfully.` });
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
+  const openEditIssueModal = (iss: any) => {
+    setEditingIssue(iss);
+    setEditIssueTitle(iss.title || '');
+    setEditIssueNumber(iss.issueNumber || 1);
+    setEditIssueYear(iss.year || new Date().getFullYear());
+    setEditIssueStatus(iss.status || 'DRAFT');
+    setEditIssueIsCurrent(Boolean(iss.isCurrent));
+    setEditIssueScheduledDate(iss.scheduledPublishDate ? iss.scheduledPublishDate.split('T')[0] : '');
+    setEditIssueExistingCoverUrl(iss.coverImageUrl || '');
+    setEditIssueCoverFile(null);
+    setEditIssueDescription(iss.description || '');
+    setEditIssueEditorialIntro(iss.editorialIntroduction || '');
+    setEditIssueModalOpen(true);
+  };
+
+  const handleCreateIssue = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setFeedback(null);
+    try {
+      let resolvedCoverUrl: string | undefined = undefined;
+      if (newIssueCoverFile) {
+        const formData = new FormData();
+        formData.append('file', newIssueCoverFile);
+        formData.append('bucket', 'published-articles');
+        const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Failed to upload cover');
+        resolvedCoverUrl = uploadData.publicUrl || uploadData.storageUrl || `/storage/${uploadData.storageKey}`;
+      }
+
+      const res = await fetch('/api/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          journalId: newIssueJournalId,
+          volumeNumber: newIssueVolumeNumber,
+          issueNumber: newIssueNumber,
+          year: newIssueYear,
+          title: newIssueTitle,
+          description: newIssueDescription,
+          status: newIssueStatus,
+          isCurrent: newIssueIsCurrent,
+          scheduledPublishDate: newIssueScheduledDate || undefined,
+          editorialIntroduction: newIssueEditorialIntro || undefined,
+          coverImageUrl: resolvedCoverUrl,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create issue');
+      setFeedback({ type: 'success', text: `Issue "${newIssueTitle}" created successfully.` });
+      setCreateIssueModalOpen(false);
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
+  const handleEditIssueSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingIssue) return;
+    setLoading(true);
+    setFeedback(null);
+    try {
+      let resolvedCoverUrl = editIssueExistingCoverUrl;
+      if (editIssueCoverFile) {
+        const formData = new FormData();
+        formData.append('file', editIssueCoverFile);
+        formData.append('bucket', 'published-articles');
+        const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Failed to upload cover');
+        resolvedCoverUrl = uploadData.publicUrl || uploadData.storageUrl || `/storage/${uploadData.storageKey}`;
+      }
+
+      const res = await fetch(`/api/issues/${editingIssue.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editIssueTitle,
+          issueNumber: editIssueNumber,
+          year: editIssueYear,
+          status: editIssueStatus,
+          isCurrent: editIssueIsCurrent,
+          scheduledPublishDate: editIssueScheduledDate || null,
+          coverImageUrl: resolvedCoverUrl || null,
+          description: editIssueDescription,
+          editorialIntroduction: editIssueEditorialIntro,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update issue');
+      setFeedback({ type: 'success', text: `Issue "${editIssueTitle}" updated successfully.` });
+      setEditIssueModalOpen(false);
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 space-x-6 text-sm font-semibold">
+      <div className="flex border-b border-slate-200 space-x-6 text-sm font-semibold overflow-x-auto scrollbar-none">
         {[
           { key: 'overview', label: 'Platform Overview' },
           { key: 'users', label: `Users & Roles (${users.length})` },
           { key: 'journals', label: `Journals (${journals.length})` },
+          { key: 'issues', label: `Issues & Volumes (${issues.length})` },
           { key: 'articles', label: `Published Articles (${publishedArticles.length})` },
           { key: 'doi', label: `Crossref DOI Subsystem (${doiRecords.length})` },
           { key: 'audit', label: `Security Audit Logs (${auditEvents.length})` },
@@ -661,6 +853,254 @@ export default function AdminDashboardClient({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ISSUES & VOLUMES MANAGEMENT TAB */}
+      {activeTab === 'issues' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                <h3 className="font-bold text-slate-900 text-base">
+                  Journal Volumes & Issues Administration
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Configure publication volumes, add and edit issues, upload cover artwork, and designate each journal&apos;s active Current Issue.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setImportModalOpen(true)}
+                className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow-xs transition-colors"
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Direct Import Article</span>
+              </button>
+              {journals.length > 1 && (
+                <select
+                  value={filterIssueJournalId}
+                  onChange={(e) => setFilterIssueJournalId(e.target.value)}
+                  className="text-xs px-3 py-2 border border-slate-300 rounded-lg bg-white outline-none font-medium text-slate-700 shadow-xs"
+                >
+                  <option value="ALL">All Journals ({journals.length})</option>
+                  {journals.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.title} ({j.abbreviation})
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                onClick={() => {
+                  if (journals[0]) setNewIssueJournalId(journals[0].id);
+                  setCreateIssueModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-xs transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create New Issue</span>
+              </button>
+            </div>
+          </div>
+
+          {(() => {
+            const displayedIssues = issues.filter(
+              (iss) => filterIssueJournalId === 'ALL' || iss.journalId === filterIssueJournalId
+            );
+
+            if (displayedIssues.length === 0) {
+              return (
+                <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-sm text-slate-500 space-y-3">
+                  <BookOpen className="w-10 h-10 text-slate-300 mx-auto" />
+                  <p className="font-semibold text-slate-700">No issues found</p>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    No publication issues have been created yet for this journal.
+                    Create an issue to organize published articles and assign catalog volumes.
+                  </p>
+                  <button
+                    onClick={() => {
+                      if (journals[0]) setNewIssueJournalId(journals[0].id);
+                      setCreateIssueModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-navy-900 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create First Issue</span>
+                  </button>
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {displayedIssues.map((iss) => {
+                  const articleCount = iss._count?.publishedArticles || iss.publishedArticles?.length || 0;
+                  return (
+                    <div
+                      key={iss.id}
+                      className={`bg-white border rounded-xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden ${
+                        iss.isCurrent ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200'
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        {iss.coverImageUrl ? (
+                          <div className="relative h-36 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                            <img
+                              src={iss.coverImageUrl}
+                              alt={iss.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : iss.journal?.coverImageUrl ? (
+                          <div className="relative h-36 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                            <img
+                              src={iss.journal.coverImageUrl}
+                              alt={iss.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-28 w-full bg-navy-950 rounded-lg flex flex-col items-center justify-center text-white p-3 text-center">
+                            <BookOpen className="w-7 h-7 text-blue-400 mb-1" />
+                            <span className="text-xs font-bold">Vol. {iss.volume?.volumeNumber || 1}, No. {iss.issueNumber}</span>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                            {iss.journal?.abbreviation || 'JOURNAL'}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {iss.isCurrent && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1">
+                                <Star className="w-2.5 h-2.5 fill-current text-amber-600" />
+                                <span>CURRENT ISSUE</span>
+                              </span>
+                            )}
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                                iss.status === 'PUBLISHED'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : iss.status === 'SCHEDULED'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-amber-100 text-amber-800'
+                              }`}
+                            >
+                              {iss.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm leading-snug line-clamp-2">
+                            {iss.title}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Vol. {iss.volume?.volumeNumber || 1}, Issue {iss.issueNumber} ({iss.year})
+                          </p>
+                        </div>
+
+                        {iss.description && (
+                          <p className="text-xs text-slate-600 line-clamp-2">
+                            {iss.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
+                        <div className="flex justify-between text-slate-500 text-[11px]">
+                          <span>Published Articles:</span>
+                          <span className="font-bold text-slate-800">{articleCount}</span>
+                        </div>
+
+                        {iss.publicationDate && (
+                          <div className="flex justify-between text-slate-500 text-[11px]">
+                            <span>Released:</span>
+                            <span className="text-slate-700">
+                              {new Date(iss.publicationDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="pt-2 flex flex-col gap-2">
+                          {/* Current Issue Action */}
+                          {!iss.isCurrent ? (
+                            <button
+                              onClick={() => handleSetCurrentIssue(iss.id, iss.title)}
+                              disabled={loading}
+                              className="w-full text-center py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold text-[11px] transition-colors inline-flex items-center justify-center space-x-1"
+                              title="Designate this issue as the Current Issue for this journal"
+                            >
+                              <Star className="w-3 h-3 text-amber-600" />
+                              <span>Set as Current Issue</span>
+                            </button>
+                          ) : (
+                            <div className="w-full text-center py-1 rounded bg-amber-50 text-amber-800 font-bold text-[11px] border border-amber-200">
+                              ⭐ Designated Current Issue
+                            </div>
+                          )}
+
+                          {/* Action Toolbar */}
+                          <div className="flex items-center gap-1.5 pt-1">
+                            {iss.journal?.slug && (
+                              <Link
+                                href={`/issues/${iss.id}`}
+                                className="flex-1 text-center py-1.5 px-2 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-[11px] transition-colors"
+                              >
+                                View Catalog
+                              </Link>
+                            )}
+
+                            {iss.status === 'PUBLISHED' ? (
+                              <button
+                                onClick={() => handleTogglePublishIssue(iss.id, true, iss.title)}
+                                disabled={loading}
+                                className="p-1.5 rounded hover:bg-amber-50 text-slate-500 hover:text-amber-700 transition-colors"
+                                title="Unpublish Issue (revert to Draft)"
+                              >
+                                <RotateCcw className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleTogglePublishIssue(iss.id, false, iss.title)}
+                                disabled={loading}
+                                className="p-1.5 rounded hover:bg-emerald-50 text-slate-500 hover:text-emerald-700 transition-colors"
+                                title="Publish Issue"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => openEditIssueModal(iss)}
+                              disabled={loading}
+                              className="p-1.5 rounded hover:bg-blue-50 text-slate-500 hover:text-blue-700 transition-colors"
+                              title="Edit Issue & Cover Image"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteIssue(iss.id, iss.title)}
+                              disabled={loading}
+                              className="p-1.5 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                              title="Delete Issue"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -1524,6 +1964,378 @@ export default function AdminDashboardClient({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE ISSUE MODAL */}
+      {createIssueModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <h3 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
+                <Plus className="w-4 h-4 text-blue-700" />
+                <span>Create New Journal Issue</span>
+              </h3>
+              <button onClick={() => setCreateIssueModalOpen(false)}>
+                <X className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateIssue} className="p-6 space-y-4 text-xs overflow-y-auto">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Target Journal *
+                </label>
+                <select
+                  value={newIssueJournalId}
+                  onChange={(e) => setNewIssueJournalId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none font-semibold text-slate-800"
+                >
+                  {journals.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.title} ({j.abbreviation})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Issue Title / Theme Designation *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newIssueTitle}
+                  onChange={(e) => setNewIssueTitle(e.target.value)}
+                  placeholder="e.g. Regular Issue, Special Issue on Foundation Models..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Volume Number *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={newIssueVolumeNumber}
+                    onChange={(e) => setNewIssueVolumeNumber(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Issue Number *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={newIssueNumber}
+                    onChange={(e) => setNewIssueNumber(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Publication Year *
+                  </label>
+                  <input
+                    type="number"
+                    min="2000"
+                    max="2100"
+                    required
+                    value={newIssueYear}
+                    onChange={(e) => setNewIssueYear(parseInt(e.target.value) || new Date().getFullYear())}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Publication Status *
+                  </label>
+                  <select
+                    value={newIssueStatus}
+                    onChange={(e) => setNewIssueStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none font-semibold text-slate-800"
+                  >
+                    <option value="DRAFT">Draft (In Progress)</option>
+                    <option value="SCHEDULED">Scheduled</option>
+                    <option value="PUBLISHED">Published (Live in Catalog)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Scheduled Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={newIssueScheduledDate}
+                    onChange={(e) => setNewIssueScheduledDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Current Issue Checkbox */}
+              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-lg flex items-center space-x-2.5">
+                <input
+                  type="checkbox"
+                  id="newIssueIsCurrent"
+                  checked={newIssueIsCurrent}
+                  onChange={(e) => setNewIssueIsCurrent(e.target.checked)}
+                  className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                />
+                <label htmlFor="newIssueIsCurrent" className="font-semibold text-slate-800 text-xs cursor-pointer">
+                  Designate as Current Issue for this journal
+                </label>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Issue Front Cover Artwork (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setNewIssueCoverFile(e.target.files?.[0] || null)}
+                  className="w-full py-1 text-slate-700 text-xs"
+                />
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Upload front cover image (.png, .jpg, .webp).
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Description / Issue Scope (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={newIssueDescription}
+                  onChange={(e) => setNewIssueDescription(e.target.value)}
+                  placeholder="Summary of articles and special themes covered in this issue..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Editorial Introduction / Foreword (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={newIssueEditorialIntro}
+                  onChange={(e) => setNewIssueEditorialIntro(e.target.value)}
+                  placeholder="Foreword from the Editor-in-Chief or Guest Editors..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setCreateIssueModalOpen(false)}
+                  className="px-4 py-2 border border-slate-300 rounded text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !newIssueTitle}
+                  className="bg-navy-900 hover:bg-navy-950 text-white font-semibold px-5 py-2 rounded transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'Creating Issue...' : 'Create Issue'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT ISSUE MODAL */}
+      {editIssueModalOpen && editingIssue && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
+                  <Edit3 className="w-4 h-4 text-blue-700" />
+                  <span>Edit Issue: {editingIssue.title}</span>
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  {editingIssue.journal?.abbreviation} &bull; Vol. {editingIssue.volume?.volumeNumber || 1}, Issue {editingIssue.issueNumber} ({editingIssue.year})
+                </p>
+              </div>
+              <button onClick={() => setEditIssueModalOpen(false)}>
+                <X className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditIssueSubmit} className="p-6 space-y-4 text-xs overflow-y-auto">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Issue Title / Theme Designation *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editIssueTitle}
+                  onChange={(e) => setEditIssueTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Issue Number *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={editIssueNumber}
+                    onChange={(e) => setEditIssueNumber(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Publication Year *
+                  </label>
+                  <input
+                    type="number"
+                    min="2000"
+                    max="2100"
+                    required
+                    value={editIssueYear}
+                    onChange={(e) => setEditIssueYear(parseInt(e.target.value) || new Date().getFullYear())}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Publication Status *
+                  </label>
+                  <select
+                    value={editIssueStatus}
+                    onChange={(e) => setEditIssueStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none font-semibold text-slate-800"
+                  >
+                    <option value="DRAFT">Draft (In Progress)</option>
+                    <option value="SCHEDULED">Scheduled</option>
+                    <option value="PUBLISHED">Published (Live in Catalog)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">
+                    Scheduled Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={editIssueScheduledDate}
+                    onChange={(e) => setEditIssueScheduledDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Current Issue Checkbox */}
+              <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-lg flex items-center space-x-2.5">
+                <input
+                  type="checkbox"
+                  id="editIssueIsCurrent"
+                  checked={editIssueIsCurrent}
+                  onChange={(e) => setEditIssueIsCurrent(e.target.checked)}
+                  className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                />
+                <label htmlFor="editIssueIsCurrent" className="font-semibold text-slate-800 text-xs cursor-pointer">
+                  Designate as Current Issue for this journal
+                </label>
+              </div>
+
+              {/* Cover Image Upload & Current Preview */}
+              <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <label className="block font-bold text-slate-700 uppercase text-[11px]">
+                  Issue Cover Image
+                </label>
+                {editIssueExistingCoverUrl && (
+                  <div className="relative h-28 w-20 rounded border border-slate-300 overflow-hidden shadow-xs bg-white">
+                    <img
+                      src={editIssueExistingCoverUrl}
+                      alt="Current Cover"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEditIssueCoverFile(e.target.files?.[0] || null)}
+                  className="w-full py-1 text-slate-700 text-xs"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Select a new image (.png, .jpg, .webp) to update or replace the issue cover artwork.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Description / Issue Scope
+                </label>
+                <textarea
+                  rows={2}
+                  value={editIssueDescription}
+                  onChange={(e) => setEditIssueDescription(e.target.value)}
+                  placeholder="Overview of articles and themes..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">
+                  Editorial Introduction / Foreword
+                </label>
+                <textarea
+                  rows={2}
+                  value={editIssueEditorialIntro}
+                  onChange={(e) => setEditIssueEditorialIntro(e.target.value)}
+                  placeholder="Foreword from the Editor-in-Chief..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditIssueModalOpen(false)}
+                  className="px-4 py-2 border border-slate-300 rounded text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !editIssueTitle}
+                  className="bg-navy-900 hover:bg-navy-950 text-white font-semibold px-5 py-2 rounded transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'Saving...' : 'Save Issue Changes'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

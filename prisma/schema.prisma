@@ -323,6 +323,7 @@ model Issue {
   description            String?
   coverImageUrl          String?
   status                 String    @default("DRAFT") // DRAFT, IN_PROGRESS, PUBLISHED, ARCHIVED
+  isCurrent              Boolean   @default(false)
   publicationDate        DateTime?
   scheduledPublishDate   DateTime?
   editorialIntroduction  String?

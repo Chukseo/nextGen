@@ -7,7 +7,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
-import { generateScholarlyArticlePdf, extractDocxText } from '@/lib/pdfGenerator';
+import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } from '@/lib/pdfGenerator';
 import { uploadFile, getFileBuffer } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
@@ -122,8 +122,9 @@ export async function POST(
     try {
       const latestDecision = submission.editorialDecisions?.[0];
 
-      // Extract full text from submitted manuscript file
+      // Extract full text and tables from submitted manuscript file
       let manuscriptFullText: string | null = null;
+      let manuscriptBlocks: any = null;
       const manuscriptFile = submission.files?.find(
         (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
       );
@@ -131,7 +132,9 @@ export async function POST(
       if (manuscriptFile?.storageKey) {
         try {
           const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
-          manuscriptFullText = await extractDocxText(fileBuffer);
+          const parsed = await parseManuscriptDocx(fileBuffer);
+          manuscriptFullText = parsed.fullText;
+          manuscriptBlocks = parsed.blocks;
         } catch (fileErr) {
           console.warn('Could not extract submitted manuscript full text during publishing:', fileErr);
         }
@@ -159,6 +162,7 @@ export async function POST(
         title: submission.title,
         abstract: submission.abstract,
         manuscriptFullText,
+        manuscriptBlocks,
         declarations,
         publishedAt: publishedDate,
         receivedAt: submission.createdAt,

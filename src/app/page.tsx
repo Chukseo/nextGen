@@ -33,10 +33,10 @@ export default async function HomePage() {
         orderBy: { createdAt: 'asc' },
       }),
       prisma.publishedArticle.findMany({
-        take: 4,
+        take: 6,
         orderBy: { publishedAt: 'desc' },
         include: {
-          journal: { select: { title: true, abbreviation: true, slug: true } },
+          journal: { select: { title: true, abbreviation: true, slug: true, coverImageUrl: true } },
           issue: { include: { volume: true } },
           submission: {
             include: {
@@ -167,72 +167,130 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Published Research Articles */}
+      {/* Featured Published Research Articles (Always Featured Across All Journals) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3 border-b border-slate-200 pb-4">
           <div>
-            <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Peer-Reviewed Scholarship</span>
-            <h2 className="text-2xl font-bold text-slate-900 scholarly-heading">Latest Published Articles</h2>
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Recently Published Scholarship</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 scholarly-heading mt-1">
+              Latest Published Articles Across NextGen Press
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Peer-reviewed open-access discoveries published in real time across all participating journals.
+            </p>
           </div>
-          <Link href="/articles" className="text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1">
-            <span>View all articles</span>
+          <Link href="/articles" className="text-xs sm:text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1 shrink-0">
+            <span>Explore all articles</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {publishedArticles.map((article: any) => {
-            const authorNames = (article.submission?.coAuthors || [])
-              .map((a: any) => `${a.firstName} ${a.lastName}`)
-              .join(', ');
-
-            return (
-              <article
-                key={article.id}
-                className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4"
+        {publishedArticles.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3 shadow-sm">
+            <BookOpen className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="font-bold text-slate-800 text-base">New Articles Forthcoming</h3>
+            <p className="text-xs text-slate-500 max-w-lg mx-auto">
+              Articles across NextGen Press journals are currently advancing through editorial desk screening, double-anonymous peer review, and typeset production.
+            </p>
+            <div className="pt-2 flex justify-center gap-3">
+              <Link
+                href="/submit"
+                className="bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-colors shadow-sm"
               >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                      {article.journal.abbreviation}
-                    </span>
-                    <span>{new Date(article.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                Submit Manuscript
+              </Link>
+              <Link
+                href="/issues"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs px-4 py-2 rounded-lg transition-colors"
+              >
+                Browse Current Issues
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {publishedArticles.map((article: any) => {
+              const authorNames = (article.submission?.coAuthors || [])
+                .map((a: any) => `${a.firstName} ${a.lastName}`)
+                .join(', ');
+
+              return (
+                <article
+                  key={article.id}
+                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4 group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        {article.journal.coverImageUrl && (
+                          <div className="w-6 h-8 rounded overflow-hidden border border-slate-200 shadow-xs shrink-0 hidden sm:block">
+                            <img
+                              src={article.journal.coverImageUrl}
+                              alt={article.journal.abbreviation}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <Link
+                          href={`/journals/${article.journal.slug}`}
+                          className="font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 text-[11px] transition-colors"
+                        >
+                          {article.journal.abbreviation}
+                        </Link>
+                      </div>
+                      <span className="text-slate-400 text-[11px]">
+                        {new Date(article.publishedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+
+                    <div>
+                      {article.issue && (
+                        <div className="text-[10px] text-slate-400 font-medium mb-1">
+                          Vol. {article.issue.volume?.volumeNumber || 1}, No. {article.issue.issueNumber} ({article.issue.year})
+                        </div>
+                      )}
+                      <h3 className="text-base font-bold text-slate-900 scholarly-heading group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
+                        <Link href={`/articles/${article.id}`}>
+                          {article.title}
+                        </Link>
+                      </h3>
+                    </div>
+
+                    <p className="text-xs text-slate-600 font-medium line-clamp-1">
+                      {authorNames}
+                    </p>
+
+                    <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed scholarly-abstract">
+                      {article.abstract}
+                    </p>
                   </div>
 
-                  <h3 className="text-lg font-bold text-slate-900 scholarly-heading hover:text-blue-700 transition-colors leading-snug">
-                    <Link href={`/articles/${article.id}`}>
-                      {article.title}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    {article.doi ? (
+                      <span className="font-mono text-[11px] text-slate-500 truncate max-w-[150px]" title={article.doi}>
+                        DOI: {article.doi}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
+                        Open Access
+                      </span>
+                    )}
+                    <Link
+                      href={`/articles/${article.id}`}
+                      className="font-semibold text-blue-700 hover:text-blue-800 flex items-center space-x-1 ml-auto"
+                    >
+                      <span>Read Article</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </Link>
-                  </h3>
-
-                  <p className="text-xs text-slate-600 font-medium">
-                    {authorNames}
-                  </p>
-
-                  <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed scholarly-abstract">
-                    {article.abstract}
-                  </p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  {article.doi && (
-                    <span className="font-mono text-slate-500 flex items-center space-x-1">
-                      <span className="font-bold text-slate-700">DOI:</span>
-                      <span className="hover:text-blue-700 truncate max-w-[200px]">{article.doi}</span>
-                    </span>
-                  )}
-                  <Link
-                    href={`/articles/${article.id}`}
-                    className="font-semibold text-blue-700 hover:text-blue-800 flex items-center space-x-1 ml-auto"
-                  >
-                    <span>Read Article</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Multidisciplinary Journals Section */}

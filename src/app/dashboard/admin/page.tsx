@@ -47,6 +47,7 @@ export default async function AdminDashboardPage() {
   let auditEvents: any[] = [];
   let publishedArticles: any[] = [];
   let productionSubmissions: any[] = [];
+  let issues: any[] = [];
   let loadError: string | null = null;
 
   try {
@@ -89,7 +90,7 @@ export default async function AdminDashboardPage() {
     };
 
     // Run record fetches in a separate batch
-    [users, journals, doiRecords, auditEvents, publishedArticles, productionSubmissions] = await Promise.all([
+    [users, journals, doiRecords, auditEvents, publishedArticles, productionSubmissions, issues] = await Promise.all([
       prisma.user.findMany({
         include: {
           roleAssignments: {
@@ -99,6 +100,16 @@ export default async function AdminDashboardPage() {
         orderBy: { createdAt: 'desc' },
       }),
       prisma.journal.findMany({
+        include: {
+          volumes: {
+            include: {
+              issues: {
+                orderBy: { issueNumber: 'asc' },
+              },
+            },
+            orderBy: { volumeNumber: 'asc' },
+          },
+        },
         orderBy: { createdAt: 'asc' },
       }),
       prisma.dOIRecord.findMany({
@@ -129,6 +140,18 @@ export default async function AdminDashboardPage() {
           journal: { select: { title: true, abbreviation: true, slug: true } },
           coAuthors: { orderBy: { authorOrder: 'asc' } },
         },
+      }),
+      prisma.issue.findMany({
+        include: {
+          journal: { select: { id: true, title: true, abbreviation: true, slug: true } },
+          volume: true,
+          _count: { select: { publishedArticles: true } },
+        },
+        orderBy: [
+          { isCurrent: 'desc' },
+          { year: 'desc' },
+          { issueNumber: 'desc' },
+        ],
       }),
     ]);
   } catch (error: any) {
@@ -163,6 +186,7 @@ export default async function AdminDashboardPage() {
         metrics={metrics}
         users={users}
         journals={journals}
+        issues={issues}
         doiRecords={doiRecords}
         auditEvents={auditEvents}
         publishedArticles={publishedArticles}

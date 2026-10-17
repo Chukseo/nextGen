@@ -117,6 +117,7 @@ export async function POST(req: Request) {
           title: `Inaugural Issue: Advances in ${abbreviation || title}`,
           description: `Premier issue featuring foundational peer-reviewed research and methodologies.`,
           status: 'PUBLISHED',
+          isCurrent: true,
           publicationDate: new Date(),
           editorialIntroduction: `Welcome to the inaugural issue of ${title}. All articles undergo rigorous double-anonymous peer review to ensure exceptional scientific merit and reproducible impact.`,
           coverImageUrl: coverImageUrl || null,
