@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   BookOpen,
@@ -19,6 +20,7 @@ import {
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
@@ -28,8 +30,16 @@ export default function Navbar() {
   const isReviewer = roles.some((r: any) => r.role === 'REVIEWER');
   const isAuthor = roles.some((r: any) => r.role === 'AUTHOR');
 
+  const navLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/journals', label: 'Journals' },
+    { href: '/issues', label: 'Current Issues' },
+    { href: '/articles', label: 'Search Research', icon: Search },
+    { href: '/about', label: 'About' },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.04)]">
       {/* Top Organization Header */}
       <div className="bg-navy-950 text-slate-300 text-xs py-1.5 px-4 sm:px-6 lg:px-10 border-b border-navy-900">
         <div className="w-full flex justify-between items-center">
@@ -56,7 +66,7 @@ export default function Navbar() {
             <img
               src="/logo.png"
               alt="NextGen Research & Innovation Press"
-              className="h-11 sm:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div className="hidden sm:block">
               <div className="text-base xl:text-lg font-bold text-navy-950 scholarly-heading tracking-tight leading-tight whitespace-nowrap">
@@ -68,16 +78,39 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-4 xl:space-x-7 text-sm font-medium text-slate-700 whitespace-nowrap flex-shrink-0">
-            <Link href="/" className="hover:text-blue-700 transition-colors py-1">Home</Link>
-            <Link href="/journals" className="hover:text-blue-700 transition-colors py-1">Journals</Link>
-            <Link href="/issues" className="hover:text-blue-700 transition-colors py-1">Current Issues</Link>
-            <Link href="/articles" className="hover:text-blue-700 transition-colors flex items-center space-x-1.5 py-1">
-              <Search className="w-3.5 h-3.5 text-slate-400" />
-              <span>Search Research</span>
-            </Link>
-            <Link href="/about" className="hover:text-blue-700 transition-colors py-1">About</Link>
+          {/* Desktop Nav Links with Stylish Animated Underline and Hover Effect */}
+          <nav className="hidden lg:flex items-center space-x-2 xl:space-x-3 text-sm font-medium whitespace-nowrap flex-shrink-0">
+            {navLinks.map((link) => {
+              const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative group px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-1.5 ${
+                    isActive
+                      ? 'text-blue-700 bg-blue-50/80 shadow-xs'
+                      : 'text-slate-700 hover:text-blue-700 hover:bg-slate-100/70'
+                  }`}
+                >
+                  {link.icon && (
+                    <link.icon
+                      className={`w-3.5 h-3.5 transition-colors ${
+                        isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-600'
+                      }`}
+                    />
+                  )}
+                  <span>{link.label}</span>
+                  {/* Active / Hover Underline Glow */}
+                  <span
+                    className={`absolute bottom-0 left-3 right-3 h-[2px] rounded-full transition-all duration-300 ${
+                      isActive
+                        ? 'bg-blue-600 opacity-100 shadow-[0_0_8px_rgba(37,99,235,0.7)]'
+                        : 'bg-blue-500 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100'
+                    }`}
+                  />
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Action CTAs & Auth */}
@@ -199,21 +232,76 @@ export default function Navbar() {
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 py-4 space-y-3">
-            <Link href="/" className="block text-slate-800 font-medium py-1">Home</Link>
-            <Link href="/journals" className="block text-slate-800 font-medium py-1">Journals</Link>
-            <Link href="/issues" className="block text-slate-800 font-medium py-1">Current Issues</Link>
-            <Link href="/articles" className="block text-slate-800 font-medium py-1">Search Research</Link>
-            <Link href="/submit" className="block text-blue-700 font-semibold py-1">Submit Manuscript</Link>
+          <div className="lg:hidden border-t border-slate-200/80 py-4 space-y-2">
+            {navLinks.map((link) => {
+              const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600'
+                      : 'text-slate-800 hover:bg-slate-50'
+                  }`}
+                >
+                  <span className="flex items-center space-x-2">
+                    {link.icon && <link.icon className="w-4 h-4 text-slate-400" />}
+                    <span>{link.label}</span>
+                  </span>
+                  {isActive && <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-100/70 px-2 py-0.5 rounded">Active</span>}
+                </Link>
+              );
+            })}
+            <Link
+              href="/submit"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center space-x-2 bg-blue-700 text-white font-semibold px-3.5 py-2.5 rounded-lg text-sm shadow-sm"
+            >
+              <UploadCloud className="w-4 h-4" />
+              <span>Submit Manuscript</span>
+            </Link>
             {status === 'authenticated' ? (
-              <div className="pt-2 border-t border-slate-100 space-y-2">
-                <Link href="/dashboard/author" className="block text-slate-700 font-medium">Author Portal</Link>
-                <Link href="/dashboard/editor" className="block text-slate-700 font-medium">Editor Dashboard</Link>
-                <Link href="/dashboard/admin" className="block text-amber-700 font-medium">Admin Console</Link>
-                <button onClick={() => signOut({ callbackUrl: '/' })} className="text-rose-600 font-medium">Sign Out</button>
+              <div className="pt-3 border-t border-slate-100 space-y-1">
+                <Link
+                  href="/dashboard/author"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3.5 py-2 rounded-md text-slate-700 hover:bg-slate-50 font-medium text-sm"
+                >
+                  Author Portal
+                </Link>
+                <Link
+                  href="/dashboard/editor"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3.5 py-2 rounded-md text-slate-700 hover:bg-slate-50 font-medium text-sm"
+                >
+                  Editor Dashboard
+                </Link>
+                {isMasterAdmin && (
+                  <Link
+                    href="/dashboard/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3.5 py-2 rounded-md text-amber-800 hover:bg-amber-50 font-medium text-sm"
+                  >
+                    Admin Console
+                  </Link>
+                )}
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="w-full text-left px-3.5 py-2 rounded-md text-rose-600 hover:bg-rose-50 font-medium text-sm"
+                >
+                  Sign Out
+                </button>
               </div>
             ) : (
-              <Link href="/login" className="block text-blue-700 font-semibold">Sign In / Register</Link>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-center mt-2 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold text-sm hover:bg-slate-50"
+              >
+                Sign In / Register
+              </Link>
             )}
           </div>
         )}

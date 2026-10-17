@@ -30,6 +30,8 @@ export async function POST(
       submissionId,
       articleNumber,
       pageRange,
+      customPdfStorageKey,
+      customPdfUrl,
       pdfStorageKey,
       pdfUrl,
       license = 'CC BY 4.0',
@@ -115,87 +117,89 @@ export async function POST(
       authors: submission.coAuthors.map((a) => ({ firstName: a.firstName, lastName: a.lastName })),
     });
 
-    // 2. Automatically generate the official typeset PDF with Journal & Issue branding + Full Manuscript Text
-    let resolvedPdfStorageKey = pdfStorageKey;
-    let resolvedPdfUrl = pdfUrl;
+    // 2. Determine PDF: If editor uploaded a custom typeset PDF, use it. Otherwise, generate typeset PDF from manuscript.
+    let resolvedPdfStorageKey = customPdfStorageKey || pdfStorageKey || null;
+    let resolvedPdfUrl = customPdfUrl || pdfUrl || null;
 
-    try {
-      const latestDecision = submission.editorialDecisions?.[0];
+    if (!resolvedPdfUrl || resolvedPdfUrl.startsWith('/storage/published/') || resolvedPdfUrl.startsWith('/api/articles/')) {
+      try {
+        const latestDecision = submission.editorialDecisions?.[0];
 
-      // Extract full text and tables from submitted manuscript file
-      let manuscriptFullText: string | null = null;
-      let manuscriptBlocks: any = null;
-      const manuscriptFile = submission.files?.find(
-        (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
-      );
+        // Extract full text and tables from submitted manuscript file
+        let manuscriptFullText: string | null = null;
+        let manuscriptBlocks: any = null;
+        const manuscriptFile = submission.files?.find(
+          (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
+        );
 
-      if (manuscriptFile?.storageKey) {
-        try {
-          const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
-          const parsed = await parseManuscriptDocx(fileBuffer);
-          manuscriptFullText = parsed.fullText;
-          manuscriptBlocks = parsed.blocks;
-        } catch (fileErr) {
-          console.warn('Could not extract submitted manuscript full text during publishing:', fileErr);
+        if (manuscriptFile?.storageKey) {
+          try {
+            const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
+            const parsed = await parseManuscriptDocx(fileBuffer);
+            manuscriptFullText = parsed.fullText;
+            manuscriptBlocks = parsed.blocks;
+          } catch (fileErr) {
+            console.warn('Could not extract submitted manuscript full text during publishing:', fileErr);
+          }
         }
-      }
 
-      const declarations = [
-        { label: 'Funding Information', text: submission.fundingInfo },
-        { label: 'Conflict of Interest', text: submission.conflictOfInterest },
-        { label: 'Data Availability', text: submission.dataAvailability },
-        { label: 'Ethical Approval & Consent', text: submission.ethicsStatement || submission.consentStatement },
-        { label: 'Acknowledgements', text: submission.acknowledgements },
-      ];
+        const declarations = [
+          { label: 'Funding Information', text: submission.fundingInfo },
+          { label: 'Conflict of Interest', text: submission.conflictOfInterest },
+          { label: 'Data Availability', text: submission.dataAvailability },
+          { label: 'Ethical Approval & Consent', text: submission.ethicsStatement || submission.consentStatement },
+          { label: 'Acknowledgements', text: submission.acknowledgements },
+        ];
 
-      const pdfBytes = await generateScholarlyArticlePdf({
-        journalTitle: issue.journal.title,
-        journalAbbreviation: issue.journal.abbreviation,
-        onlineIssn: issue.journal.onlineIssn,
-        volumeNumber: issue.volume.volumeNumber,
-        issueNumber: issue.issueNumber,
-        year: issue.year,
-        articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
-        pageRange,
-        doi: finalDoi,
-        articleType: submission.articleType,
-        title: submission.title,
-        abstract: submission.abstract,
-        manuscriptFullText,
-        manuscriptBlocks,
-        declarations,
-        publishedAt: publishedDate,
-        receivedAt: submission.createdAt,
-        acceptedAt: latestDecision?.decidedAt || publishedDate,
-        citationString,
-        license,
-        authors: submission.coAuthors.map((a) => ({
-          firstName: a.firstName,
-          lastName: a.lastName,
-          affiliation: a.affiliation,
-          orcid: a.orcid,
-          isCorresponding: a.isCorresponding,
-          email: a.email,
-        })),
-      });
+        const pdfBytes = await generateScholarlyArticlePdf({
+          journalTitle: issue.journal.title,
+          journalAbbreviation: issue.journal.abbreviation,
+          onlineIssn: issue.journal.onlineIssn,
+          volumeNumber: issue.volume.volumeNumber,
+          issueNumber: issue.issueNumber,
+          year: issue.year,
+          articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
+          pageRange,
+          doi: finalDoi,
+          articleType: submission.articleType,
+          title: submission.title,
+          abstract: submission.abstract,
+          manuscriptFullText,
+          manuscriptBlocks,
+          declarations,
+          publishedAt: publishedDate,
+          receivedAt: submission.createdAt,
+          acceptedAt: latestDecision?.decidedAt || publishedDate,
+          citationString,
+          license,
+          authors: submission.coAuthors.map((a) => ({
+            firstName: a.firstName,
+            lastName: a.lastName,
+            affiliation: a.affiliation,
+            orcid: a.orcid,
+            isCorresponding: a.isCorresponding,
+            email: a.email,
+          })),
+        });
 
-      const fileName = `${issue.journal.abbreviation}_${issue.year}_${articleNumber || String(seqNum).padStart(3, '0')}.pdf`;
-      const uploadRes = await uploadFile({
-        fileBuffer: Buffer.from(pdfBytes),
-        originalFileName: fileName,
-        mimeType: 'application/pdf',
-        bucketName: 'published-articles',
-      });
+        const fileName = `${issue.journal.abbreviation}_${issue.year}_${articleNumber || String(seqNum).padStart(3, '0')}.pdf`;
+        const uploadRes = await uploadFile({
+          fileBuffer: Buffer.from(pdfBytes),
+          originalFileName: fileName,
+          mimeType: 'application/pdf',
+          bucketName: 'published-articles',
+        });
 
-      resolvedPdfStorageKey = uploadRes.storageKey;
-      resolvedPdfUrl = uploadRes.publicUrl || `/api/articles/${submission.id}/pdf`;
-    } catch (pdfErr) {
-      console.error('Automated PDF generation fallback warning:', pdfErr);
-      if (!resolvedPdfStorageKey) {
-        resolvedPdfStorageKey = `published/${submission.submissionNumber}.pdf`;
-      }
-      if (!resolvedPdfUrl) {
-        resolvedPdfUrl = `/api/articles/${submission.id}/pdf`;
+        resolvedPdfStorageKey = uploadRes.storageKey;
+        resolvedPdfUrl = uploadRes.publicUrl || `/api/articles/${submission.id}/pdf`;
+      } catch (pdfErr) {
+        console.error('Automated PDF generation fallback warning:', pdfErr);
+        if (!resolvedPdfStorageKey) {
+          resolvedPdfStorageKey = `published/${submission.submissionNumber}.pdf`;
+        }
+        if (!resolvedPdfUrl) {
+          resolvedPdfUrl = `/api/articles/${submission.id}/pdf`;
+        }
       }
     }
 

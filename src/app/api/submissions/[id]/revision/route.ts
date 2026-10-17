@@ -34,7 +34,7 @@ export async function POST(
 
     if (!uploadedFileKey) {
       return NextResponse.json(
-        { error: 'Corrected Word document (.docx) is required.' },
+        { error: 'Corrected manuscript document (.docx, .doc, or .pdf) is required.' },
         { status: 400 }
       );
     }
@@ -67,7 +67,7 @@ export async function POST(
 
     // 1. Find previous manuscript files to force delete from physical storage
     const previousManuscriptFiles = submission.files.filter((f) =>
-      ['MANUSCRIPT_DOCX', 'REVISION', 'COPYEDITED'].includes(f.fileType)
+      ['MANUSCRIPT_DOCX', 'MANUSCRIPT_PDF', 'REVISION', 'COPYEDITED'].includes(f.fileType)
     );
 
     for (const oldFile of previousManuscriptFiles) {
@@ -82,7 +82,7 @@ export async function POST(
       await tx.manuscriptFile.deleteMany({
         where: {
           submissionId: submission.id,
-          fileType: { in: ['MANUSCRIPT_DOCX', 'REVISION', 'COPYEDITED'] },
+          fileType: { in: ['MANUSCRIPT_DOCX', 'MANUSCRIPT_PDF', 'REVISION', 'COPYEDITED'] },
         },
       });
 
@@ -92,14 +92,15 @@ export async function POST(
       });
 
       // Insert the new single corrected manuscript file
+      const isPdf = (uploadedFileName || '').toLowerCase().endsWith('.pdf');
       await tx.manuscriptFile.create({
         data: {
           submissionId: submission.id,
           versionNumber: 1,
-          fileType: 'MANUSCRIPT_DOCX',
-          originalFileName: uploadedFileName || `Corrected_Manuscript_${submission.submissionNumber}.docx`,
+          fileType: isPdf ? 'MANUSCRIPT_PDF' : 'MANUSCRIPT_DOCX',
+          originalFileName: uploadedFileName || `Corrected_Manuscript_${submission.submissionNumber}.${isPdf ? 'pdf' : 'docx'}`,
           storageKey: uploadedFileKey,
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          mimeType: isPdf ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           fileSize: uploadedFileSize || 0,
           isConfidential: true,
           uploadedById: user.id,

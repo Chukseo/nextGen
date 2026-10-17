@@ -48,7 +48,7 @@ const SubmissionSchema = z.object({
     message: 'You must confirm the submission declarations and publishing ethics statement.',
   }),
   authors: z.array(AuthorSchema).min(1, 'At least one author must be specified'),
-  uploadedFileKey: z.string().min(1, 'Manuscript Word document (DOC/DOCX) must be uploaded'),
+  uploadedFileKey: z.string().min(1, 'Manuscript file (PDF or DOC/DOCX) must be uploaded'),
   uploadedFileName: z.string().min(1),
   uploadedFileSize: z.number().positive(),
   supplementaryFiles: z.array(
@@ -193,15 +193,16 @@ export async function POST(req: Request) {
         });
       }
 
-      // Add primary manuscript DOCX file
+      // Add primary manuscript file (DOCX or PDF)
+      const isPdf = data.uploadedFileName.toLowerCase().endsWith('.pdf');
       await tx.manuscriptFile.create({
         data: {
           submissionId: sub.id,
           versionNumber: 1,
-          fileType: 'MANUSCRIPT_DOCX',
+          fileType: isPdf ? 'MANUSCRIPT_PDF' : 'MANUSCRIPT_DOCX',
           originalFileName: data.uploadedFileName,
           storageKey: data.uploadedFileKey,
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          mimeType: isPdf ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           fileSize: data.uploadedFileSize,
           isConfidential: true,
           uploadedById: user.id,

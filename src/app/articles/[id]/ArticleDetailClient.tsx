@@ -18,7 +18,13 @@ import {
 } from 'lucide-react';
 import CitationModal from '@/components/CitationModal';
 
-export default function ArticleDetailClient({ article }: { article: any }) {
+export default function ArticleDetailClient({
+  article,
+  manuscriptBlocks,
+}: {
+  article: any;
+  manuscriptBlocks?: any[] | null;
+}) {
   const [citationModalOpen, setCitationModalOpen] = useState(false);
   const [downloadsCount, setDownloadsCount] = useState<number>(article.downloadsCount || 0);
 
@@ -212,6 +218,105 @@ export default function ArticleDetailClient({ article }: { article: any }) {
           </div>
         )}
       </section>
+
+      {/* Full Manuscript Body (Headings, Paragraphs, Tables, and Lists) */}
+      {manuscriptBlocks && manuscriptBlocks.length > 0 && (
+        <section className="bg-white p-6 sm:p-10 rounded-xl border border-slate-200 shadow-sm space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h2 className="text-xl font-bold text-navy-950 scholarly-heading">
+              Full Text Article
+            </h2>
+            <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2.5 py-1 rounded">
+              Peer-Reviewed Manuscript
+            </span>
+          </div>
+
+          <div className="space-y-5 text-sm text-slate-800 leading-relaxed scholarly-article-body">
+            {manuscriptBlocks.map((block: any, idx: number) => {
+              if (block.type === 'heading') {
+                if (block.level === 1) {
+                  return (
+                    <h2
+                      key={idx}
+                      className="text-xl sm:text-2xl font-bold text-navy-950 scholarly-heading pt-6 pb-2 border-b border-slate-100"
+                    >
+                      {block.text}
+                    </h2>
+                  );
+                }
+                return (
+                  <h3
+                    key={idx}
+                    className="text-base sm:text-lg font-bold text-slate-900 scholarly-heading pt-4 pb-1"
+                  >
+                    {block.text}
+                  </h3>
+                );
+              }
+
+              if (block.type === 'table') {
+                return (
+                  <div key={idx} className="my-6 space-y-2">
+                    {block.caption && (
+                      <div className="text-xs font-bold text-navy-950 uppercase tracking-wider">
+                        {block.caption}
+                      </div>
+                    )}
+                    <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-xs">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <tbody>
+                          {block.rows.map((row: any, rIdx: number) => {
+                            const isHeader = rIdx === 0 || row.cells.some((c: any) => c.isHeader);
+                            return (
+                              <tr
+                                key={rIdx}
+                                className={
+                                  isHeader
+                                    ? 'bg-slate-100 font-bold text-navy-950 border-b-2 border-slate-300'
+                                    : rIdx % 2 === 1
+                                    ? 'bg-slate-50/60 text-slate-800 border-b border-slate-200'
+                                    : 'bg-white text-slate-800 border-b border-slate-200'
+                                }
+                              >
+                                {row.cells.map((cell: any, cIdx: number) => {
+                                  const CellTag = isHeader ? 'th' : 'td';
+                                  return (
+                                    <CellTag
+                                      key={cIdx}
+                                      className="py-2.5 px-3.5 border-r border-slate-200 last:border-r-0 align-top"
+                                    >
+                                      {cell.text}
+                                    </CellTag>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (block.type === 'list_item') {
+                return (
+                  <div key={idx} className="flex items-start space-x-2.5 pl-4 text-slate-700 text-sm">
+                    <span className="text-blue-600 font-bold">•</span>
+                    <span>{block.text}</span>
+                  </div>
+                );
+              }
+
+              return (
+                <p key={idx} className="text-justify text-slate-800 leading-relaxed text-sm">
+                  {block.text}
+                </p>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Declarations & Ethics Statement */}
       <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4 text-xs text-slate-700">

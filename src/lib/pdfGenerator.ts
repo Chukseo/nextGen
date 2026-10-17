@@ -80,13 +80,30 @@ export interface ScholarlyPdfData {
 
 // Utility to wrap text into lines fitting a maxWidth
 function wrapText(text: string, maxWidth: number, font: any, fontSize: number): string[] {
-  const words = text.replace(/\s+/g, ' ').trim().split(' ');
+  if (!text) return [];
+  const sanitized = text
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/\u2026/g, '...')
+    .replace(/\u00A0/g, ' ')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .trim();
+
+  const words = sanitized.replace(/\s+/g, ' ').split(' ');
   const lines: string[] = [];
   let currentLine = '';
 
   for (const word of words) {
+    if (!word) continue;
     const testLine = currentLine ? `${currentLine} ${word}` : word;
-    const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+    let testWidth = 0;
+    try {
+      testWidth = font.widthOfTextAtSize(testLine, fontSize);
+    } catch {
+      testWidth = testLine.length * (fontSize * 0.55);
+    }
+
     if (testWidth > maxWidth && currentLine) {
       lines.push(currentLine);
       currentLine = word;
@@ -110,9 +127,14 @@ function isSectionHeading(text: string): boolean {
   return false;
 }
 
-// Clean HTML tags and decode HTML entities
+// Clean HTML tags and decode HTML entities while preserving spacing
 function cleanHtmlText(html: string): string {
   return html
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<\/div>/gi, ' ')
+    .replace(/<\/td>/gi, ' ')
+    .replace(/<\/th>/gi, ' ')
     .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
@@ -120,6 +142,7 @@ function cleanHtmlText(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -751,7 +774,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
         const numCols = Math.max(...block.rows.map(r => r.cells.length));
         if (numCols === 0) continue;
 
-        // Calculate column widths
+        // Calculate column widths proportional to content with reasonable boundaries
         const rawColLengths: number[] = new Array(numCols).fill(0);
         block.rows.forEach(r => {
           r.cells.forEach((c, idx) => {
@@ -760,15 +783,18 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
         });
 
         const totalLength = rawColLengths.reduce((a, b) => a + b, 0) || 1;
-        const minColWidth = Math.min(45, contentWidth / numCols);
-        let colWidths: number[] = [];
+        const minColWidth = Math.max(30, Math.min(65, (contentWidth / numCols) * 0.55));
+        const remainingWidth = Math.max(0, contentWidth - minColWidth * numCols);
 
-        const isUniform = rawColLengths.every(len => Math.abs(len - rawColLengths[0]) < 8);
-        if (isUniform || numCols <= 2) {
-          colWidths = new Array(numCols).fill(contentWidth / numCols);
-        } else {
-          const remainingWidth = contentWidth - minColWidth * numCols;
-          colWidths = rawColLengths.map(len => minColWidth + (len / totalLength) * remainingWidth);
+        let colWidths: number[] = rawColLengths.map(len => {
+          return minColWidth + (len / totalLength) * remainingWidth;
+        });
+
+        // Normalize sum to match contentWidth exactly
+        const currentSum = colWidths.reduce((a, b) => a + b, 0);
+        if (currentSum > 0 && Math.abs(currentSum - contentWidth) > 0.5) {
+          const ratio = contentWidth / currentSum;
+          colWidths = colWidths.map(w => w * ratio);
         }
 
         currentY -= 8;
@@ -843,7 +869,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
             currentY -= 2;
           }
 
-          // Header background fill
+          // Header background fill or subtle zebra striping for alternate rows
           if (isHeaderRow) {
             activePage.drawRectangle({
               x: marginX,
@@ -851,6 +877,26 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
               width: contentWidth,
               height: rowHeight,
               color: rgb(241 / 255, 245 / 255, 249 / 255),
+            });
+          } else if (rowIndex % 2 === 1) {
+            activePage.drawRectangle({
+              x: marginX,
+              y: currentY - rowHeight + 2,
+              width: contentWidth,
+              height: rowHeight,
+              color: rgb(250 / 255, 250 / 255, 252 / 255),
+            });
+          }
+
+          // Draw subtle vertical column boundaries
+          let vLineX = marginX;
+          for (let c = 0; c < numCols - 1; c++) {
+            vLineX += colWidths[c];
+            activePage.drawLine({
+              start: { x: vLineX, y: currentY + 2 },
+              end: { x: vLineX, y: currentY - rowHeight + 2 },
+              thickness: 0.35,
+              color: rgb(226 / 255, 232 / 255, 240 / 255),
             });
           }
 

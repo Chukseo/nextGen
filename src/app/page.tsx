@@ -11,7 +11,9 @@ import {
   Award,
   ArrowRight,
   ExternalLink,
-  Users
+  Users,
+  GraduationCap,
+  TrendingUp
 } from 'lucide-react';
 import prisma from '@/lib/prisma';
 
@@ -122,11 +124,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Key Scholarly Pillars */}
+      {/* Key Scholarly Pillars & Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div className="w-10 h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center shadow-xs">
               <CheckCircle className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-900 text-base">Double-Anonymous Review</h3>
@@ -135,8 +137,8 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center">
+          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center shadow-xs">
               <Award className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-900 text-base">Crossref DOI Infrastructure</h3>
@@ -145,8 +147,8 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-amber-50 text-amber-700 rounded-lg flex items-center justify-center">
+          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div className="w-10 h-10 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center shadow-xs">
               <BookOpen className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-900 text-base">Diamond Open Access</h3>
@@ -155,13 +157,33 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-purple-50 text-purple-700 rounded-lg flex items-center justify-center">
+          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div className="w-10 h-10 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center shadow-xs">
               <Shield className="w-5 h-5" />
             </div>
             <h3 className="font-bold text-slate-900 text-base">COPE Ethics Standards</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Uncompromising publication ethics, conflict-of-interest declarations, data availability mandates, and transparent corrections.
+            </p>
+          </div>
+
+          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div className="w-10 h-10 bg-sky-50 text-sky-700 rounded-xl flex items-center justify-center shadow-xs">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-base">Google Scholar & Global Indexing</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Comprehensive highwire metadata tags, automated sitemap feeds, and full-text harvest integration across Google Scholar and library discovery systems.
+            </p>
+          </div>
+
+          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div className="w-10 h-10 bg-rose-50 text-rose-700 rounded-xl flex items-center justify-center shadow-xs">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-base">2-Year Impact Factor Reports</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Transparent, citation-tracked 2-year Journal Impact Factor (JIF) calculations, immediacy metrics, and annual citable item reports across all journals.
             </p>
           </div>
         </div>

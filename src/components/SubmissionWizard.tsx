@@ -126,8 +126,8 @@ export default function SubmissionWizard({
 
     // Validate extension
     const ext = selectedFile.name.split('.').pop()?.toLowerCase();
-    if (ext !== 'docx' && ext !== 'doc') {
-      setUploadError('Only Microsoft Word (.doc, .docx) manuscript files are permitted.');
+    if (ext !== 'docx' && ext !== 'doc' && ext !== 'pdf') {
+      setUploadError('Only Microsoft Word (.doc, .docx) or Adobe PDF (.pdf) manuscript files are permitted.');
       return;
     }
 
@@ -159,7 +159,7 @@ export default function SubmissionWizard({
 
   const handleSubmitFinal = async () => {
     if (!uploadedKey || !uploadedFileName || !uploadedFileSize) {
-      setSubmitError('Please upload your manuscript Word document.');
+      setSubmitError('Please upload your manuscript file (.docx, .doc, or .pdf).');
       return;
     }
     if (!declarationsConfirmed) {
@@ -224,7 +224,7 @@ export default function SubmissionWizard({
           {[
             { num: 1, label: 'Journal & Type' },
             { num: 2, label: 'Article Metadata' },
-            { num: 3, label: 'Upload Word DOCX' },
+            { num: 3, label: 'Upload Manuscript' },
             { num: 4, label: 'Review & Confirm' },
             { num: 5, label: 'Receipt' },
           ].map((s) => (
@@ -612,7 +612,7 @@ export default function SubmissionWizard({
                 Step 3: Upload Manuscript Document
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Upload your blinded manuscript as a Microsoft Word document (.docx or .doc).
+                Upload your blinded manuscript as an Adobe PDF (.pdf) or Microsoft Word document (.docx or .doc).
               </p>
             </div>
 
@@ -630,16 +630,16 @@ export default function SubmissionWizard({
                 </div>
                 <div>
                   <label className="cursor-pointer font-bold text-blue-700 hover:underline text-sm">
-                    <span>Click to select Word document</span>
+                    <span>Click to select manuscript file (PDF, DOCX, DOC)</span>
                     <input
                       type="file"
-                      accept=".docx,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
+                      accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
                       onChange={handleFileUpload}
                       className="hidden"
                     />
                   </label>
                   <p className="text-xs text-slate-500 mt-1">
-                    Accepts .docx or .doc format (up to 50MB)
+                    Accepts .pdf, .docx, or .doc format (up to 50MB)
                   </p>
                 </div>
 

@@ -65,6 +65,7 @@ export default function EditorDashboardClient({
   const [selectedIssueId, setSelectedIssueId] = useState(issues[0]?.id || '');
   const [articleNumber, setArticleNumber] = useState('003');
   const [pageRange, setPageRange] = useState('32-48');
+  const [customProductionPdfFile, setCustomProductionPdfFile] = useState<File | null>(null);
 
   // Issue creation state
   const [newIssueJournalId, setNewIssueJournalId] = useState(journals[0]?.id || '');
@@ -291,7 +292,20 @@ export default function EditorDashboardClient({
     setFeedback(null);
 
     try {
-      const primaryFile = selectedSub.files?.[0];
+      let customPdfUrl: string | undefined = undefined;
+      let customPdfStorageKey: string | undefined = undefined;
+
+      if (customProductionPdfFile) {
+        const formData = new FormData();
+        formData.append('file', customProductionPdfFile);
+        formData.append('bucket', 'published-articles');
+        const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Failed to upload custom PDF');
+        customPdfUrl = uploadData.publicUrl || uploadData.storageUrl || `/storage/${uploadData.storageKey}`;
+        customPdfStorageKey = uploadData.storageKey;
+      }
+
       const res = await fetch(`/api/issues/${selectedIssueId}/publish-article`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -299,8 +313,8 @@ export default function EditorDashboardClient({
           submissionId: selectedSub.id,
           articleNumber,
           pageRange,
-          pdfStorageKey: primaryFile?.storageKey || `published/${selectedSub.submissionNumber}.pdf`,
-          pdfUrl: primaryFile?.storageUrl || `/storage/published/${selectedSub.submissionNumber}.pdf`,
+          customPdfUrl,
+          customPdfStorageKey,
         }),
       });
 
@@ -308,6 +322,8 @@ export default function EditorDashboardClient({
       if (!res.ok) throw new Error(data.error || 'Failed to publish article');
 
       setFeedback({ type: 'success', text: data.message });
+      setPublishModalOpen(false);
+      setCustomProductionPdfFile(null);
       setTimeout(() => window.location.reload(), 1200);
     } catch (err: any) {
       setFeedback({ type: 'error', text: err.message });
@@ -1245,6 +1261,30 @@ export default function EditorDashboardClient({
                     className="w-full px-3 py-2 border border-slate-300 rounded outline-none"
                   />
                 </div>
+              </div>
+
+              {/* Optional Custom PDF Upload */}
+              <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-slate-700 uppercase text-[11px]">
+                    Upload Final Publication PDF (Optional)
+                  </label>
+                  <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium">Optional</span>
+                </div>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={(e) => setCustomProductionPdfFile(e.target.files?.[0] || null)}
+                  className="w-full py-1 text-slate-700 text-xs"
+                />
+                <p className="text-[11px] text-slate-500">
+                  If you have a professionally typeset PDF file for this article, upload it here. If left empty, the system will automatically generate the official publication PDF from the manuscript with full text and tables.
+                </p>
+                {customProductionPdfFile && (
+                  <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                    <span>Selected: {customProductionPdfFile.name} ({(customProductionPdfFile.size / 1024).toFixed(1)} KB)</span>
+                  </div>
+                )}
               </div>
 
               <div className="p-3 bg-blue-50 border border-blue-200 rounded text-blue-900">
