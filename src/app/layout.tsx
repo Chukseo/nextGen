@@ -3,6 +3,7 @@ import './globals.css';
 import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import SupportChatbot from '@/components/SupportChatbot';
 
 export const metadata: Metadata = {
   title: 'NextGen Research and Innovation Press | Peer-Reviewed Open Access Publishing',
@@ -30,6 +31,7 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <SupportChatbot />
         </Providers>
       </body>
     </html>

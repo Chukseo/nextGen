@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { UploadCloud, BookOpen, Layers, Users, Info, TrendingUp } from 'lucide-react';
+import { UploadCloud, BookOpen, Layers, Users, Info, TrendingUp, FileText } from 'lucide-react';
 import JournalImpactFactorModal from '@/components/JournalImpactFactorModal';
 
 interface JournalHeaderProps {
@@ -16,7 +16,7 @@ interface JournalHeaderProps {
     onlineIssn?: string | null;
     coverImageUrl?: string | null;
   };
-  activeTab: 'about' | 'current' | 'archive' | 'editorial-board';
+  activeTab: 'about' | 'current' | 'archive' | 'editorial-board' | 'guidelines';
 }
 
 export default function JournalHeader({ journal, activeTab }: JournalHeaderProps) {
@@ -31,6 +31,7 @@ export default function JournalHeader({ journal, activeTab }: JournalHeaderProps
     { key: 'current', label: 'Current Issue', href: `/journals/${journal.slug}/current`, icon: BookOpen },
     { key: 'archive', label: 'Issue Archive', href: `/journals/${journal.slug}/archive`, icon: Layers },
     { key: 'editorial-board', label: 'Editorial Board', href: `/journals/${journal.slug}/editorial-board`, icon: Users },
+    { key: 'guidelines', label: 'Author Guidelines', href: `/journals/${journal.slug}/guidelines`, icon: FileText },
   ];
 
   return (

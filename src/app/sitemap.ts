@@ -84,6 +84,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'monthly' as const,
         priority: 0.7,
       },
+      {
+        url: `${baseUrl}/journals/${j.slug}/guidelines`,
+        lastModified: j.updatedAt,
+        changeFrequency: 'monthly' as const,
+        priority: 0.75,
+      },
     ]);
 
     // 3. Published Articles for Google Scholar Harvesting

@@ -31,6 +31,8 @@ import {
   Calendar,
 } from 'lucide-react';
 import ImportArticleModal from '@/components/ImportArticleModal';
+import AdminEditorialBoardModal from '@/components/AdminEditorialBoardModal';
+import AdminAuthorGuidelinesModal from '@/components/AdminAuthorGuidelinesModal';
 
 export default function AdminDashboardClient({
   metrics,
@@ -93,6 +95,8 @@ export default function AdminDashboardClient({
   const [editJournalCoverFile, setEditJournalCoverFile] = useState<File | null>(null);
   const [editJournalExistingCoverUrl, setEditJournalExistingCoverUrl] = useState('');
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [boardModalJournal, setBoardModalJournal] = useState<any | null>(null);
+  const [guidelinesModalJournal, setGuidelinesModalJournal] = useState<any | null>(null);
 
   // Issue Management state
   const [filterIssueJournalId, setFilterIssueJournalId] = useState('ALL');
@@ -838,17 +842,35 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                <div className="pt-3 border-t border-slate-100 flex flex-wrap gap-2 justify-between items-center text-xs">
                   <Link href={`/journals/${j.slug}`} className="text-blue-700 font-semibold hover:underline">
                     Public View
                   </Link>
-                  <button
-                    onClick={() => openEditJournalModal(j)}
-                    className="inline-flex items-center space-x-1 py-1 px-2.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors"
-                  >
-                    <Edit3 className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Edit Journal & Cover</span>
-                  </button>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      onClick={() => setBoardModalJournal(j)}
+                      className="inline-flex items-center space-x-1 py-1 px-2.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold text-[11px] border border-blue-200 transition-colors"
+                      title="Manage Editorial Board appointments"
+                    >
+                      <Users className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Editorial Board</span>
+                    </button>
+                    <button
+                      onClick={() => setGuidelinesModalJournal(j)}
+                      className="inline-flex items-center space-x-1 py-1 px-2.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-semibold text-[11px] border border-indigo-200 transition-colors"
+                      title="Manage Author Guidelines"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Author Guidelines</span>
+                    </button>
+                    <button
+                      onClick={() => openEditJournalModal(j)}
+                      className="inline-flex items-center space-x-1 py-1 px-2.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Edit & Cover</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -2346,6 +2368,24 @@ export default function AdminDashboardClient({
         onClose={() => setImportModalOpen(false)}
         journals={journals}
         onSuccess={(msg) => setFeedback({ type: 'success', text: msg })}
+      />
+
+      {/* EDITORIAL BOARD APPOINTMENT MODAL */}
+      <AdminEditorialBoardModal
+        isOpen={!!boardModalJournal}
+        onClose={() => setBoardModalJournal(null)}
+        journal={boardModalJournal}
+        platformUsers={users}
+        onBoardUpdated={() => {
+          // Trigger refresh
+        }}
+      />
+
+      {/* AUTHOR GUIDELINES EDITOR MODAL */}
+      <AdminAuthorGuidelinesModal
+        isOpen={!!guidelinesModalJournal}
+        onClose={() => setGuidelinesModalJournal(null)}
+        journal={guidelinesModalJournal}
       />
     </div>
   );

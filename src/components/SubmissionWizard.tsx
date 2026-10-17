@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Check,
   Shield,
-  HelpCircle
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
 import { ArticleType, ReviewModel, AuthorMetadata } from '@/types';
 
@@ -290,8 +291,19 @@ export default function SubmissionWizard({
                 <div className="p-4 bg-blue-50/70 border border-blue-100 rounded-lg text-xs space-y-2 text-slate-700">
                   <div className="font-bold text-blue-900">{selectedJournal.title}</div>
                   <p className="leading-relaxed">{selectedJournal.aimsScope}</p>
-                  <div className="pt-1 text-slate-500">
-                    <span className="font-semibold text-slate-700">Peer Review Model:</span> {selectedJournal.peerReviewPolicy}
+                  <div className="pt-2 border-t border-blue-200/60 flex flex-wrap items-center justify-between gap-2 text-slate-500">
+                    <div>
+                      <span className="font-semibold text-slate-700">Peer Review Model:</span> {selectedJournal.peerReviewPolicy}
+                    </div>
+                    <a
+                      href={`/journals/${selectedJournal.slug}/guidelines`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-bold text-blue-700 hover:text-blue-900 inline-flex items-center gap-1 hover:underline"
+                    >
+                      <span>Read Author Guidelines</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
               )}
@@ -607,13 +619,27 @@ export default function SubmissionWizard({
         {/* STEP 3: Upload Manuscript */}
         {currentStep === 3 && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 scholarly-heading">
-                Step 3: Upload Manuscript Document
-              </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Upload your blinded manuscript as an Adobe PDF (.pdf) or Microsoft Word document (.docx or .doc).
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 scholarly-heading">
+                  Step 3: Upload Manuscript Document
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload your manuscript as an Adobe PDF (.pdf) or Microsoft Word document (.docx or .doc).
+                </p>
+              </div>
+              {selectedJournal && (
+                <a
+                  href={`/journals/${selectedJournal.slug}/guidelines`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center space-x-1.5 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shrink-0"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Formatting Guidelines</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
             </div>
 
             <div className="space-y-4">
