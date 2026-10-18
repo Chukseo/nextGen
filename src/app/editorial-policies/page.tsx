@@ -63,7 +63,7 @@ export default function EditorialPoliciesPage() {
             4. Open Access & Creative Commons Licensing
           </h2>
           <p>
-            NextGen Research and Innovation Press operates under the principles of Budapest Open Access Initiative (BOAI). All published articles are immediately and permanently free for anyone to read, download, copy, distribute, and cite under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="text-blue-700 underline font-semibold">Creative Commons Attribution 4.0 International License (CC BY 4.0)</a>.
+            NextGen Innovation & Research Journals operates under the principles of Budapest Open Access Initiative (BOAI). All published articles are immediately and permanently free for anyone to read, download, copy, distribute, and cite under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="text-blue-700 underline font-semibold">Creative Commons Attribution 4.0 International License (CC BY 4.0)</a>.
           </p>
         </section>
       </div>

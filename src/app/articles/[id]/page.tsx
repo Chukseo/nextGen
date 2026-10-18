@@ -97,7 +97,7 @@ export async function generateMetadata({
       'DC.title': article.title,
       'DC.creator': authorNames,
       'DC.date': article.publishedAt.toISOString().split('T')[0],
-      'DC.publisher': article.journal.publisher || 'NextGen Research and Innovation Press',
+      'DC.publisher': article.journal.publisher || 'NextGen Innovation & Research Journals',
       'DC.format': 'text/html',
       'DC.language': 'en',
       ...(article.doi ? { 'DC.identifier': `doi:${article.doi}` } : {}),

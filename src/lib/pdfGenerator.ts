@@ -476,7 +476,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   pdfDoc.setAuthor(data.authors.map(a => `${a.firstName} ${a.lastName}`).join(', '));
   pdfDoc.setSubject(`Published in ${data.journalTitle}`);
   pdfDoc.setKeywords(data.keywords || ['Open Access', 'Peer-Reviewed', 'NextGen Press']);
-  pdfDoc.setProducer('NextGen Research and Innovation Press (Lagos, Nigeria)');
+  pdfDoc.setProducer('NextGen Innovation & Research Journals (Lagos, Nigeria)');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
 
   // Embed standard PDF fonts
@@ -641,7 +641,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       color: rgb(226 / 255, 232 / 255, 240 / 255),
     });
 
-    const copyrightText = `© ${data.year} NextGen Research and Innovation Press • Lagos, Nigeria. CC BY 4.0`;
+    const copyrightText = `© ${data.year} NextGen Innovation & Research Journals • Lagos, Nigeria. CC BY 4.0`;
     page.drawText(copyrightText, {
       x: marginX,
       y: bottomY + 2,

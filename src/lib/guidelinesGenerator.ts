@@ -15,7 +15,7 @@ export function generateDefaultAuthorGuidelines(journal: JournalInfoForGuideline
   const currentYear = new Date().getFullYear();
   return `# Author Guidelines & Submission Instructions
 **${journal.title} (${journal.abbreviation})**
-*Published by ${journal.publisher || 'NextGen Research and Innovation Press'} • ISSN Registered • Crossref Member*
+*Published by ${journal.publisher || 'NextGen Innovation & Research Journals'} • ISSN Registered • Crossref Member*
 
 ---
 
@@ -100,7 +100,7 @@ ${journal.title} strictly adheres to the guidelines established by the Committee
 ## 7. Editorial Office Inquiries
 For questions regarding manuscript suitability, special thematic issues, or editorial board appointments, please contact the editorial office:
 - **Email**: [${journal.contactEmail}](mailto:${journal.contactEmail})
-- **Publisher**: NextGen Research and Innovation Press (Lagos, Nigeria)
+- **Publisher**: NextGen Innovation & Research Journals (Lagos, Nigeria)
 - **Portal**: [https://nextgen-press.org/journals/${journal.slug}](https://nextgen-press.org/journals/${journal.slug})
 `;
 }

@@ -40,7 +40,7 @@ export default function ContactPage() {
               <MapPin className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-slate-900 block">Publishing Headquarters</span>
-                <span className="text-slate-600">NextGen Research & Innovation Press<br />Lagos, Nigeria</span>
+                <span className="text-slate-600">NextGen Innovation & Research Journals<br />Lagos, Nigeria</span>
               </div>
             </div>
           </div>

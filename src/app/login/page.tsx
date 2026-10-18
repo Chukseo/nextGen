@@ -274,7 +274,7 @@ function LoginForm() {
 
       {/* Institutional Reassurance Footer */}
       <div className="mt-8 text-center text-xs text-slate-500 space-y-1">
-        <p className="font-medium text-slate-600">NextGen Research and Innovation Press &bull; Lagos, Nigeria</p>
+        <p className="font-medium text-slate-600">NextGen Innovation & Research Journals &bull; Lagos, Nigeria</p>
         <p className="text-[11px] text-slate-400">
           Secure academic authentication for authors, peer reviewers, and editors.
         </p>

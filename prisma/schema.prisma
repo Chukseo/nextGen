@@ -1,4 +1,4 @@
-// This is your Prisma schema file for NextGen Research and Innovation Press
+// This is your Prisma schema file for NextGen Innovation & Research Journals
 // Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -95,7 +95,7 @@ model Journal {
   abbreviation      String
   description       String
   aimsScope         String
-  publisher         String   @default("NextGen Research and Innovation Press")
+  publisher         String   @default("NextGen Innovation & Research Journals")
   printIssn         String?
   onlineIssn        String?
   peerReviewPolicy  String   @default("Double-anonymous peer review")

@@ -8,7 +8,7 @@ export default function AboutPage() {
       <div className="border-b border-slate-200 pb-6 space-y-2">
         <span className="text-xs font-bold text-blue-700 uppercase tracking-widest">Publishing Organization</span>
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 scholarly-heading">
-          About NextGen Research and Innovation Press
+          About NextGen Innovation & Research Journals
         </h1>
         <p className="text-base text-slate-600 leading-relaxed font-light">
           A dedicated digital scholarly publisher committed to high-standard peer review, transparent open access, and persistent scholarly infrastructure.
@@ -21,7 +21,7 @@ export default function AboutPage() {
             Our Mission & Positioning
           </h2>
           <p>
-            NextGen Research and Innovation Press was established to address the critical need for rapid, rigorous, and completely unrestricted dissemination of advanced scientific and technical research. Specializing in computer science, artificial intelligence, cyber-physical systems, hardware architectures, and computational healthcare, the press provides a modern platform adhering to international editorial integrity standards.
+            NextGen Innovation & Research Journals was established to address the critical need for rapid, rigorous, and completely unrestricted dissemination of advanced scientific and technical research. Specializing in computer science, artificial intelligence, cyber-physical systems, hardware architectures, and computational healthcare, the press provides a modern platform adhering to international editorial integrity standards.
           </p>
           <p>
             We believe scholarly knowledge is a global public good. All peer-reviewed articles published across our catalog are released under the Creative Commons Attribution 4.0 International License (CC BY 4.0), ensuring universal accessibility without subscription walls or reading barriers.

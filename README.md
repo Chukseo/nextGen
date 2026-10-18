@@ -1,7 +1,7 @@
-# NextGen Research and Innovation Press
+# NextGen Innovation & Research Journals
 ### Academic Journal Publishing Platform
 
-**NextGen Research and Innovation Press** is a modern, full-stack scholarly journal publishing platform following established academic editorial workflows, peer-review standards, and role-based access control, designed with an academic light aesthetic, deep navy and blue accents, and full integration with **PostgreSQL (Supabase)** and **Crossref DOI** services.
+**NextGen Innovation & Research Journals** is a modern, full-stack scholarly journal publishing platform following established academic editorial workflows, peer-review standards, and role-based access control, designed with an academic light aesthetic, deep navy and blue accents, and full integration with **PostgreSQL (Supabase)** and **Crossref DOI** services.
 
 ---
 

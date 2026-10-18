@@ -64,12 +64,12 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-3 group flex-shrink-0">
             <img
               src="/logo.png"
-              alt="NextGen Research & Innovation Press"
+              alt="NextGen Innovation & Research Journals"
               className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
             <div className="hidden sm:block">
               <div className="text-base xl:text-lg font-bold text-navy-950 scholarly-heading tracking-tight leading-tight whitespace-nowrap">
-                NextGen Research & Innovation Press
+                NextGen Innovation & Research Journals
               </div>
               <div className="text-[11px] xl:text-xs text-slate-500 font-medium tracking-wide whitespace-nowrap">
                 Scholarly Peer-Reviewed Journal Systems

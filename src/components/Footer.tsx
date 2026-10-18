@@ -27,7 +27,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              NextGen Research and Innovation Press is an independent digital scholarly publisher committed to high-standard peer review, open access dissemination, and persistent scholarly infrastructure.
+              NextGen Innovation & Research Journals is an independent digital scholarly publisher committed to high-standard peer review, open access dissemination, and persistent scholarly infrastructure.
             </p>
             <div className="pt-2 text-xs text-slate-400 space-y-1">
               <div className="flex items-center space-x-2">
@@ -95,7 +95,7 @@ export default function Footer() {
         {/* Bottom Legal bar */}
         <div className="pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 space-y-4 md:space-y-0">
           <div>
-            © {new Date().getFullYear()} NextGen Research and Innovation Press. All rights reserved. Content published under Creative Commons Attribution 4.0 International.
+            © {new Date().getFullYear()} NextGen Innovation & Research Journals. All rights reserved. Content published under Creative Commons Attribution 4.0 International.
           </div>
           <div className="flex space-x-6">
             <Link href="/about" className="hover:text-slate-400">About the Organization</Link>

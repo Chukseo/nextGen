@@ -87,7 +87,7 @@ export default async function HomePage() {
               <span>Open Access Scholarly Publishing Ecosystem</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold scholarly-heading tracking-tight leading-tight">
-              NextGen Research & Innovation Press
+              NextGen Innovation & Research Journals
             </h1>
             <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-light">
               Advancing high-impact, peer-reviewed scholarship across computing, artificial intelligence, cyber-physical engineering, and translational healthcare sciences.

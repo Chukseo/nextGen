@@ -33,7 +33,7 @@ export default async function JournalsPage() {
           Academic Journals
         </h1>
         <p className="text-sm text-slate-600 max-w-3xl">
-          NextGen Research and Innovation Press oversees peer-reviewed scholarly journals operating across foundational, experimental, and applied domains.
+          NextGen Innovation & Research Journals oversees peer-reviewed scholarly journals operating across foundational, experimental, and applied domains.
         </p>
       </div>
 

@@ -38,7 +38,7 @@ export function formatDOISuffix(journalSlug: string, year: number, sequenceNum: 
 export function generateCrossrefXML(data: CrossrefMetadataPayload): string {
   const batchId = `nextgen-dep-${Date.now()}`;
   const timestamp = Math.floor(Date.now() / 1000);
-  const depositorName = process.env.CROSSREF_DEPOSITOR_NAME || 'NextGen Research and Innovation Press';
+  const depositorName = process.env.CROSSREF_DEPOSITOR_NAME || 'NextGen Innovation & Research Journals';
   const depositorEmail = process.env.CROSSREF_DEPOSITOR_EMAIL || 'doi@nextgen-press.org';
 
   const contributorsXml = data.authors

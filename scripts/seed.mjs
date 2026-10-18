@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding NextGen Research and Innovation Press database...');
+  console.log('Seeding NextGen Innovation & Research Journals database...');
 
   // Clean existing data
   await prisma.aLM_cleanup?.(); // if any
@@ -44,7 +44,7 @@ async function main() {
       affiliation: 'NextGen Press Governance Board',
       country: 'United States',
       orcid: '0000-0002-1825-0097',
-      bio: 'Executive Director and Master Publisher at NextGen Research and Innovation Press.',
+      bio: 'Executive Director and Master Publisher at NextGen Innovation & Research Journals.',
       roleAssignments: {
         create: [
           { role: 'MASTER_ADMIN' },
@@ -171,7 +171,7 @@ async function main() {
       abbreviation: 'J. Sci. Technol. AI',
       description: 'A peer-reviewed, open-access international scholarly journal advancing foundational and applied innovations in computer science, machine intelligence, neural architectures, and scientific computing.',
       aimsScope: 'JSTAI publishes original research, systematic reviews, and technical notes spanning machine learning theory, autonomous systems, scalable cloud architectures, generative models, quantum algorithms, and computational physics. All submissions undergo double-anonymous peer review.',
-      publisher: 'NextGen Research and Innovation Press',
+      publisher: 'NextGen Innovation & Research Journals',
       printIssn: '2834-9102',
       onlineIssn: '2834-9110',
       peerReviewPolicy: 'Rigorous double-anonymous peer review conducted by independent domain experts. Minimum two review reports required prior to editorial decision.',
@@ -213,7 +213,7 @@ async function main() {
       abbreviation: 'NextGen Eng. Comput. Rev.',
       description: 'Disseminating rigorous theoretical, experimental, and applied engineering solutions for cyber-physical infrastructure, sustainable microelectronics, and advanced systems architecture.',
       aimsScope: 'Emphasizes high-impact contributions in embedded systems, renewable energy grid control, resilient telecommunications, robotic automation, and novel computing hardware.',
-      publisher: 'NextGen Research and Innovation Press',
+      publisher: 'NextGen Innovation & Research Journals',
       printIssn: '2941-1044',
       onlineIssn: '2941-1052',
       peerReviewPolicy: 'Double-anonymous peer review with comprehensive technical and reproducibility verifications.',
@@ -241,7 +241,7 @@ async function main() {
       abbreviation: 'Interdiscip. Health Life Sci.',
       description: 'Bridging computational medicine, genomics, clinical informatics, and biomedical engineering to accelerate translational healthcare breakthroughs.',
       aimsScope: 'Publishes interdisciplinary research combining AI-driven diagnostic imaging, biostatistics, synthetic biology, and clinical informatics with clinical trial datasets.',
-      publisher: 'NextGen Research and Innovation Press',
+      publisher: 'NextGen Innovation & Research Journals',
       printIssn: '2988-3412',
       onlineIssn: '2988-3420',
       peerReviewPolicy: 'Rigorous peer review with dedicated biostatistical screening.',
@@ -826,7 +826,7 @@ async function main() {
     data: [
       {
         key: 'PLATFORM_NAME',
-        value: 'NextGen Research and Innovation Press',
+        value: 'NextGen Innovation & Research Journals',
         description: 'Organization name'
       },
       {

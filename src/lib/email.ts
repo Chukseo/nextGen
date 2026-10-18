@@ -143,7 +143,7 @@ export function renderScholarlyEmail({
                 <tr>
                   <td>
                     <div style="font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">
-                      NextGen Research & Innovation Press
+                      NextGen Innovation & Research Journals
                     </div>
                     <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">
                       Peer-Reviewed Open Access Publishing
@@ -191,7 +191,7 @@ export function renderScholarlyEmail({
 
               <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #475569;">
                 <p style="margin: 0 0 4px 0; font-weight: 600; color: #0b192c;">Editorial Office</p>
-                <p style="margin: 0; color: #64748b;">NextGen Research and Innovation Press</p>
+                <p style="margin: 0; color: #64748b;">NextGen Innovation & Research Journals</p>
                 <p style="margin: 4px 0 0 0; color: #2563eb;">
                   <a href="mailto:editorial@nextgen-press.org" style="color: #2563eb; text-decoration: none;">editorial@nextgen-press.org</a>
                 </p>
@@ -203,7 +203,7 @@ export function renderScholarlyEmail({
           <tr>
             <td style="background-color: #f8fafc; padding: 24px 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.6;">
               <p style="margin: 0 0 6px 0; font-weight: 600; color: #334155;">
-                NextGen Research and Innovation Press • Lagos, Nigeria
+                NextGen Innovation & Research Journals • Lagos, Nigeria
               </p>
               <p style="margin: 0 0 10px 0;">
                 Crossref Digital Object Identifier (DOI) Member • Committee on Publication Ethics (COPE) Compliant
@@ -301,13 +301,13 @@ export async function sendWelcomeEmail({
 }) {
   const displayName = name || 'Scholar';
   const html = renderScholarlyEmail({
-    title: 'Welcome to NextGen Research and Innovation Press',
+    title: 'Welcome to NextGen Innovation & Research Journals',
     preheader: 'Your academic scholar portal account has been established.',
     badgeText: 'New Scholar Account',
     badgeColor: '#2563eb',
     recipientName: displayName,
     introParagraphs: [
-      'Welcome to the NextGen Research & Innovation Press publishing platform. Your scholarly account has been successfully provisioned.',
+      'Welcome to the NextGen Innovation & Research Journals publishing platform. Your scholarly account has been successfully provisioned.',
       'Through this unified academic portal, you can submit original manuscripts, monitor double-anonymous peer review progress, track editorial decisions, and explore peer-reviewed open access scholarship across our multidisciplinary journals.',
     ],
     detailsTable: [
@@ -325,7 +325,7 @@ export async function sendWelcomeEmail({
 
   return sendEmail({
     to: toEmail,
-    subject: 'Welcome to NextGen Research and Innovation Press | Scholar Portal',
+    subject: 'Welcome to NextGen Innovation & Research Journals | Scholar Portal',
     html,
   });
 }

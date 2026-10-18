@@ -94,7 +94,7 @@ export default async function ArticlesSearchPage({
           Scholarly Articles & Publications
         </h1>
         <p className="text-sm text-slate-600 max-w-3xl">
-          Search, read, and freely download verified peer-reviewed articles published by NextGen Research and Innovation Press.
+          Search, read, and freely download verified peer-reviewed articles published by NextGen Innovation & Research Journals.
         </p>
 
         {/* Search Bar Form */}
