@@ -7,6 +7,27 @@ import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
+async function checkJournalAuthorization(user: any, journalId: string): Promise<boolean> {
+  if (!user || !user.id) return false;
+  if (isMasterAdmin(user) || isEditor(user, journalId)) return true;
+
+  // Fresh database check in case session token is stale
+  try {
+    const dbRoles = await prisma.userRoleAssignment.findMany({
+      where: { userId: user.id },
+    });
+    const hasAdmin = dbRoles.some(r => r.role === 'MASTER_ADMIN' || r.role === 'JOURNAL_MANAGER');
+    if (hasAdmin) return true;
+
+    return dbRoles.some(
+      r => (r.role === 'EDITOR' || r.role === 'SECTION_EDITOR') && (!r.journalId || r.journalId === journalId)
+    );
+  } catch (err) {
+    console.error('Database role check error:', err);
+    return false;
+  }
+}
+
 export async function GET(
   req: Request,
   { params }: { params: { id: string } }
@@ -33,7 +54,7 @@ export async function GET(
               },
             },
           },
-          orderBy: { displayOrder: 'asc' },
+          orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
         },
       },
     });
@@ -78,38 +99,56 @@ export async function POST(
       return NextResponse.json({ error: 'Journal not found' }, { status: 404 });
     }
 
-    if (!isMasterAdmin(user) && !isEditor(user, journal.id)) {
-      return NextResponse.json({ error: 'Admin or Editor privileges required' }, { status: 403 });
+    const isAuthorized = await checkJournalAuthorization(user, journal.id);
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Administrator or Journal Editor privileges required.' }, { status: 403 });
     }
 
     const body = await req.json();
     const { userId, name, email, roleTitle, affiliation, orcid, displayOrder } = body;
 
-    if (!roleTitle || !affiliation) {
-      return NextResponse.json({ error: 'Role title and affiliation are required' }, { status: 400 });
+    if (!roleTitle || !roleTitle.trim()) {
+      return NextResponse.json({ error: 'Editorial role title is required.' }, { status: 400 });
     }
 
     let targetUserId = userId;
+    let targetName = name?.trim();
+    let targetEmail = email?.toLowerCase().trim();
+    let targetAffiliation = affiliation?.trim() || 'Academic Research Institution';
+    let targetOrcid = orcid?.trim() || null;
 
-    if (!targetUserId) {
-      if (!name || !email) {
-        return NextResponse.json({ error: 'Either select an existing user or provide name and email' }, { status: 400 });
+    if (targetUserId) {
+      const userById = await prisma.user.findUnique({ where: { id: targetUserId } });
+      if (userById) {
+        targetName = targetName || userById.name || 'Scholar Member';
+        targetEmail = targetEmail || userById.email;
+        targetAffiliation = targetAffiliation || userById.affiliation || 'Academic Research Institution';
+        targetOrcid = targetOrcid || userById.orcid;
+
+        // Ensure user has EDITOR role assignment for this journal
+        const hasRole = await prisma.userRoleAssignment.findFirst({
+          where: { userId: targetUserId, role: 'EDITOR', journalId: journal.id },
+        });
+        if (!hasRole) {
+          await prisma.userRoleAssignment.create({
+            data: { userId: targetUserId, role: 'EDITOR', journalId: journal.id },
+          }).catch(() => {});
+        }
       }
-
-      // Find or create user
+    } else if (targetEmail) {
       let existingUser = await prisma.user.findUnique({
-        where: { email: email.toLowerCase().trim() },
+        where: { email: targetEmail },
       });
 
       if (!existingUser) {
         const tempPassword = await bcrypt.hash('NextGenBoard2026!', 10);
         existingUser = await prisma.user.create({
           data: {
-            name: name.trim(),
-            email: email.toLowerCase().trim(),
+            name: targetName || 'Scholar Member',
+            email: targetEmail,
             passwordHash: tempPassword,
-            affiliation: affiliation.trim(),
-            orcid: orcid?.trim() || null,
+            affiliation: targetAffiliation,
+            orcid: targetOrcid,
             roleAssignments: {
               create: [
                 { role: 'EDITOR', journalId: journal.id },
@@ -117,13 +156,35 @@ export async function POST(
             },
           },
         });
+      } else {
+        // Update user profile info
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            ...(targetName && { name: targetName }),
+            ...(targetOrcid && { orcid: targetOrcid }),
+            ...(targetAffiliation && { affiliation: targetAffiliation }),
+          },
+        });
+
+        // Ensure user has EDITOR role assignment for this journal
+        const hasRole = await prisma.userRoleAssignment.findFirst({
+          where: { userId: existingUser.id, role: 'EDITOR', journalId: journal.id },
+        });
+        if (!hasRole) {
+          await prisma.userRoleAssignment.create({
+            data: { userId: existingUser.id, role: 'EDITOR', journalId: journal.id },
+          }).catch(() => {});
+        }
       }
 
       targetUserId = existingUser.id;
+    } else {
+      return NextResponse.json({ error: 'Please choose an existing user or enter scholar name and email.' }, { status: 400 });
     }
 
     // Determine display order
-    let order = typeof displayOrder === 'number' ? displayOrder : 0;
+    let order = typeof displayOrder === 'number' && displayOrder > 0 ? displayOrder : 0;
     if (order === 0) {
       const highest = await prisma.editorialBoardMember.findFirst({
         where: { journalId: journal.id },
@@ -141,14 +202,14 @@ export async function POST(
         },
       },
       update: {
-        affiliation: affiliation.trim(),
+        affiliation: targetAffiliation,
         displayOrder: order,
       },
       create: {
         journalId: journal.id,
         userId: targetUserId,
         roleTitle: roleTitle.trim(),
-        affiliation: affiliation.trim(),
+        affiliation: targetAffiliation,
         displayOrder: order,
       },
       include: {
@@ -166,7 +227,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: `${member.user.name} added to Editorial Board as ${member.roleTitle}.`,
+      message: `${member.user.name || 'Scholar'} appointed to Editorial Board as ${member.roleTitle}.`,
       member,
     });
   } catch (error: any) {
@@ -199,8 +260,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Journal not found' }, { status: 404 });
     }
 
-    if (!isMasterAdmin(user) && !isEditor(user, journal.id)) {
-      return NextResponse.json({ error: 'Admin or Editor privileges required' }, { status: 403 });
+    const isAuthorized = await checkJournalAuthorization(user, journal.id);
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Administrator or Journal Editor privileges required.' }, { status: 403 });
     }
 
     const body = await req.json();
@@ -268,8 +330,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Journal not found' }, { status: 404 });
     }
 
-    if (!isMasterAdmin(user) && !isEditor(user, journal.id)) {
-      return NextResponse.json({ error: 'Admin or Editor privileges required' }, { status: 403 });
+    const isAuthorized = await checkJournalAuthorization(user, journal.id);
+    if (!isAuthorized) {
+      return NextResponse.json({ error: 'Administrator or Journal Editor privileges required.' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);

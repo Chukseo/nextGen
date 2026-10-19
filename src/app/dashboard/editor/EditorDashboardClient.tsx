@@ -25,8 +25,10 @@ import {
   Edit3,
   Image as ImageIcon,
   Star,
+  Users,
 } from 'lucide-react';
 import ImportArticleModal from '@/components/ImportArticleModal';
+import AdminEditorialBoardModal from '@/components/AdminEditorialBoardModal';
 
 export default function EditorDashboardClient({
   submissions,
@@ -51,6 +53,7 @@ export default function EditorDashboardClient({
   const [doiModalOpen, setDoiModalOpen] = useState(false);
   const [createIssueModalOpen, setCreateIssueModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [boardModalJournal, setBoardModalJournal] = useState<any | null>(null);
 
   // Form states
   const [reviewerId, setReviewerId] = useState(reviewers[0]?.id || '');
@@ -487,6 +490,16 @@ export default function EditorDashboardClient({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {journals.length > 0 && (
+            <button
+              onClick={() => setBoardModalJournal(journals[0])}
+              className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 font-semibold text-xs px-3.5 py-2.5 rounded-lg shadow-xs transition-all"
+              title="Manage and appoint editorial board members"
+            >
+              <Users className="w-4 h-4 text-blue-600" />
+              <span>Editorial Board</span>
+            </button>
+          )}
           <button
             onClick={() => {
               if (journals[0]) setNewIssueJournalId(journals[0].id);
@@ -1668,6 +1681,16 @@ export default function EditorDashboardClient({
         onClose={() => setImportModalOpen(false)}
         journals={journals}
         onSuccess={(msg) => setFeedback({ type: 'success', text: msg })}
+      />
+
+      {/* EDITORIAL BOARD APPOINTMENT MODAL */}
+      <AdminEditorialBoardModal
+        isOpen={!!boardModalJournal}
+        onClose={() => setBoardModalJournal(null)}
+        journal={boardModalJournal}
+        onBoardUpdated={() => {
+          setTimeout(() => window.location.reload(), 1000);
+        }}
       />
     </div>
   );

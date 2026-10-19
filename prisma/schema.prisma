@@ -105,6 +105,10 @@ model Journal {
   contactEmail      String
   logoUrl           String?
   coverImageUrl     String?
+  aboutDetails      String?  @db.Text
+  privacyStatement  String?  @db.Text
+  contactDetails    String?  @db.Text
+  authorGuidelines  String?  @db.Text
   isActive          Boolean  @default(true)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

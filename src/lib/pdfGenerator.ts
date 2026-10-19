@@ -475,7 +475,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   pdfDoc.setTitle(data.title);
   pdfDoc.setAuthor(data.authors.map(a => `${a.firstName} ${a.lastName}`).join(', '));
   pdfDoc.setSubject(`Published in ${data.journalTitle}`);
-  pdfDoc.setKeywords(data.keywords || ['Open Access', 'Peer-Reviewed', 'NextGen Press']);
+  pdfDoc.setKeywords(data.keywords || ['Open Access', 'Peer-Reviewed', 'NextGen Innovation & Research Journals']);
   pdfDoc.setProducer('NextGen Innovation & Research Journals (Lagos, Nigeria)');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
 
@@ -600,7 +600,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       return { page, startY: y - 16 };
     } else {
       // FOLLOW-ON PAGES: COMPACT RUNNING HEADER
-      const firstAuthor = data.authors[0] ? `${data.authors[0].lastName} et al.` : 'NextGen Press';
+      const firstAuthor = data.authors[0] ? `${data.authors[0].lastName} et al.` : 'NextGen Journals';
       page.drawText(`${firstAuthor} • ${data.journalAbbreviation} (${data.year})`, {
         x: marginX,
         y,

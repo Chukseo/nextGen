@@ -55,7 +55,7 @@ export default async function IssuesPage({
               Current Issues & Archives
             </h1>
             <p className="text-sm text-slate-600 max-w-3xl mt-1">
-              Browse published volumes, current issues, and complete tables of contents across all NextGen Press academic journals.
+              Browse published volumes, current issues, and complete tables of contents across all NextGen Innovation & Research Journals.
             </p>
           </div>
 

@@ -21,7 +21,7 @@ export default function AboutPage() {
             Our Mission & Positioning
           </h2>
           <p>
-            NextGen Innovation & Research Journals was established to address the critical need for rapid, rigorous, and completely unrestricted dissemination of advanced scientific and technical research. Specializing in computer science, artificial intelligence, cyber-physical systems, hardware architectures, and computational healthcare, the press provides a modern platform adhering to international editorial integrity standards.
+            NextGen Innovation & Research Journals was established to address the critical need for rapid, rigorous, and completely unrestricted dissemination of advanced scientific and technical research. Specializing in computer science, artificial intelligence, cyber-physical systems, hardware architectures, and computational healthcare, the platform provides an advanced venue adhering to international editorial integrity standards.
           </p>
           <p>
             We believe scholarly knowledge is a global public good. All peer-reviewed articles published across our catalog are released under the Creative Commons Attribution 4.0 International License (CC BY 4.0), ensuring universal accessibility without subscription walls or reading barriers.
@@ -54,7 +54,7 @@ export default function AboutPage() {
             Editorial Independence & Governance
           </h2>
           <p>
-            Each journal under NextGen Press is governed by an independent Editor-in-Chief and an international editorial board of recognized scholars. Editorial decisions are made strictly on scholarly merits, technical rigour, and methodological soundness, free from commercial or political influence.
+            Each journal under NextGen Innovation & Research Journals is governed by an independent Editor-in-Chief and an international editorial board of recognized scholars. Editorial decisions are made strictly on scholarly merits, technical rigour, and methodological soundness, free from commercial or political influence.
           </p>
         </section>
 

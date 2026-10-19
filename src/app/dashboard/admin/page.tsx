@@ -23,7 +23,7 @@ export default async function AdminDashboardPage() {
       <div className="max-w-xl mx-auto py-20 px-4 text-center space-y-4">
         <h2 className="text-xl font-bold text-slate-800">Master Administrator Authority Required</h2>
         <p className="text-sm text-slate-600">
-          Your account ({user.email}) does not hold the MASTER_ADMIN governance role for NextGen Press.
+          Your account ({user.email}) does not hold the MASTER_ADMIN governance role for NextGen Innovation & Research Journals.
         </p>
       </div>
     );

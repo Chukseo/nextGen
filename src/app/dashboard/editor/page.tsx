@@ -107,7 +107,7 @@ export default async function EditorDashboardPage() {
           Editorial Queue & Decision Center
         </h1>
         <p className="text-xs text-slate-500">
-          Managing submissions following NextGen Press scholarly editorial workflow. Logged in as <strong>{user.name || user.email}</strong>.
+          Managing submissions following NextGen Innovation & Research Journals scholarly editorial workflow. Logged in as <strong>{user.name || user.email}</strong>.
         </p>
       </div>
 

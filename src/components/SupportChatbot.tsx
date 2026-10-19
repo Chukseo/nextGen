@@ -37,9 +37,9 @@ const KNOWLEDGE_BASE: {
 }[] = [
   {
     keywords: ['submit', 'submission', 'upload manuscript', 'how to submit', 'start submission'],
-    response: `To submit your manuscript to NextGen Press journals:
+    response: `To submit your manuscript to NextGen Innovation & Research Journals:
 1. Navigate to the **Submit Manuscript** portal.
-2. Select your target journal (JSTAI, NECR, or IHLS).
+2. Select your target journal.
 3. Upload your manuscript file (**Microsoft Word .docx, .doc** or **PDF**).
 4. Enter your title, abstract, and keywords.
 5. Add all co-author names, affiliations, emails, and ORCID identifiers.
@@ -52,7 +52,7 @@ const KNOWLEDGE_BASE: {
   },
   {
     keywords: ['format', 'file format', 'docx', 'doc', 'pdf', 'accepted files', 'file types'],
-    response: `NextGen Press accepts manuscripts in:
+    response: `NextGen Innovation & Research Journals accepts manuscripts in:
 - **Microsoft Word (.docx, .doc)**: Prepared in 11pt/12pt standard academic font, 1.5 line spacing, and numbered sections.
 - **Portable Document Format (.pdf)**: High-resolution typeset manuscripts or preprints with embedded fonts.
 - Tables should include descriptive titles and clear column headers.
@@ -64,7 +64,7 @@ const KNOWLEDGE_BASE: {
   },
   {
     keywords: ['peer review', 'review process', 'double blind', 'anonymous', 'how long', 'timeline'],
-    response: `NextGen Press practices **Double-Anonymous Peer Review**:
+    response: `NextGen Innovation & Research Journals practices **Double-Anonymous Peer Review**:
 - Both author identities and reviewer identities are strictly concealed throughout the evaluation.
 - **Initial Desk Review**: 3 to 5 business days.
 - **External Peer Review**: 2 to 4 weeks with at least two independent expert subject reviewers.
@@ -94,7 +94,7 @@ const KNOWLEDGE_BASE: {
   },
   {
     keywords: ['impact factor', 'jif', 'citescore', 'metrics', 'citation', 'ranking'],
-    response: `NextGen Press publishes transparent **2-Year Journal Impact Factor (JIF)** reports for all journals:
+    response: `NextGen Innovation & Research Journals publishes transparent **2-Year Journal Impact Factor (JIF)** reports for all journals:
 - Calculated using standard Clarivate / JCR formulas across all peer-reviewed articles and citation windows.
 - Includes 5-Year Impact Factor, CiteScore™ tracker, and Immediacy Index.
 - Click the **Impact Factor badge** on any journal masthead or sidebar to inspect the full report and formula breakdown.`,
@@ -104,7 +104,7 @@ const KNOWLEDGE_BASE: {
   },
   {
     keywords: ['index', 'indexing', 'google scholar', 'crossref', 'doi', 'scholar'],
-    response: `All published articles on NextGen Press are globally indexed:
+    response: `All published articles on NextGen Innovation & Research Journals are globally indexed:
 - **Google Scholar**: Server-side Highwire Press meta citation tags (\`citation_title\`, \`citation_author\`, \`citation_pdf_url\`, \`citation_doi\`, etc.).
 - **Crossref**: Persistent digital DOIs (\`10.5555/...\`).
 - **Dynamic XML Sitemap & Robots**: Continuous automated crawling for scholarly search engines.`,
@@ -143,7 +143,7 @@ const KNOWLEDGE_BASE: {
 - You can also leave a message right here in this chat, and our academic support team will follow up!`,
     links: [
       { label: 'Contact Us', href: '/contact' },
-      { label: 'About NextGen Press', href: '/about' }
+      { label: 'About the Journals', href: '/about' }
     ]
   }
 ];

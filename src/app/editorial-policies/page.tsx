@@ -53,7 +53,7 @@ export default function EditorialPoliciesPage() {
             3. Plagiarism Screening, Corrections, and Retractions
           </h2>
           <p>
-            NextGen Press enforces a zero-tolerance policy regarding plagiarism, data fabrication, and improper duplicate submission. When significant post-publication errors are identified, formal Errata or Corrigenda notices are published and linked via Crossref Crossmark. If fundamental invalidity is proven, the paper will be retracted following COPE Retraction Guidelines.
+            NextGen Innovation & Research Journals enforces a zero-tolerance policy regarding plagiarism, data fabrication, and improper duplicate submission. When significant post-publication errors are identified, formal Errata or Corrigenda notices are published and linked via Crossref Crossmark. If fundamental invalidity is proven, the paper will be retracted following COPE Retraction Guidelines.
           </p>
         </section>
 

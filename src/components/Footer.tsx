@@ -13,13 +13,13 @@ export default function Footer() {
               <div className="bg-white p-1 rounded-lg shadow-sm">
                 <img
                   src="/logo.png"
-                  alt="NextGen Press Logo"
+                  alt="NextGen Innovation & Research Journals Logo"
                   className="h-9 w-auto object-contain"
                 />
               </div>
               <div>
                 <span className="font-bold text-white text-base scholarly-heading block">
-                  NextGen Press
+                  NextGen Innovation & Research Journals
                 </span>
                 <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-medium">
                   Scholarly Publishing

@@ -215,7 +215,7 @@ export default async function HomePage() {
             <BookOpen className="w-10 h-10 text-slate-400 mx-auto" />
             <h3 className="font-bold text-slate-800 text-base">New Articles Forthcoming</h3>
             <p className="text-xs text-slate-500 max-w-lg mx-auto">
-              Articles across NextGen Press journals are currently advancing through editorial desk screening, double-anonymous peer review, and typeset production.
+              Articles across NextGen Innovation & Research Journals are currently advancing through editorial desk screening, double-anonymous peer review, and typeset production.
             </p>
             <div className="pt-2 flex justify-center gap-3">
               <Link
@@ -400,7 +400,7 @@ export default async function HomePage() {
           <div className="space-y-3 max-w-2xl">
             <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Call for Submissions</span>
             <h2 className="text-2xl sm:text-3xl font-bold scholarly-heading">
-              Publish Your Next Breakthrough with NextGen Press
+              Publish Your Next Breakthrough with NextGen Innovation & Research Journals
             </h2>
             <p className="text-sm text-slate-300 leading-relaxed">
               Experience a streamlined, respectful editorial process. Authors retain full copyright under Creative Commons Attribution licenses, with rapid desk screening, rigorous double-anonymous peer review, and automated Crossref DOI registration upon acceptance.

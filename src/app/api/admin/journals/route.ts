@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     const resolvedPeerReview = peerReviewPolicy || 'Rigorous double-anonymous peer review conducted by independent domain experts. Minimum two review reports required prior to editorial decision.';
     const resolvedOpenAccess = openAccessPolicy || 'Diamond Open Access: immediate and unrestricted global access with no fees for readers or authors under CC BY 4.0.';
     const resolvedLicensing = body.licensingPolicy || 'Creative Commons Attribution 4.0 International (CC BY 4.0)';
-    const resolvedApc = body.apcInfo || 'All article processing charges (APCs) are fully sponsored by NextGen Press Foundation for the current publishing year.';
+    const resolvedApc = body.apcInfo || 'All article processing charges (APCs) are fully sponsored by NextGen Innovation & Research Journals for the current publishing year.';
     const resolvedAims = aimsScope || `${title} publishes original peer-reviewed research, comprehensive literature reviews, and technical notes spanning foundational theory, experimental benchmarks, and applied innovations.`;
 
     const adminUser = session.user as any;
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
           slug: cleanSlug,
           title,
           abbreviation: abbreviation || title,
-          description: description || `Official peer-reviewed open access academic publication under NextGen Press.`,
+          description: description || `Official peer-reviewed open access academic publication under NextGen Innovation & Research Journals.`,
           aimsScope: resolvedAims,
           publisher: resolvedPublisher,
           licensingPolicy: resolvedLicensing,
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
             journalId: createdJournal.id,
             userId: adminUser.id,
             roleTitle: 'Editor-in-Chief',
-            affiliation: adminUser.affiliation || 'NextGen Press Governance Board',
+            affiliation: adminUser.affiliation || 'NextGen Innovation & Research Journals Governance Board',
             displayOrder: 1,
           },
         });

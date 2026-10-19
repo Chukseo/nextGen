@@ -774,7 +774,7 @@ export default function SubmissionWizard({
                     className="mt-1 rounded text-blue-700"
                   />
                   <label htmlFor="decl" className="text-xs text-amber-950 leading-relaxed font-medium">
-                    I confirm that this manuscript is original, has not been published previously, is not under consideration by another journal, complies with NextGen Press publication ethics guidelines, and all named co-authors have reviewed and approved the submission.
+                    I confirm that this manuscript is original, has not been published previously, is not under consideration by another journal, complies with NextGen Innovation & Research Journals publication ethics guidelines, and all named co-authors have reviewed and approved the submission.
                   </label>
                 </div>
               </div>

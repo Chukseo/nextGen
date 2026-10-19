@@ -14,7 +14,7 @@ export default function GlobalErrorPage({
 }) {
   useEffect(() => {
     // Log error details for diagnostics
-    console.error('NextGen Press caught application error:', error);
+    console.error('NextGen Innovation & Research Journals caught application error:', error);
   }, [error]);
 
   return (

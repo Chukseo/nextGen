@@ -8,7 +8,7 @@ import SupportChatbot from '@/components/SupportChatbot';
 export const metadata: Metadata = {
   title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
   description: 'Digital scholarly academic journal publisher advancing science, technology, artificial intelligence, computing, engineering, and interdisciplinary research.',
-  keywords: 'academic publishing, scholarly journals, peer review, open access, crossref doi, artificial intelligence research, nextgen press',
+  keywords: 'academic publishing, scholarly journals, peer review, open access, crossref doi, artificial intelligence research, nextgen innovation & research journals',
   icons: {
     icon: [
       { url: '/favicon.ico' },

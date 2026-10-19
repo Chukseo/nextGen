@@ -67,7 +67,17 @@ export async function PATCH(
       return NextResponse.json({ error: 'Journal not found' }, { status: 404 });
     }
 
-    if (!isMasterAdmin(user) && !isEditor(user, targetJournal.id)) {
+    let isAuthorized = isMasterAdmin(user) || isEditor(user, targetJournal.id);
+    if (!isAuthorized && user?.id) {
+      const dbRoles = await prisma.userRoleAssignment.findMany({ where: { userId: user.id } });
+      const hasAdmin = dbRoles.some(r => r.role === 'MASTER_ADMIN' || r.role === 'JOURNAL_MANAGER');
+      const hasEditor = dbRoles.some(
+        r => (r.role === 'EDITOR' || r.role === 'SECTION_EDITOR') && (!r.journalId || r.journalId === targetJournal.id)
+      );
+      isAuthorized = hasAdmin || hasEditor;
+    }
+
+    if (!isAuthorized) {
       return NextResponse.json({ error: 'Unauthorized to update this journal' }, { status: 403 });
     }
 
@@ -86,6 +96,10 @@ export async function PATCH(
       apcInfo,
       coverImageUrl,
       logoUrl,
+      aboutDetails,
+      privacyStatement,
+      contactDetails,
+      authorGuidelines,
       isActive,
     } = body;
 
@@ -105,6 +119,10 @@ export async function PATCH(
         ...(apcInfo !== undefined && { apcInfo }),
         ...(coverImageUrl !== undefined && { coverImageUrl }),
         ...(logoUrl !== undefined && { logoUrl }),
+        ...(aboutDetails !== undefined && { aboutDetails }),
+        ...(privacyStatement !== undefined && { privacyStatement }),
+        ...(contactDetails !== undefined && { contactDetails }),
+        ...(authorGuidelines !== undefined && { authorGuidelines }),
         ...(isActive !== undefined && { isActive }),
       },
     });

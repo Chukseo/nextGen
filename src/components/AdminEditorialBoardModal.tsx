@@ -14,7 +14,8 @@ import {
   UserCheck,
   Building,
   GraduationCap,
-  Mail
+  Mail,
+  Loader2
 } from 'lucide-react';
 
 interface EditorialMember {
@@ -55,6 +56,7 @@ export default function AdminEditorialBoardModal({
   const [boardMembers, setBoardMembers] = useState<EditorialMember[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [internalUsers, setInternalUsers] = useState<any[]>(platformUsers || []);
 
   // Form states
   const [showAddForm, setShowAddForm] = useState(false);
@@ -99,6 +101,19 @@ export default function AdminEditorialBoardModal({
   };
 
   useEffect(() => {
+    if (platformUsers && platformUsers.length > 0) {
+      setInternalUsers(platformUsers);
+    } else if (isOpen) {
+      fetch('/api/admin/users')
+        .then(res => res.json())
+        .then(data => {
+          if (data.users) setInternalUsers(data.users);
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, platformUsers]);
+
+  useEffect(() => {
     if (isOpen && journal) {
       fetchBoard();
       setShowAddForm(false);
@@ -117,18 +132,22 @@ export default function AdminEditorialBoardModal({
     setSuccessMsg(null);
 
     try {
-      const payload: any = {
-        roleTitle,
-        affiliation,
-      };
-
-      if (selectedUserId) {
-        payload.userId = selectedUserId;
-      } else {
-        payload.name = customName;
-        payload.email = customEmail;
-        if (orcid) payload.orcid = orcid;
+      if (!roleTitle.trim()) {
+        throw new Error('Please specify an editorial role title (e.g. Editor-in-Chief, Associate Editor).');
       }
+
+      if (!selectedUserId && (!customName.trim() || !customEmail.trim())) {
+        throw new Error('Please select an existing platform user or provide both full name and email.');
+      }
+
+      const payload = {
+        userId: selectedUserId || undefined,
+        name: customName.trim(),
+        email: customEmail.trim(),
+        roleTitle: roleTitle.trim(),
+        affiliation: affiliation.trim() || 'Academic Research Institution',
+        orcid: orcid.trim() || undefined,
+      };
 
       const res = await fetch(`/api/admin/journals/${journal.id}/editorial-board`, {
         method: 'POST',
@@ -137,7 +156,7 @@ export default function AdminEditorialBoardModal({
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to add member');
+      if (!res.ok) throw new Error(data.error || 'Failed to add member to editorial board');
 
       setSuccessMsg(data.message || 'Board member added successfully');
       setShowAddForm(false);
@@ -146,7 +165,7 @@ export default function AdminEditorialBoardModal({
       setCustomEmail('');
       setAffiliation('');
       setOrcid('');
-      fetchBoard();
+      await fetchBoard();
       if (onBoardUpdated) onBoardUpdated();
     } catch (err: any) {
       setError(err.message);
@@ -164,8 +183,8 @@ export default function AdminEditorialBoardModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           memberId,
-          roleTitle: editRoleTitle,
-          affiliation: editAffiliation,
+          roleTitle: editRoleTitle.trim(),
+          affiliation: editAffiliation.trim(),
           displayOrder: editOrder,
         }),
       });
@@ -175,7 +194,7 @@ export default function AdminEditorialBoardModal({
 
       setEditingMemberId(null);
       setSuccessMsg('Member updated successfully');
-      fetchBoard();
+      await fetchBoard();
       if (onBoardUpdated) onBoardUpdated();
     } catch (err: any) {
       setError(err.message);
@@ -200,7 +219,7 @@ export default function AdminEditorialBoardModal({
       if (!res.ok) throw new Error(data.error || 'Failed to delete member');
 
       setSuccessMsg('Member removed from Editorial Board');
-      fetchBoard();
+      await fetchBoard();
       if (onBoardUpdated) onBoardUpdated();
     } catch (err: any) {
       setError(err.message);
@@ -217,39 +236,32 @@ export default function AdminEditorialBoardModal({
     const target = boardMembers[targetIndex];
 
     try {
-      // Swap display order
-      await fetch(`/api/admin/journals/${journal.id}/editorial-board`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          memberId: current.id,
-          displayOrder: target.displayOrder,
+      await Promise.all([
+        fetch(`/api/admin/journals/${journal.id}/editorial-board`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberId: current.id, displayOrder: target.displayOrder }),
         }),
-      });
-
-      await fetch(`/api/admin/journals/${journal.id}/editorial-board`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          memberId: target.id,
-          displayOrder: current.displayOrder,
+        fetch(`/api/admin/journals/${journal.id}/editorial-board`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ memberId: target.id, displayOrder: current.displayOrder }),
         }),
-      });
-
-      fetchBoard();
+      ]);
+      await fetchBoard();
       if (onBoardUpdated) onBoardUpdated();
     } catch (err: any) {
-      setError(err.message);
+      setError('Failed to update display order: ' + err.message);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-xs">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
         <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/70">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shadow-xs">
               <Users className="w-5 h-5" />
             </div>
             <div>
@@ -297,7 +309,11 @@ export default function AdminEditorialBoardModal({
             </div>
             {!showAddForm && (
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={() => {
+                  setShowAddForm(true);
+                  setError(null);
+                  setSuccessMsg(null);
+                }}
                 className="inline-flex items-center space-x-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow-xs transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -324,7 +340,7 @@ export default function AdminEditorialBoardModal({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                {platformUsers.length > 0 && (
+                {internalUsers.length > 0 && (
                   <div className="md:col-span-2">
                     <label className="block font-semibold text-slate-700 mb-1">
                       Choose from Registered Platform Users (Optional)
@@ -335,21 +351,23 @@ export default function AdminEditorialBoardModal({
                         const val = e.target.value;
                         setSelectedUserId(val);
                         if (val) {
-                          const found = platformUsers.find(u => u.id === val);
+                          const found = internalUsers.find(u => u.id === val);
                           if (found) {
-                            setCustomName(found.name);
-                            setCustomEmail(found.email);
+                            setCustomName(found.name || '');
+                            setCustomEmail(found.email || '');
                             if (found.affiliation) setAffiliation(found.affiliation);
                             if (found.orcid) setOrcid(found.orcid);
                           }
+                        } else {
+                          setSelectedUserId('');
                         }
                       }}
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white"
                     >
                       <option value="">-- Or enter new scholar details below --</option>
-                      {platformUsers.map(u => (
+                      {internalUsers.map(u => (
                         <option key={u.id} value={u.id}>
-                          {u.name} ({u.email}) - {u.affiliation || 'No Affiliation'}
+                          {u.name || 'Scholar'} ({u.email}) {u.affiliation ? `- ${u.affiliation}` : ''}
                         </option>
                       ))}
                     </select>
@@ -360,7 +378,6 @@ export default function AdminEditorialBoardModal({
                   <label className="block font-semibold text-slate-700 mb-1">Scholar Full Name *</label>
                   <input
                     type="text"
-                    required
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value)}
                     placeholder="Prof. Jane Doe, Ph.D."
@@ -372,7 +389,6 @@ export default function AdminEditorialBoardModal({
                   <label className="block font-semibold text-slate-700 mb-1">Email Address *</label>
                   <input
                     type="email"
-                    required
                     value={customEmail}
                     onChange={(e) => setCustomEmail(e.target.value)}
                     placeholder="jane.doe@university.edu"
@@ -385,7 +401,6 @@ export default function AdminEditorialBoardModal({
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      required
                       value={roleTitle}
                       onChange={(e) => setRoleTitle(e.target.value)}
                       placeholder="e.g. Editor-in-Chief"
@@ -410,7 +425,6 @@ export default function AdminEditorialBoardModal({
                   <label className="block font-semibold text-slate-700 mb-1">Academic Affiliation & Institution *</label>
                   <input
                     type="text"
-                    required
                     value={affiliation}
                     onChange={(e) => setAffiliation(e.target.value)}
                     placeholder="e.g. Stanford University / MIT"
@@ -441,9 +455,10 @@ export default function AdminEditorialBoardModal({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-1.5 text-xs font-semibold bg-blue-700 hover:bg-blue-800 text-white rounded-lg shadow-xs disabled:opacity-50"
+                  className="px-4 py-1.5 text-xs font-semibold bg-blue-700 hover:bg-blue-800 text-white rounded-lg shadow-xs disabled:opacity-50 inline-flex items-center space-x-1.5"
                 >
-                  {submitting ? 'Appointing...' : 'Save Member to Board'}
+                  {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{submitting ? 'Appointing...' : 'Save Member to Board'}</span>
                 </button>
               </div>
             </form>
@@ -451,148 +466,146 @@ export default function AdminEditorialBoardModal({
 
           {/* Board Members Table / List */}
           {loading ? (
-            <div className="py-12 text-center text-xs text-slate-500">
-              Loading board members...
+            <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center space-x-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              <span>Loading current editorial board...</span>
             </div>
           ) : boardMembers.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-500 bg-slate-50 border border-dashed border-slate-200 rounded-xl space-y-2">
-              <Users className="w-8 h-8 text-slate-300 mx-auto" />
-              <p className="font-semibold text-slate-700">No board members appointed yet</p>
-              <p className="text-[11px] text-slate-400">Click &ldquo;Appoint New Board Member&rdquo; above to add members.</p>
+            <div className="py-12 text-center text-xs text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              No editorial board members appointed yet for {journal.title}.
             </div>
           ) : (
-            <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white">
+            <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white">
               {boardMembers.map((member, idx) => {
                 const isEditing = editingMemberId === member.id;
+
+                if (isEditing) {
+                  return (
+                    <div key={member.id} className="p-4 bg-slate-50 space-y-3 text-xs">
+                      <div className="font-bold text-slate-800">
+                        Editing appointment for {member.user.name}
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-slate-600 font-semibold mb-1">Role Title</label>
+                          <input
+                            type="text"
+                            value={editRoleTitle}
+                            onChange={(e) => setEditRoleTitle(e.target.value)}
+                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-600 font-semibold mb-1">Affiliation</label>
+                          <input
+                            type="text"
+                            value={editAffiliation}
+                            onChange={(e) => setEditAffiliation(e.target.value)}
+                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-600 font-semibold mb-1">Display Order</label>
+                          <input
+                            type="number"
+                            value={editOrder}
+                            onChange={(e) => setEditOrder(parseInt(e.target.value, 10) || 0)}
+                            className="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingMemberId(null)}
+                          className="px-3 py-1 text-slate-600 hover:bg-slate-200 rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(member.id)}
+                          disabled={submitting}
+                          className="px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded disabled:opacity-50"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={member.id}
-                    className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors"
+                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 transition-colors"
                   >
-                    {isEditing ? (
-                      <div className="w-full space-y-3 py-2">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-600 mb-0.5">Role Title</label>
-                            <input
-                              type="text"
-                              value={editRoleTitle}
-                              onChange={(e) => setEditRoleTitle(e.target.value)}
-                              className="w-full px-2.5 py-1.5 border border-slate-300 rounded"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-600 mb-0.5">Affiliation</label>
-                            <input
-                              type="text"
-                              value={editAffiliation}
-                              onChange={(e) => setEditAffiliation(e.target.value)}
-                              className="w-full px-2.5 py-1.5 border border-slate-300 rounded"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-600 mb-0.5">Display Order</label>
-                            <input
-                              type="number"
-                              value={editOrder}
-                              onChange={(e) => setEditOrder(parseInt(e.target.value) || 0)}
-                              className="w-full px-2.5 py-1.5 border border-slate-300 rounded"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => setEditingMemberId(null)}
-                            className="px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-200 rounded"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            disabled={submitting}
-                            onClick={() => handleSaveEdit(member.id)}
-                            className="px-3 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded shadow-xs"
-                          >
-                            Save Changes
-                          </button>
-                        </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-slate-900 text-sm">
+                          {member.user.name || 'Scholar Member'}
+                        </span>
+                        <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                          {member.roleTitle}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          #{member.displayOrder}
+                        </span>
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex items-start space-x-3 flex-1 min-w-0">
-                          {/* Order Buttons */}
-                          <div className="flex flex-col space-y-0.5 shrink-0 pt-0.5">
-                            <button
-                              type="button"
-                              disabled={idx === 0}
-                              onClick={() => handleMoveOrder(idx, 'up')}
-                              className="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-20"
-                              title="Move Up"
-                            >
-                              <ArrowUp className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={idx === boardMembers.length - 1}
-                              onClick={() => handleMoveOrder(idx, 'down')}
-                              className="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-20"
-                              title="Move Down"
-                            >
-                              <ArrowDown className="w-3 h-3" />
-                            </button>
-                          </div>
+                      <div className="text-xs text-slate-600 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span className="flex items-center gap-1">
+                          <Building className="w-3 h-3 text-slate-400" />
+                          <span>{member.affiliation || member.user.affiliation}</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-slate-500">
+                          <Mail className="w-3 h-3 text-slate-400" />
+                          <span>{member.user.email}</span>
+                        </span>
+                        {member.user.orcid && (
+                          <span className="text-emerald-700 font-mono text-[11px]">
+                            ORCID: {member.user.orcid}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center space-x-2 flex-wrap">
-                              <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                                {member.user.name}
-                              </span>
-                              <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                                {member.roleTitle}
-                              </span>
-                              {member.user.orcid && (
-                                <span className="text-[10px] text-emerald-700 font-mono">
-                                  ORCID: {member.user.orcid}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
-                              <Building className="w-3 h-3 text-slate-400" />
-                              <span>{member.affiliation}</span>
-                              <span className="text-slate-300">•</span>
-                              <Mail className="w-3 h-3 text-slate-400" />
-                              <span>{member.user.email}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-1 shrink-0 self-end sm:self-auto">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingMemberId(member.id);
-                              setEditRoleTitle(member.roleTitle);
-                              setEditAffiliation(member.affiliation);
-                              setEditOrder(member.displayOrder);
-                            }}
-                            className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-slate-100 rounded transition-colors"
-                            title="Edit Title & Affiliation"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteMember(member.id, member.user.name)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                            title="Remove from Board"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center space-x-1.5 self-end sm:self-center shrink-0">
+                      <button
+                        onClick={() => handleMoveOrder(idx, 'up')}
+                        disabled={idx === 0}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded hover:bg-slate-100"
+                        title="Move Up"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveOrder(idx, 'down')}
+                        disabled={idx === boardMembers.length - 1}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-30 rounded hover:bg-slate-100"
+                        title="Move Down"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingMemberId(member.id);
+                          setEditRoleTitle(member.roleTitle);
+                          setEditAffiliation(member.affiliation);
+                          setEditOrder(member.displayOrder);
+                        }}
+                        className="p-1.5 text-slate-600 hover:text-blue-700 rounded hover:bg-slate-100"
+                        title="Edit appointment"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteMember(member.id, member.user.name)}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50"
+                        title="Remove member"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -601,20 +614,15 @@ export default function AdminEditorialBoardModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-slate-100 flex justify-between items-center bg-slate-50 text-xs">
-          <a
-            href={`/journals/${journal.slug}/editorial-board`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-700 hover:underline font-semibold"
-          >
-            Preview Public Editorial Board &rarr;
-          </a>
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs text-slate-500">
+          <span>
+            Changes to the editorial board are instantly published to the journal's public directory.
+          </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition-colors"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-semibold transition-colors"
           >
-            Done
+            Close
           </button>
         </div>
       </div>

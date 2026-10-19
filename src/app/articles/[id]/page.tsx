@@ -55,7 +55,7 @@ export async function generateMetadata({
   const article = await getArticle(params.id);
   if (!article) {
     return {
-      title: 'Article Not Found | NextGen Press',
+      title: 'Article Not Found | NextGen Innovation & Research Journals',
       robots: { index: false, follow: false },
     };
   }

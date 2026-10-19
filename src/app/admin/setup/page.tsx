@@ -110,7 +110,7 @@ export default function AdminSetupPage() {
                   <span>First-Run Security Requirement</span>
                 </div>
                 <p>
-                  This one-time bootstrap allows the legitimate publisher owner to claim master governance of NextGen Press. The email entered below must strictly match the server environment variable <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">MASTER_ADMIN_EMAIL</code> ({designatedEmailMasked || 'configured on server'}).
+                  This one-time bootstrap allows the legitimate publisher owner to claim master governance of NextGen Innovation & Research Journals. The email entered below must strictly match the server environment variable <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">MASTER_ADMIN_EMAIL</code> ({designatedEmailMasked || 'configured on server'}).
                 </p>
               </div>
 
@@ -163,7 +163,7 @@ export default function AdminSetupPage() {
                     type="text"
                     value={affiliation}
                     onChange={(e) => setAffiliation(e.target.value)}
-                    placeholder="NextGen Press Governance Board"
+                    placeholder="NextGen Innovation & Research Journals Governance Board"
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
                   />
                 </div>
