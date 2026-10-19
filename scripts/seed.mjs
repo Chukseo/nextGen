@@ -178,7 +178,7 @@ async function main() {
       openAccessPolicy: 'Diamond Open Access: immediate and unrestricted global access with no fees for readers or authors.',
       licensingPolicy: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
       apcInfo: 'All article processing charges (APCs) are fully sponsored by NextGen Press Foundation for the current publishing year.',
-      contactEmail: 'jstai-editorial@nextgen-press.org',
+      contactEmail: 'jstai-nextgenjournals@gmail.com',
       logoUrl: '/logos/jstai-logo.svg',
       coverImageUrl: '/covers/jstai-cover.jpg',
       editorialBoard: {
@@ -220,7 +220,7 @@ async function main() {
       openAccessPolicy: 'Open Access under CC BY 4.0 license.',
       licensingPolicy: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
       apcInfo: 'Waived for academic institutions during the 2026 inaugural volume.',
-      contactEmail: 'necr-editorial@nextgen-press.org',
+      contactEmail: 'necr-nextgenjournals@gmail.com',
       editorialBoard: {
         create: [
           {
@@ -247,7 +247,7 @@ async function main() {
       peerReviewPolicy: 'Rigorous peer review with dedicated biostatistical screening.',
       openAccessPolicy: 'Immediate open access under Creative Commons Attribution 4.0.',
       licensingPolicy: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
-      contactEmail: 'ihls-editorial@nextgen-press.org',
+      contactEmail: 'ihls-nextgenjournals@gmail.com',
     }
   });
 

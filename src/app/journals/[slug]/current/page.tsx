@@ -181,7 +181,7 @@ export default async function JournalCurrentIssuePage({
                           </div>
 
                           <h4 className="text-base sm:text-lg font-bold text-slate-900 scholarly-heading hover:text-blue-700 transition-colors leading-snug">
-                            <Link href={`/articles/${article.id}`}>
+                            <Link href={`/articles/${article.slug || article.id}`}>
                               {article.title}
                             </Link>
                           </h4>
@@ -203,7 +203,7 @@ export default async function JournalCurrentIssuePage({
 
                         <div className="flex items-center gap-2 flex-shrink-0 pt-2 sm:pt-0">
                           <Link
-                            href={`/articles/${article.id}`}
+                            href={`/articles/${article.slug || article.id}`}
                             className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs px-3.5 py-1.5 rounded transition-colors"
                           >
                             Read Article

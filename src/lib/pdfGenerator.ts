@@ -744,7 +744,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   // Corresponding author footnote
   const corrAuthor = data.authors.find(a => a.isCorresponding) || data.authors[0];
   if (corrAuthor) {
-    const corrText = `* Corresponding Author: ${corrAuthor.firstName} ${corrAuthor.lastName} (${corrAuthor.email || 'editorial@nextgen-press.org'})`;
+    const corrText = `* Corresponding Author: ${corrAuthor.firstName} ${corrAuthor.lastName} (${corrAuthor.email || 'nextgenjournals@gmail.com'})`;
     activePage.drawText(corrText, {
       x: marginX,
       y: currentY,

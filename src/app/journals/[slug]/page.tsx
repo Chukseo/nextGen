@@ -144,7 +144,7 @@ export default async function JournalSlugPage({
                       </div>
 
                       <h3 className="text-lg font-bold text-slate-900 scholarly-heading hover:text-blue-700">
-                        <Link href={`/articles/${article.id}`}>{article.title}</Link>
+                        <Link href={`/articles/${article.slug || article.id}`}>{article.title}</Link>
                       </h3>
 
                       <p className="text-xs text-slate-600 font-medium">
@@ -157,7 +157,7 @@ export default async function JournalSlugPage({
 
                       <div className="pt-2 flex justify-end">
                         <Link
-                          href={`/articles/${article.id}`}
+                          href={`/articles/${article.slug || article.id}`}
                           className="text-xs font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1"
                         >
                           <span>Full Article & PDF</span>

@@ -204,7 +204,7 @@ export default async function IssuesPage({
                         <div key={article.id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row justify-between items-start gap-4">
                           <div className="space-y-1.5 flex-1">
                             <h4 className="text-base font-bold text-slate-900 scholarly-heading hover:text-blue-700">
-                              <Link href={`/articles/${article.id}`}>{article.title}</Link>
+                              <Link href={`/articles/${article.slug || article.id}`}>{article.title}</Link>
                             </h4>
                             <p className="text-xs text-slate-600 font-medium">{authors}</p>
                             {article.doi && (
@@ -219,7 +219,7 @@ export default async function IssuesPage({
                               <span className="text-slate-500">pp. {article.pageRange}</span>
                             )}
                             <Link
-                              href={`/articles/${article.id}`}
+                              href={`/articles/${article.slug || article.id}`}
                               className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded font-semibold transition-colors"
                             >
                               View Article

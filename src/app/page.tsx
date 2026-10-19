@@ -198,7 +198,7 @@ export default async function HomePage() {
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Recently Published Scholarship</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 scholarly-heading mt-1">
-              Latest Published Articles Across NextGen Press
+              ## Latest Published Articles Across NextGen
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Peer-reviewed open-access discoveries published in real time across all participating journals.
@@ -275,7 +275,7 @@ export default async function HomePage() {
                         </div>
                       )}
                       <h3 className="text-base font-bold text-slate-900 scholarly-heading group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
-                        <Link href={`/articles/${article.id}`}>
+                        <Link href={`/articles/${article.slug || article.id}`}>
                           {article.title}
                         </Link>
                       </h3>
@@ -301,7 +301,7 @@ export default async function HomePage() {
                       </span>
                     )}
                     <Link
-                      href={`/articles/${article.id}`}
+                      href={`/articles/${article.slug || article.id}`}
                       className="font-semibold text-blue-700 hover:text-blue-800 flex items-center space-x-1 ml-auto"
                     >
                       <span>Read Article</span>
@@ -321,7 +321,7 @@ export default async function HomePage() {
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Publishing Portfolio</span>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 scholarly-heading">
-              Journals Under NextGen Press
+              NextGen Innovation & Research Journals
             </h2>
             <p className="text-xs sm:text-sm text-slate-600">
               Each journal operates with an autonomous editorial board, dedicated reviewer pool, and independent publication schedule.

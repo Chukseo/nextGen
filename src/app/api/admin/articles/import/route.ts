@@ -7,6 +7,7 @@ import { logAuditEvent } from '@/lib/audit';
 import { uploadFile } from '@/lib/storage';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
+import { generateUniqueArticleSlug } from '@/lib/slug';
 
 export const dynamic = 'force-dynamic';
 
@@ -288,9 +289,11 @@ export async function POST(req: Request) {
         });
       }
 
-      // 3. Create PublishedArticle
+      // 3. Resolve slug and create PublishedArticle
+      const articleSlug = await generateUniqueArticleSlug(title, prisma);
       const publishedArticle = await tx.publishedArticle.create({
         data: {
+          slug: articleSlug,
           submissionId: submission.id,
           journalId,
           issueId: targetIssue.id,
@@ -365,7 +368,7 @@ export async function POST(req: Request) {
       success: true,
       message: `Article "${title}" directly imported and published successfully into ${journal.title} (Vol. ${targetIssue.volume?.volumeNumber || 1}, No. ${targetIssue.issueNumber}).`,
       articleId: result.publishedArticle.id,
-      articleUrl: `/articles/${result.publishedArticle.id}`,
+      articleUrl: `/articles/${result.publishedArticle.slug || result.publishedArticle.id}`,
     });
   } catch (error: any) {
     console.error('Direct article import error:', error);

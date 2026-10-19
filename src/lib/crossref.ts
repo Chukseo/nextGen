@@ -218,7 +218,7 @@ export async function depositDOI({
   }
 
   const siteUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  const resourceUrl = `${siteUrl}/articles/${submission.publishedArticle?.id || submission.id}`;
+  const resourceUrl = `${siteUrl}/articles/${submission.publishedArticle?.slug || submission.publishedArticle?.id || submission.id}`;
 
   const crossrefPayload: CrossrefMetadataPayload = {
     journalTitle: submission.journal.title,

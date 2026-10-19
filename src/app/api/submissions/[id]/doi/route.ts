@@ -46,7 +46,7 @@ export async function GET(
     const fullDoi = submission.doiRecord?.doi || `${prefix}/${suffix}`;
 
     const siteUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const resourceUrl = `${siteUrl}/articles/${submission.publishedArticle?.id || submission.id}`;
+    const resourceUrl = `${siteUrl}/articles/${submission.publishedArticle?.slug || submission.publishedArticle?.id || submission.id}`;
 
     const previewXml = generateCrossrefXML({
       journalTitle: submission.journal.title,

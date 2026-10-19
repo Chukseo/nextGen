@@ -29,7 +29,21 @@ export default function ArticleDetailClient({
   const [downloadsCount, setDownloadsCount] = useState<number>(article.downloadsCount || 0);
 
   const publicationYear = new Date(article.publishedAt).getFullYear();
-  const authors = article.submission.coAuthors;
+  const rawAuthors = article.submission?.coAuthors || [];
+  const leadAuthor = article.submission?.author;
+  const authors = rawAuthors.length > 0
+    ? rawAuthors
+    : leadAuthor
+    ? [
+        {
+          id: leadAuthor.id || 'lead',
+          firstName: leadAuthor.name?.split(' ')[0] || 'Lead',
+          lastName: leadAuthor.name?.split(' ').slice(1).join(' ') || 'Author',
+          affiliation: leadAuthor.affiliation || 'Academic Research Institution',
+          isCorresponding: true,
+        },
+      ]
+    : [];
 
   const citationData = {
     title: article.title,

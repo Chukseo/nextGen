@@ -141,7 +141,7 @@ export default async function IssueDetailPage({
                 <div key={article.id} className="py-5 first:pt-0 last:pb-0 flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div className="space-y-2 flex-1">
                     <h3 className="text-lg font-bold text-slate-900 scholarly-heading hover:text-blue-700">
-                      <Link href={`/articles/${article.id}`}>{article.title}</Link>
+                      <Link href={`/articles/${article.slug || article.id}`}>{article.title}</Link>
                     </h3>
                     <p className="text-xs text-slate-600 font-medium">{authors}</p>
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
@@ -156,7 +156,7 @@ export default async function IssueDetailPage({
 
                   <div className="flex items-center space-x-3 text-xs flex-shrink-0">
                     <Link
-                      href={`/articles/${article.id}`}
+                      href={`/articles/${article.slug || article.id}`}
                       className="bg-blue-700 hover:bg-blue-800 text-white px-3.5 py-1.5 rounded font-semibold transition-colors"
                     >
                       Read Article

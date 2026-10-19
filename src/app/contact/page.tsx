@@ -7,7 +7,7 @@ export default function ContactPage() {
       <div className="border-b border-slate-200 pb-6 space-y-2">
         <span className="text-xs font-bold text-blue-700 uppercase tracking-widest">Inquiries & Support</span>
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 scholarly-heading">
-          Contact NextGen Press
+          Contact NextGen
         </h1>
         <p className="text-base text-slate-600 leading-relaxed font-light">
           Reach the editorial office, technical publication support, or journal leadership.
@@ -24,7 +24,7 @@ export default function ContactPage() {
               <Mail className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-slate-900 block">General Submissions</span>
-                <span className="text-slate-600">editorial@nextgen-press.org</span>
+                <span className="text-slate-600">editorial@nextgen.org</span>
               </div>
             </div>
 
@@ -53,15 +53,15 @@ export default function ContactPage() {
           <div className="space-y-3">
             <div>
               <span className="font-bold text-slate-900 block">Journal of Science, Technology & AI (JSTAI)</span>
-              <span className="text-blue-700">jstai-editorial@nextgen-press.org</span>
+              <span className="text-blue-700">jstai-nextgenjournals@gmail.com</span>
             </div>
             <div>
               <span className="font-bold text-slate-900 block">NextGen Engineering & Computing Review (NECR)</span>
-              <span className="text-blue-700">necr-editorial@nextgen-press.org</span>
+              <span className="text-blue-700">necr-nextgenjournals@gmail.com</span>
             </div>
             <div>
               <span className="font-bold text-slate-900 block">Interdisciplinary Health & Life Sciences (IHLS)</span>
-              <span className="text-blue-700">ihls-editorial@nextgen-press.org</span>
+              <span className="text-blue-700">ihls-nextgenjournals@gmail.com</span>
             </div>
           </div>
         </div>

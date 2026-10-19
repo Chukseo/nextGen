@@ -32,11 +32,11 @@ export default function Footer() {
             <div className="pt-2 text-xs text-slate-400 space-y-1">
               <div className="flex items-center space-x-2">
                 <Mail className="w-3.5 h-3.5 text-blue-400" />
-                <span>editorial@nextgen-press.org</span>
+                <span>nextgenjournals@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Globe className="w-3.5 h-3.5 text-blue-400" />
-                <span>Lagos, Nigeria</span>
+                <span>London, UK</span>
               </div>
             </div>
           </div>

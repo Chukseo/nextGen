@@ -221,7 +221,7 @@ export default async function ArticlesSearchPage({
                     </div>
 
                     <h2 className="text-xl font-bold text-slate-900 scholarly-heading hover:text-blue-700">
-                      <Link href={`/articles/${article.id}`}>{article.title}</Link>
+                      <Link href={`/articles/${article.slug || article.id}`}>{article.title}</Link>
                     </h2>
 
                     <p className="text-xs text-slate-700 font-semibold">
@@ -253,7 +253,7 @@ export default async function ArticlesSearchPage({
                       )}
                       <div className="flex items-center space-x-3 ml-auto">
                         <Link
-                          href={`/articles/${article.id}`}
+                          href={`/articles/${article.slug || article.id}`}
                           className="font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1"
                         >
                           <span>View Article Details</span>

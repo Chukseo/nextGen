@@ -138,7 +138,7 @@ const KNOWLEDGE_BASE: {
   {
     keywords: ['contact', 'email', 'editorial office', 'help', 'editor email', 'support'],
     response: `You can reach our administrative and editorial offices:
-- **General Inquiries**: \`editorial@nextgen-press.org\`
+- **General Inquiries**: \`nextgenjournals@gmail.com\`
 - **Office**: Lagos, Nigeria
 - You can also leave a message right here in this chat, and our academic support team will follow up!`,
     links: [
@@ -211,7 +211,7 @@ export default function SupportChatbot() {
         botResponse = matched.response;
         botLinks = matched.links;
       } else {
-        botResponse = `Thank you for your inquiry. For specific queries regarding "${text}", please review our Editorial Guidelines or contact the managing editorial office at editorial@nextgen-press.org. Our editorial desk is available to assist you Monday through Friday.`;
+        botResponse = `Thank you for your inquiry. For specific queries regarding "${text}", please review our Editorial Guidelines or contact the managing editorial office at nextgenjournals@gmail.com. Our editorial desk is available to assist you Monday through Friday.`;
         botLinks = [
           { label: 'Author Guidelines', href: '/submit' },
           { label: 'Contact Office', href: '/contact' }

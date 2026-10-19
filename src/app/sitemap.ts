@@ -99,13 +99,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
       select: {
         id: true,
+        slug: true,
         updatedAt: true,
         publishedAt: true,
       },
     });
 
     const articleRoutes: MetadataRoute.Sitemap = articles.map((art) => ({
-      url: `${baseUrl}/articles/${art.id}`,
+      url: `${baseUrl}/articles/${art.slug || art.id}`,
       lastModified: art.updatedAt || art.publishedAt,
       changeFrequency: 'monthly' as const,
       priority: 0.9,

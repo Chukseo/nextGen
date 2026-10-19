@@ -15,7 +15,7 @@ export function getEmailConfig(): EmailConfig {
     port: parseInt(process.env.EMAIL_SERVER_PORT || '587', 10),
     user: process.env.EMAIL_SERVER_USER || '',
     pass: process.env.EMAIL_SERVER_PASSWORD || '',
-    from: process.env.EMAIL_FROM || 'NextGen Press Editorial <editorial@nextgen-press.org>',
+    from: process.env.EMAIL_FROM || 'NextGen Press Editorial <nextgenjournals@gmail.com>',
   };
 }
 
@@ -193,7 +193,7 @@ export function renderScholarlyEmail({
                 <p style="margin: 0 0 4px 0; font-weight: 600; color: #0b192c;">Editorial Office</p>
                 <p style="margin: 0; color: #64748b;">NextGen Innovation & Research Journals</p>
                 <p style="margin: 4px 0 0 0; color: #2563eb;">
-                  <a href="mailto:editorial@nextgen-press.org" style="color: #2563eb; text-decoration: none;">editorial@nextgen-press.org</a>
+                  <a href="mailto:nextgenjournals@gmail.com" style="color: #2563eb; text-decoration: none;">nextgenjournals@gmail.com</a>
                 </p>
               </div>
             </td>

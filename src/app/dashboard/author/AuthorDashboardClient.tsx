@@ -358,7 +358,7 @@ export default function AuthorDashboardClient({ submissions }: { submissions: an
                       {/* View Published Article */}
                       {sub.status === 'PUBLISHED' && sub.publishedArticle && (
                         <Link
-                          href={`/articles/${sub.publishedArticle.id || sub.id}`}
+                          href={`/articles/${sub.publishedArticle.slug || sub.publishedArticle.id || sub.id}`}
                           className="inline-flex items-center space-x-1 py-1.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded font-medium transition-colors shadow-xs"
                         >
                           <span>View Published Article</span>

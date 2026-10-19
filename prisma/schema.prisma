@@ -339,6 +339,7 @@ model Issue {
 
 model PublishedArticle {
   id             String    @id @default(cuid())
+  slug           String?   @unique
   submissionId   String    @unique
   journalId      String
   issueId        String

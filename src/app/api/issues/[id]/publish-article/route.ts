@@ -9,6 +9,7 @@ import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
 import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } from '@/lib/pdfGenerator';
 import { uploadFile, getFileBuffer } from '@/lib/storage';
+import { generateUniqueArticleSlug } from '@/lib/slug';
 
 export const dynamic = 'force-dynamic';
 
@@ -203,12 +204,20 @@ export async function POST(
       }
     }
 
-    // 3. Atomic transaction to publish article & record DOI
+    // 3. Resolve stable slug for the article
+    const existingPub = await prisma.publishedArticle.findUnique({
+      where: { submissionId: submission.id },
+      select: { id: true, slug: true },
+    });
+    const articleSlug = existingPub?.slug || await generateUniqueArticleSlug(submission.title, prisma, existingPub?.id);
+
+    // 4. Atomic transaction to publish article & record DOI
     const published = await prisma.$transaction(async (tx) => {
       // 1. Create or update PublishedArticle
       const pubArt = await tx.publishedArticle.upsert({
         where: { submissionId: submission.id },
         update: {
+          slug: articleSlug,
           issueId: issue.id,
           journalId: issue.journalId,
           title: submission.title,
@@ -224,6 +233,7 @@ export async function POST(
           publishedAt: publishedDate,
         },
         create: {
+          slug: articleSlug,
           submissionId: submission.id,
           issueId: issue.id,
           journalId: issue.journalId,
@@ -293,7 +303,7 @@ export async function POST(
       type: 'ARTICLE_PUBLISHED',
       title: `Article Published: ${submission.title}`,
       message: `Your article has been officially published in ${issue.journal.title}, Volume ${issue.volume.volumeNumber}, Issue ${issue.issueNumber}. Assigned DOI: ${finalDoi}.`,
-      linkUrl: `/articles/${published.id}`,
+      linkUrl: `/articles/${published.slug || published.id}`,
     });
 
     await logAuditEvent({
