@@ -117,7 +117,10 @@ export async function GET(
     const pdfBytes = await generateScholarlyArticlePdf({
       journalTitle: article.journal.title,
       journalAbbreviation: article.journal.abbreviation,
+      journalSlug: article.journal.slug,
+      journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${article.journal.slug}`,
       onlineIssn: article.journal.onlineIssn,
+      printIssn: article.journal.printIssn,
       volumeNumber: article.issue?.volume?.volumeNumber || 1,
       issueNumber: article.issue?.issueNumber || 1,
       year: article.issue?.year || new Date().getFullYear(),

@@ -69,7 +69,7 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-white tracking-wider uppercase">Scholarly Standards</h4>
             <p className="text-xs text-slate-400 leading-relaxed">
-              All articles are assigned persistent Digital Object Identifiers (DOIs) registered with Crossref and indexed for long-term digital preservation.
+              Each journal under NextGen is governed by an independent Editor-in-Chief across different Universities in the world and an international editorial board of recognized scholars. Editorial decisions are made strictly on scholarly merits, technical rigour and methodological soundness, free from commercial or political influence.
             </p>
             <div className="grid grid-cols-2 gap-2 pt-2">
               <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center">

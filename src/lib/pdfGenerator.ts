@@ -41,7 +41,10 @@ export type ManuscriptContentBlock =
 export interface ScholarlyPdfData {
   journalTitle: string;
   journalAbbreviation: string;
+  journalSlug?: string | null;
+  journalUrl?: string | null;
   onlineIssn?: string | null;
+  printIssn?: string | null;
   volumeNumber: number;
   issueNumber: number;
   year: number;
@@ -568,26 +571,28 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       });
 
       y -= 12;
-      const doiText = data.doi ? `https://doi.org/${data.doi}` : 'https://nextgen-press.org';
-      page.drawText(doiText, {
+      const siteBase = process.env.NEXTAUTH_URL || 'https://nextgenjournals.org';
+      const journalUrl = data.journalUrl || (data.journalSlug ? `${siteBase}/journals/${data.journalSlug}` : siteBase);
+      page.drawText(journalUrl, {
         x: marginX,
         y,
         size: 7.5,
-        font: helveticaOblique,
+        font: helveticaBold,
         color: bluePrimary,
       });
 
-      if (data.onlineIssn) {
-        const issnText = `e-ISSN: ${data.onlineIssn}`;
-        const issnWidth = helvetica.widthOfTextAtSize(issnText, 7.5);
-        page.drawText(issnText, {
-          x: pageWidth - marginX - issnWidth,
-          y,
-          size: 7.5,
-          font: helvetica,
-          color: slateMuted,
-        });
-      }
+      const issnParts: string[] = [];
+      if (data.onlineIssn) issnParts.push(`Online ISSN: ${data.onlineIssn}`);
+      if (data.printIssn) issnParts.push(`Print ISSN: ${data.printIssn}`);
+      const issnDisplay = issnParts.length > 0 ? issnParts.join('  •  ') : (data.onlineIssn ? `ISSN: ${data.onlineIssn}` : 'ISSN: Pending');
+      const issnWidth = helvetica.widthOfTextAtSize(issnDisplay, 7.5);
+      page.drawText(issnDisplay, {
+        x: pageWidth - marginX - issnWidth,
+        y,
+        size: 7.5,
+        font: helvetica,
+        color: slateMuted,
+      });
 
       y -= 10;
       page.drawLine({
@@ -752,33 +757,12 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       font: helveticaOblique,
       color: slateMuted,
     });
-    currentY -= 13;
+    currentY -= 15;
+  } else {
+    currentY -= 6;
   }
 
-  // 5. Editorial Timeline box
-  currentY -= 3;
-  const boxHeight = 20;
-  activePage.drawRectangle({
-    x: marginX,
-    y: currentY - boxHeight + 6,
-    width: contentWidth,
-    height: boxHeight,
-    color: slateLight,
-  });
-
-  const pubDateStr = new Date(data.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  const metaText = `Received: ${data.receivedAt ? new Date(data.receivedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recent'}   |   Accepted: ${data.acceptedAt ? new Date(data.acceptedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recent'}   |   Published Online: ${pubDateStr}`;
-  activePage.drawText(metaText, {
-    x: marginX + 10,
-    y: currentY - 5,
-    size: 7.5,
-    font: helvetica,
-    color: slateDark,
-  });
-
-  currentY -= (boxHeight + 14);
-
-  // 6. Abstract
+  // 5. Abstract
   activePage.drawText('ABSTRACT', {
     x: marginX,
     y: currentY,

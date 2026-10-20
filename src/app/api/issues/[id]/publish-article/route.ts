@@ -155,7 +155,10 @@ export async function POST(
         const pdfBytes = await generateScholarlyArticlePdf({
           journalTitle: issue.journal.title,
           journalAbbreviation: issue.journal.abbreviation,
+          journalSlug: issue.journal.slug,
+          journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${issue.journal.slug}`,
           onlineIssn: issue.journal.onlineIssn,
+          printIssn: issue.journal.printIssn,
           volumeNumber: issue.volume.volumeNumber,
           issueNumber: issue.issueNumber,
           year: issue.year,

@@ -13,7 +13,11 @@ import {
   ExternalLink,
   Users,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  MapPin,
+  Phone,
+  Mail,
+  Globe
 } from 'lucide-react';
 import prisma from '@/lib/prisma';
 
@@ -390,6 +394,90 @@ export default async function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Strategic Publishing Partnership Card */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/40 rounded-3xl border border-slate-200/90 shadow-lg p-8 sm:p-12">
+          {/* Decorative glowing gradient backdrop */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-0 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -z-0 pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl">
+              <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200">
+                <Award className="w-3.5 h-3.5 text-blue-600" />
+                <span>Strategic Scholarly Publishing Partnership</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 scholarly-heading tracking-tight">
+                LOU Publishing and Information Services
+              </h2>
+
+              <p className="text-sm text-slate-600 leading-relaxed font-normal">
+                NextGen Innovation & Research Journals proudly collaborates with <strong>LOU Publishing and Information Services</strong> to elevate scholarly communication, bibliographic archiving, and open-science digital distribution across African and international research communities.
+              </p>
+
+              {/* Contact Directory Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-slate-700">
+                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Headquarters</span>
+                    <span>20 Nnamdi Crescent Street Asaba, Delta State, Nigeria</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <Phone className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Direct Telephone</span>
+                    <a href="tel:+2348055821283" className="text-blue-700 font-semibold hover:underline">+234 8055821283</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <Mail className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Official Email</span>
+                    <a href="mailto:loupublishinginfo@gmail.com" className="text-blue-700 font-semibold hover:underline truncate block">loupublishinginfo@gmail.com</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <Globe className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Publishing Web Portal</span>
+                    <a href="https://loupublishing.onrender.com" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-semibold hover:underline inline-flex items-center gap-1">
+                      <span>loupublishing.onrender.com</span>
+                      <ExternalLink className="w-3 h-3 text-blue-500" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action CTA */}
+            <div className="lg:w-72 w-full flex flex-col justify-center items-center text-center p-6 bg-navy-950 text-white rounded-2xl shadow-md border border-navy-800 space-y-4 shrink-0">
+              <div className="w-14 h-14 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-2xl flex items-center justify-center">
+                <Globe className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-base text-white">Partner Portal</h4>
+                <p className="text-xs text-slate-300">Explore bibliographic services, monographs, and academic archives.</p>
+              </div>
+              <a
+                href="https://loupublishing.onrender.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group"
+              >
+                <span>Visit LOU Publishing</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+            </div>
           </div>
         </div>
       </section>

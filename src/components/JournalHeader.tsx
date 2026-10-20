@@ -51,13 +51,16 @@ export default function JournalHeader({ journal, activeTab }: JournalHeaderProps
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const isAboutActive = activeTab === 'about' || activeTab === 'privacy' || activeTab === 'contact';
+  const isAboutActive =
+    activeTab === 'about' ||
+    activeTab === 'privacy' ||
+    activeTab === 'contact' ||
+    activeTab === 'editorial-board' ||
+    activeTab === 'guidelines';
 
   const otherTabs = [
     { key: 'current', label: 'Current Issue', href: `/journals/${journal.slug}/current`, icon: BookOpen },
     { key: 'archive', label: 'Issue Archive', href: `/journals/${journal.slug}/archive`, icon: Layers },
-    { key: 'editorial-board', label: 'Editorial Board', href: `/journals/${journal.slug}/editorial-board`, icon: Users },
-    { key: 'guidelines', label: 'Author Guidelines', href: `/journals/${journal.slug}/guidelines`, icon: FileText },
   ];
 
   return (
@@ -141,9 +144,9 @@ export default function JournalHeader({ journal, activeTab }: JournalHeaderProps
 
               {/* Dropdown Items */}
               {aboutDropdownOpen && (
-                <div className="absolute left-0 top-full mt-0 w-60 rounded-xl bg-white text-slate-800 shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                    Journal Information & Portals
+                <div className="absolute left-0 top-full mt-0 w-64 rounded-xl bg-white text-slate-800 shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    Journal Information & Governance
                   </div>
 
                   <Link
@@ -157,6 +160,34 @@ export default function JournalHeader({ journal, activeTab }: JournalHeaderProps
                     <div>
                       <div className="font-semibold">About & Scope</div>
                       <div className="text-[10px] text-slate-500 font-normal">Journal background & research aims</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={`/journals/${journal.slug}/editorial-board`}
+                    onClick={() => setAboutDropdownOpen(false)}
+                    className={`flex items-center space-x-2.5 px-3.5 py-2.5 text-xs hover:bg-slate-50 transition-colors ${
+                      activeTab === 'editorial-board' ? 'bg-blue-50/80 text-blue-700 font-bold' : 'text-slate-700'
+                    }`}
+                  >
+                    <Users className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <div className="font-semibold">Editorial Board</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Editor-in-Chief & board members</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href={`/journals/${journal.slug}/guidelines`}
+                    onClick={() => setAboutDropdownOpen(false)}
+                    className={`flex items-center space-x-2.5 px-3.5 py-2.5 text-xs hover:bg-slate-50 transition-colors ${
+                      activeTab === 'guidelines' ? 'bg-blue-50/80 text-blue-700 font-bold' : 'text-slate-700'
+                    }`}
+                  >
+                    <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <div className="font-semibold">Author Guidelines</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Submission format & instructions</div>
                     </div>
                   </Link>
 

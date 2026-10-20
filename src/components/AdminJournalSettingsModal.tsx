@@ -11,8 +11,10 @@ import {
   AlertCircle,
   Loader2,
   Save,
-  RotateCcw
+  RotateCcw,
+  BookOpen
 } from 'lucide-react';
+import { generateDefaultAuthorGuidelines } from '@/lib/guidelinesGenerator';
 
 interface AdminJournalSettingsModalProps {
   isOpen: boolean;
@@ -26,8 +28,14 @@ interface AdminJournalSettingsModalProps {
     privacyStatement?: string | null;
     contactDetails?: string | null;
     contactEmail?: string | null;
+    authorGuidelines?: string | null;
+    aimsScope?: string | null;
+    peerReviewPolicy?: string | null;
+    openAccessPolicy?: string | null;
+    licensingPolicy?: string | null;
+    apcInfo?: string | null;
   } | null;
-  initialTab?: 'about' | 'privacy' | 'contact';
+  initialTab?: 'about' | 'privacy' | 'contact' | 'guidelines';
   onSaved?: () => void;
 }
 
@@ -38,10 +46,11 @@ export default function AdminJournalSettingsModal({
   initialTab = 'about',
   onSaved,
 }: AdminJournalSettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'about' | 'privacy' | 'contact'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'about' | 'privacy' | 'contact' | 'guidelines'>(initialTab);
   const [aboutDetails, setAboutDetails] = useState('');
   const [privacyStatement, setPrivacyStatement] = useState('');
   const [contactDetails, setContactDetails] = useState('');
+  const [authorGuidelines, setAuthorGuidelines] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -52,6 +61,7 @@ export default function AdminJournalSettingsModal({
       setAboutDetails(journal.aboutDetails || '');
       setPrivacyStatement(journal.privacyStatement || '');
       setContactDetails(journal.contactDetails || '');
+      setAuthorGuidelines(journal.authorGuidelines || '');
       setError(null);
       setSuccessMsg(null);
     }
@@ -73,6 +83,8 @@ export default function AdminJournalSettingsModal({
         payload.privacyStatement = privacyStatement;
       } else if (activeTab === 'contact') {
         payload.contactDetails = contactDetails;
+      } else if (activeTab === 'guidelines') {
+        payload.authorGuidelines = authorGuidelines;
       }
 
       const res = await fetch(`/api/admin/journals/${journal.id}`, {
@@ -84,7 +96,13 @@ export default function AdminJournalSettingsModal({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to save changes');
 
-      setSuccessMsg(`${activeTab === 'about' ? 'About Details' : activeTab === 'privacy' ? 'Privacy Statement' : 'Contact Details'} updated successfully.`);
+      const labelMap: Record<string, string> = {
+        about: 'About Details',
+        privacy: 'Privacy Statement',
+        contact: 'Contact Details',
+        guidelines: 'Author Guidelines',
+      };
+      setSuccessMsg(`${labelMap[activeTab] || 'Journal content'} updated successfully.`);
       if (onSaved) onSaved();
       setTimeout(() => {
         window.location.reload();
@@ -107,6 +125,20 @@ export default function AdminJournalSettingsModal({
       setPrivacyStatement(`### Scholarly Privacy Statement — ${journal.title}\n\n**NextGen Innovation & Research Journals** and the editorial board of **${journal.title}** are dedicated to protecting the privacy, identity, and personal information of our contributing authors, reviewers, editors, and platform visitors.\n\n#### 1. Personal Information Collected\nThe names, institutional affiliations, academic credentials, ORCID identifiers, and email addresses entered in this journal site will be used exclusively for the stated purposes of scholarly communication, peer review management, and publication administration. They will not be made available for any commercial purpose or shared with third parties.\n\n#### 2. Confidentiality of Manuscript Submissions\nUnpublished manuscripts submitted to ${journal.title} remain strictly confidential intellectual property. Editors, section editors, and external reviewers are bound by non-disclosure ethics and must not share, cite, or exploit manuscript materials or data prior to formal publication.\n\n#### 3. Reviewer Anonymity\nIn accordance with our **Double-Anonymous Peer Review Policy**, the identities of referees are kept strictly confidential from authors and the public. Reviewer reports are transmitted through the editorial system without revealing referee identities.\n\n#### 4. Post-Publication Archiving and Attribution\nUpon formal publication, author names, affiliations, article metadata, and registered DOIs enter the permanent public scientific record. Metadata is deposited with Crossref, Google Scholar, and scholarly indexing repositories to ensure persistent attribution.\n\n#### 5. Contact Regarding Privacy Inquiries\nQuestions regarding data protection or requests to update personal information may be addressed directly to the Editorial Office at **${journal.contactEmail || 'nextgenjournals@gmail.com'}**.`);
     } else if (activeTab === 'contact') {
       setContactDetails(`### Editorial Office & Inquiries — ${journal.title}\n\n**${journal.title}** (${journal.abbreviation})\n*Published by NextGen Innovation & Research Journals*\n\n#### Primary Editorial Office\n- **Editorial Inquiries:** [${journal.contactEmail || 'nextgenjournals@gmail.com'}](mailto:${journal.contactEmail || 'nextgenjournals@gmail.com'})\n- **General Publisher Support:** [nextgenjournals@gmail.com](mailto:nextgenjournals@gmail.com)\n- **Office Location:** NextGen Innovation & Research Directorate, Lagos, Nigeria\n\n#### Editorial Leadership & Desk Inquiries\n- **Editor-in-Chief Office:** Available for scope determinations, pre-submission inquiries, and special issue proposals.\n- **Production & Typesetting Desk:** For queries regarding proof corrections, DOI resolution, and PDF downloads.\n- **Ethics & Review Integrity:** For queries regarding double-anonymous refereeing and publication ethics compliance.\n\n*Response Time: The editorial office typically responds to formal author inquiries within 24 to 48 hours.*`);
+    } else if (activeTab === 'guidelines') {
+      const generated = generateDefaultAuthorGuidelines({
+        title: journal.title,
+        abbreviation: journal.abbreviation,
+        slug: journal.slug,
+        aimsScope: journal.aimsScope || '',
+        peerReviewPolicy: journal.peerReviewPolicy || 'Double-anonymous peer review',
+        openAccessPolicy: journal.openAccessPolicy || 'Open Access (CC BY 4.0)',
+        licensingPolicy: journal.licensingPolicy || 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
+        apcInfo: journal.apcInfo || 'No author fees.',
+        contactEmail: journal.contactEmail || 'nextgenjournals@gmail.com',
+        publisher: 'NextGen Innovation & Research Journals',
+      });
+      setAuthorGuidelines(generated);
     }
   };
 
@@ -142,11 +174,11 @@ export default function AdminJournalSettingsModal({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-200 bg-slate-100/60 px-6 text-xs font-semibold">
+        <div className="flex border-b border-slate-200 bg-slate-100/60 px-6 text-xs font-semibold overflow-x-auto">
           <button
             type="button"
             onClick={() => { setActiveTab('about'); setError(null); setSuccessMsg(null); }}
-            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all ${
+            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all whitespace-nowrap ${
               activeTab === 'about'
                 ? 'border-blue-600 text-blue-700 bg-white font-bold shadow-xs'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -157,8 +189,20 @@ export default function AdminJournalSettingsModal({
           </button>
           <button
             type="button"
+            onClick={() => { setActiveTab('guidelines'); setError(null); setSuccessMsg(null); }}
+            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all whitespace-nowrap ${
+              activeTab === 'guidelines'
+                ? 'border-blue-600 text-blue-700 bg-white font-bold shadow-xs'
+                : 'border-transparent text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Author Guidelines</span>
+          </button>
+          <button
+            type="button"
             onClick={() => { setActiveTab('privacy'); setError(null); setSuccessMsg(null); }}
-            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all ${
+            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all whitespace-nowrap ${
               activeTab === 'privacy'
                 ? 'border-blue-600 text-blue-700 bg-white font-bold shadow-xs'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -170,7 +214,7 @@ export default function AdminJournalSettingsModal({
           <button
             type="button"
             onClick={() => { setActiveTab('contact'); setError(null); setSuccessMsg(null); }}
-            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all ${
+            className={`py-3 px-4 border-b-2 flex items-center space-x-2 transition-all whitespace-nowrap ${
               activeTab === 'contact'
                 ? 'border-blue-600 text-blue-700 bg-white font-bold shadow-xs'
                 : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -200,6 +244,7 @@ export default function AdminJournalSettingsModal({
           <div className="flex justify-between items-center">
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
               {activeTab === 'about' && 'About Journal Detailed Text Area (Markdown Supported)'}
+              {activeTab === 'guidelines' && 'Author Guidelines & Submission Instructions (Markdown Supported)'}
               {activeTab === 'privacy' && 'Journal Privacy Statement (Markdown Supported)'}
               {activeTab === 'contact' && 'Editorial Contact & Inquiries Information (Markdown Supported)'}
             </label>
@@ -224,6 +269,21 @@ export default function AdminJournalSettingsModal({
               />
               <p className="text-[11px] text-slate-500">
                 This content displays prominently in the About & Scope section on the journal's homepage.
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'guidelines' && (
+            <div className="space-y-2">
+              <textarea
+                rows={16}
+                value={authorGuidelines}
+                onChange={(e) => setAuthorGuidelines(e.target.value)}
+                placeholder="Enter detailed author guidelines, accepted manuscript structures, formatting instructions, and ethical standards..."
+                className="w-full p-4 border border-slate-300 rounded-xl font-mono text-xs leading-relaxed text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              />
+              <p className="text-[11px] text-slate-500">
+                This content displays on the journal's public Author Guidelines page (/journals/{journal.slug}/guidelines).
               </p>
             </div>
           )}
@@ -283,7 +343,16 @@ export default function AdminJournalSettingsModal({
                 ) : (
                   <>
                     <Save className="w-3.5 h-3.5" />
-                    <span>Save {activeTab === 'about' ? 'About Details' : activeTab === 'privacy' ? 'Privacy Statement' : 'Contact Info'}</span>
+                    <span>
+                      Save{' '}
+                      {activeTab === 'about'
+                        ? 'About Details'
+                        : activeTab === 'guidelines'
+                        ? 'Author Guidelines'
+                        : activeTab === 'privacy'
+                        ? 'Privacy Statement'
+                        : 'Contact Info'}
+                    </span>
                   </>
                 )}
               </button>
