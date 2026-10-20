@@ -25,20 +25,30 @@ export default function JournalContactClient({
   );
   const canManage = isMasterAdmin || isJournalEditor;
 
+  const eicMember = journal.editorialBoard?.find(
+    (m: any) =>
+      m.roleTitle?.toLowerCase().includes('editor-in-chief') ||
+      m.roleTitle?.toLowerCase().includes('chief')
+  );
+  const eicEmail = eicMember?.user?.email || eicMember?.email || journal.contactEmail || 'nextgenjournals@gmail.com';
+  const eicName = eicMember?.user?.name || eicMember?.name || 'Editor-in-Chief';
+
   const contactText = journal.contactDetails || `# Editorial & Publication Office — ${journal.title}
 
-## Principal Contact
-- **Email:** ${journal.contactEmail || 'editorial@nextgenjournals.org'}
-- **Department:** Editorial Council & Manuscript Operations
+## Principal Contact (Editor-in-Chief)
+- **Editor-in-Chief:** ${eicName}
+- **Direct Editorial Email:** [${eicEmail}](mailto:${eicEmail})
+- **Department:** Office of the Editor-in-Chief & Editorial Council
 - **Hours:** Monday – Friday, 08:00 – 18:00 (GMT)
 
 ## Support & Inquiries
-- **Submission & Peer Review Enquiries:** submissions@nextgenjournals.org
+- **Editorial Office Inquiries:** [${eicEmail}](mailto:${eicEmail})
+- **General Publisher Support:** [nextgenjournals@gmail.com](mailto:nextgenjournals@gmail.com)
 - **Technical & Indexing Queries:** tech-support@nextgenjournals.org
-- **Production & Offprint Queries:** production@nextgenjournals.org
+- **Production & Typesetting Desk:** production@nextgenjournals.org
 
 ## Publisher Headquarters
-NextGen Innovation & Research Journals
+${journal.publisher || 'NextGen Innovation & Research Journals'}
 Scholarly Publications Directorate
 Global Academic Publishing Center
 Email: publishing@nextgenjournals.org`;
@@ -87,12 +97,14 @@ Email: publishing@nextgenjournals.org`;
                 <div className="space-y-1 min-w-0">
                   <p className="text-xs font-semibold uppercase text-blue-900">Direct Editorial Email</p>
                   <a
-                    href={`mailto:${journal.contactEmail || 'editorial@nextgenjournals.org'}`}
+                    href={`mailto:${eicEmail}`}
                     className="text-sm font-bold text-blue-700 hover:underline truncate block"
                   >
-                    {journal.contactEmail || 'editorial@nextgenjournals.org'}
+                    {eicEmail}
                   </a>
-                  <p className="text-[11px] text-slate-500">Fast response within 24-48 business hours</p>
+                  <p className="text-[11px] text-slate-500">
+                    {eicMember ? `Office of the Editor-in-Chief (${eicName})` : 'Direct contact for scholarly inquiries'}
+                  </p>
                 </div>
               </div>
 
@@ -148,7 +160,7 @@ Email: publishing@nextgenjournals.org`;
             <div className="pt-4 border-t border-slate-100 space-y-3 text-xs text-slate-600">
               <div>
                 <p className="text-slate-400 font-semibold uppercase text-[10px]">Publisher</p>
-                <p className="font-medium text-slate-800">NextGen Innovation & Research Journals</p>
+                <p className="font-medium text-slate-800">{journal.publisher || 'NextGen Innovation & Research Journals'}</p>
               </div>
               <div>
                 <p className="text-slate-400 font-semibold uppercase text-[10px]">Access Policy</p>

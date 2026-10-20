@@ -13,6 +13,20 @@ export default async function JournalPrivacyPage({
 }) {
   const journal = await prisma.journal.findUnique({
     where: { slug: params.slug },
+    include: {
+      editorialBoard: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              affiliation: true,
+            },
+          },
+        },
+        orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+      },
+    },
   });
 
   if (!journal) {

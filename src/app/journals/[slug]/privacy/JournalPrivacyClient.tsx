@@ -25,6 +25,14 @@ export default function JournalPrivacyClient({
   );
   const canManage = isMasterAdmin || isJournalEditor;
 
+  const eicMember = journal.editorialBoard?.find(
+    (m: any) =>
+      m.roleTitle?.toLowerCase().includes('editor-in-chief') ||
+      m.roleTitle?.toLowerCase().includes('chief')
+  );
+  const eicEmail = eicMember?.user?.email || eicMember?.email || journal.contactEmail || 'nextgenjournals@gmail.com';
+  const eicName = eicMember?.user?.name || eicMember?.name;
+
   const privacyText = journal.privacyStatement || `# Privacy Statement — ${journal.title}
 
 > This journal is committed to safeguarding personal and research data in accordance with international data protection standards (including GDPR) and ethical scholarly publishing practices.
@@ -39,7 +47,7 @@ The names, email addresses, institutional affiliations, ORCID identifiers, and b
 Personal data will not be made available for any other purpose or to any third party, except as required for public scholarly indexing (e.g., Crossref DOI registration, Google Scholar, PubMed, and bibliographic databases) where author names, affiliations, and ORCID identifiers form an integral part of the permanent scholarly record.
 
 ## Author & Reviewer Rights
-Authors and reviewers may request verification, correction, or anonymization of non-published personal profiles by contacting the editorial office at ${journal.contactEmail || 'editorial@nextgenjournals.org'}. Published metadata remains immutable in accordance with Committee on Publication Ethics (COPE) retraction and correction guidelines.`;
+Authors and reviewers may request verification, correction, or anonymization of non-published personal profiles by contacting the editorial office at ${eicEmail}. Published metadata remains immutable in accordance with Committee on Publication Ethics (COPE) retraction and correction guidelines.`;
 
   return (
     <div className="space-y-10 pb-16">
@@ -104,11 +112,16 @@ Authors and reviewers may request verification, correction, or anonymization of 
               </div>
               <div className="pt-1 border-t border-slate-100">
                 <p className="text-slate-400 font-semibold uppercase text-[10px]">Publisher</p>
-                <p className="font-medium text-slate-800">NextGen Innovation & Research Journals</p>
+                <p className="font-medium text-slate-800">{journal.publisher || 'NextGen Innovation & Research Journals'}</p>
               </div>
               <div className="pt-1 border-t border-slate-100">
-                <p className="text-slate-400 font-semibold uppercase text-[10px]">Editorial Inquiries</p>
-                <p className="font-medium text-blue-600 truncate">{journal.contactEmail || 'editorial@nextgenjournals.org'}</p>
+                <p className="text-slate-400 font-semibold uppercase text-[10px]">Editorial Office Inquiries</p>
+                <a href={`mailto:${eicEmail}`} className="font-medium text-blue-600 hover:underline truncate block">
+                  {eicEmail}
+                </a>
+                {eicName && (
+                  <span className="text-[10px] text-slate-500 font-normal">Editor-in-Chief: {eicName}</span>
+                )}
               </div>
             </div>
 

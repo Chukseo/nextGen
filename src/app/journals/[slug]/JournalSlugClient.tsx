@@ -47,6 +47,14 @@ export default function JournalSlugClient({
   );
   const canManage = isMasterAdmin || isJournalEditor;
 
+  const eicMember = journal.editorialBoard?.find(
+    (m: any) =>
+      m.roleTitle?.toLowerCase().includes('editor-in-chief') ||
+      m.roleTitle?.toLowerCase().includes('chief')
+  );
+  const eicEmail = eicMember?.user?.email || eicMember?.email || journal.contactEmail || 'nextgenjournals@gmail.com';
+  const eicName = eicMember?.user?.name || eicMember?.name;
+
   const aboutText = journal.aboutDetails || journal.aimsScope || '';
 
   return (
@@ -314,7 +322,7 @@ export default function JournalSlugClient({
             <div className="space-y-2">
               <div>
                 <span className="font-bold text-slate-900 block">Publisher</span>
-                <span>{journal.publisher}</span>
+                <span>{journal.publisher || 'NextGen Innovation & Research Journals'}</span>
               </div>
               <div>
                 <span className="font-bold text-slate-900 block">Peer Review Policy</span>
@@ -325,8 +333,15 @@ export default function JournalSlugClient({
                 <span>{journal.apcInfo || 'None'}</span>
               </div>
               <div>
-                <span className="font-bold text-slate-900 block">Editorial Inquiries</span>
-                <span className="text-blue-700">{journal.contactEmail}</span>
+                <span className="font-bold text-slate-900 block">Editorial Office Inquiries</span>
+                <a href={`mailto:${eicEmail}`} className="text-blue-700 hover:underline font-medium">
+                  {eicEmail}
+                </a>
+                {eicName && (
+                  <span className="block text-[11px] text-slate-500 font-normal mt-0.5">
+                    Editor-in-Chief: {eicName}
+                  </span>
+                )}
               </div>
             </div>
           </div>

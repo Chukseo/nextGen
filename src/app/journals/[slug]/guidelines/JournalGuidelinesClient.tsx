@@ -29,6 +29,14 @@ export default function JournalGuidelinesClient({
   );
   const canManage = isMasterAdmin || isJournalEditor;
 
+  const eicMember = journal.editorialBoard?.find(
+    (m: any) =>
+      m.roleTitle?.toLowerCase().includes('editor-in-chief') ||
+      m.roleTitle?.toLowerCase().includes('chief')
+  );
+  const eicEmail = eicMember?.user?.email || eicMember?.email || journal.contactEmail || 'nextgenjournals@gmail.com';
+  const eicName = eicMember?.user?.name || eicMember?.name;
+
   return (
     <div className="space-y-10 pb-16">
       {/* Journal Masthead */}
@@ -129,6 +137,10 @@ export default function JournalGuidelinesClient({
               Review & Licensing
             </h3>
             <div>
+              <span className="font-bold text-slate-900 block">Publisher</span>
+              <span>{journal.publisher || 'NextGen Innovation & Research Journals'}</span>
+            </div>
+            <div>
               <span className="font-bold text-slate-900 block">Review Policy</span>
               <span>{journal.peerReviewPolicy || 'Double-anonymous peer review'}</span>
             </div>
@@ -151,11 +163,11 @@ export default function JournalGuidelinesClient({
               </h3>
             </div>
             <p className="text-slate-300 leading-relaxed text-xs">
-              Questions regarding presubmission inquiries or formatting requirements? Contact the managing editor at:
+              Questions regarding presubmission inquiries or formatting requirements? Contact the {eicName ? `Editor-in-Chief (${eicName})` : 'editorial desk'} at:
             </p>
             <div className="pt-1 font-semibold text-blue-300">
-              <a href={`mailto:${journal.contactEmail}`} className="hover:underline">
-                {journal.contactEmail}
+              <a href={`mailto:${eicEmail}`} className="hover:underline">
+                {eicEmail}
               </a>
             </div>
           </div>

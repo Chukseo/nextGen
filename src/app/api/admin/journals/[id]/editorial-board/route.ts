@@ -225,6 +225,14 @@ export async function POST(
       },
     });
 
+    const isEic = roleTitle.toLowerCase().includes('editor-in-chief') || roleTitle.toLowerCase().includes('chief');
+    if (isEic && member.user?.email) {
+      await prisma.journal.update({
+        where: { id: journal.id },
+        data: { contactEmail: member.user.email },
+      }).catch((err) => console.error('Failed to sync contactEmail:', err));
+    }
+
     return NextResponse.json({
       success: true,
       message: `${member.user.name || 'Scholar'} appointed to Editorial Board as ${member.roleTitle}.`,
@@ -293,6 +301,14 @@ export async function PATCH(
           ...(orcid !== undefined && { orcid: orcid ? orcid.trim() : null }),
         },
       });
+    }
+
+    const isEic = updated.roleTitle.toLowerCase().includes('editor-in-chief') || updated.roleTitle.toLowerCase().includes('chief');
+    if (isEic && updated.user?.email) {
+      await prisma.journal.update({
+        where: { id: journal.id },
+        data: { contactEmail: updated.user.email },
+      }).catch((err) => console.error('Failed to sync contactEmail:', err));
     }
 
     return NextResponse.json({

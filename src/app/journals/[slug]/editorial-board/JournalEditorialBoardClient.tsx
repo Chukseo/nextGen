@@ -27,6 +27,8 @@ export default function JournalEditorialBoardClient({
   const eicList = board.filter(
     (m: any) => m.roleTitle.toLowerCase().includes('editor-in-chief') || m.roleTitle.toLowerCase().includes('chief')
   );
+  const eicEmail = eicList[0]?.user?.email || eicList[0]?.email || journal.contactEmail || 'nextgenjournals@gmail.com';
+  const eicName = eicList[0]?.user?.name || eicList[0]?.name;
   const associateEditors = board.filter(
     (m: any) => m.roleTitle.toLowerCase().includes('associate') || m.roleTitle.toLowerCase().includes('section')
   );
@@ -227,11 +229,13 @@ export default function JournalEditorialBoardClient({
               Editorial Office Inquiries
             </h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              For special issue proposals, appeals, or editorial correspondence with the Editor-in-Chief, contact:
+              For manuscript inquiries, special issue proposals, appeals, or direct correspondence with the {eicName ? `Editor-in-Chief (${eicName})` : 'Editor-in-Chief'}, contact:
             </p>
             <div className="pt-1 flex items-center space-x-2 text-xs font-semibold text-blue-400">
-              <Mail className="w-4 h-4" />
-              <span>{journal.contactEmail}</span>
+              <Mail className="w-4 h-4 shrink-0" />
+              <a href={`mailto:${eicEmail}`} className="hover:underline hover:text-blue-300 truncate">
+                {eicEmail}
+              </a>
             </div>
           </div>
         </div>

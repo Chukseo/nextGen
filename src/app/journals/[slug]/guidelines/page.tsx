@@ -14,14 +14,41 @@ export default async function JournalGuidelinesPage({
 }) {
   const journal = await prisma.journal.findUnique({
     where: { slug: params.slug },
+    include: {
+      editorialBoard: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              affiliation: true,
+            },
+          },
+        },
+        orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+      },
+    },
   });
 
   if (!journal) {
     notFound();
   }
 
+  const eic = journal.editorialBoard?.find(
+    (m: any) =>
+      m.roleTitle?.toLowerCase().includes('editor-in-chief') ||
+      m.roleTitle?.toLowerCase().includes('chief')
+  );
+  const eicEmail = eic?.user?.email || journal.contactEmail || 'nextgenjournals@gmail.com';
+
   // Use the authorGuidelines column on Journal first, fall back to generated default
-  const guidelinesText = journal.authorGuidelines || generateDefaultAuthorGuidelines(journal);
+  const guidelinesText =
+    journal.authorGuidelines ||
+    generateDefaultAuthorGuidelines({
+      ...journal,
+      contactEmail: eicEmail,
+      publisher: journal.publisher || 'NextGen Innovation & Research Journals',
+    });
 
   return (
     <JournalGuidelinesClient
