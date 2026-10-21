@@ -44,6 +44,8 @@ const SubmissionSchema = z.object({
   consentStatement: z.string().optional(),
   acknowledgements: z.string().optional(),
   coverLetter: z.string().optional(),
+  pageRange: z.string().optional(),
+  references: z.string().optional(),
   declarationsConfirmed: z.boolean().refine((val) => val === true, {
     message: 'You must confirm the submission declarations and publishing ethics statement.',
   }),
@@ -170,6 +172,8 @@ export async function POST(req: Request) {
           consentStatement: data.consentStatement,
           acknowledgements: data.acknowledgements,
           coverLetter: data.coverLetter,
+          pageRange: data.pageRange || null,
+          referencesRaw: data.references || null,
           declarationsConfirmed: true,
           submittedAt: new Date(),
         },

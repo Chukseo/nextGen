@@ -479,7 +479,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   pdfDoc.setAuthor(data.authors.map(a => `${a.firstName} ${a.lastName}`).join(', '));
   pdfDoc.setSubject(`Published in ${data.journalTitle}`);
   pdfDoc.setKeywords(data.keywords || ['Open Access', 'Peer-Reviewed', 'NextGen Innovation & Research Journals']);
-  pdfDoc.setProducer('NextGen Innovation & Research Journals (Lagos, Nigeria)');
+  pdfDoc.setProducer('NextGen Innovation & Research Journal, London, UK');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
 
   // Embed standard PDF fonts
@@ -507,6 +507,18 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
 
   let currentPageIndex = 0;
   const pages: PDFPage[] = [];
+
+  // Parse starting page number from pageRange (e.g. "32-48" -> 32, "11-17" -> 11)
+  let startPageNum = 1;
+  if (data.pageRange) {
+    const match = data.pageRange.match(/\b(\d+)\b/);
+    if (match) {
+      const parsed = parseInt(match[1], 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        startPageNum = parsed;
+      }
+    }
+  }
 
   // Helper to start a new page with appropriate running header
   function createPage(isFollowOn: boolean = false): { page: PDFPage; startY: number } {
@@ -614,7 +626,8 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
         color: slateMuted,
       });
 
-      const headerRightFollow = `Vol. ${data.volumeNumber}, No. ${data.issueNumber} | DOI: ${data.doi || ''}`;
+      const followPageNum = startPageNum + (currentPageIndex - 1);
+      const headerRightFollow = `Vol. ${data.volumeNumber}, No. ${data.issueNumber} • Page ${followPageNum}${data.doi ? ` | DOI: ${data.doi}` : ''}`;
       const headerRightWidth = helvetica.widthOfTextAtSize(headerRightFollow, 7.5);
       page.drawText(headerRightFollow, {
         x: pageWidth - marginX - headerRightWidth,
@@ -646,7 +659,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       color: rgb(226 / 255, 232 / 255, 240 / 255),
     });
 
-    const copyrightText = `© ${data.year} NextGen Innovation & Research Journals • Lagos, Nigeria. CC BY 4.0`;
+    const copyrightText = `© ${data.year} NextGen Innovation & Research Journal, London, UK. CC BY 4.0`;
     page.drawText(copyrightText, {
       x: marginX,
       y: bottomY + 2,
@@ -655,7 +668,8 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       color: slateMuted,
     });
 
-    const pageStr = `${data.journalAbbreviation} • Page ${pageNum}`;
+    const actualPageNum = startPageNum + (pageNum - 1);
+    const pageStr = `${data.journalAbbreviation} • Page ${actualPageNum}`;
     const pageStrWidth = helvetica.widthOfTextAtSize(pageStr, 7);
     page.drawText(pageStr, {
       x: pageWidth - marginX - pageStrWidth,

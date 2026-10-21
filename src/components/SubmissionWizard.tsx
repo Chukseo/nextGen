@@ -56,6 +56,8 @@ export default function SubmissionWizard({
   const [fundingInfo, setFundingInfo] = useState('');
   const [dataAvailability, setDataAvailability] = useState('All experimental scripts, model architectures, and benchmark configurations are openly available as cited in the paper.');
   const [coverLetter, setCoverLetter] = useState('');
+  const [references, setReferences] = useState('');
+  const [pageRange, setPageRange] = useState('');
   const [declarationsConfirmed, setDeclarationsConfirmed] = useState(false);
 
   // Authors List
@@ -187,6 +189,8 @@ export default function SubmissionWizard({
       fundingInfo,
       dataAvailability,
       coverLetter,
+      pageRange: pageRange || undefined,
+      references: references || undefined,
       declarationsConfirmed,
       uploadedFileKey: uploadedKey,
       uploadedFileName: uploadedFileName,
@@ -593,6 +597,42 @@ export default function SubmissionWizard({
                   </div>
                 </div>
               </div>
+
+              {/* References & Page Range */}
+              <div className="pt-4 border-t border-slate-200 space-y-3">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  References & Page Range
+                </h3>
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Bibliographic References (Optional — one reference per line)
+                    </label>
+                    <textarea
+                      rows={6}
+                      value={references}
+                      onChange={(e) => setReferences(e.target.value)}
+                      placeholder={"Ogunmodede, T. A., & Ebijuwa, A. S. (2013). Problems of...  https://doi.org/10.xxxxx\nSmith, J. (2020). Example reference. Journal of Example, 5(2), 12-18."}
+                      className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-600 outline-none font-serif text-slate-800"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Enter each reference on a separate line. DOIs embedded in the text will be automatically detected and linked.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Page Range (Optional — e.g. 1-15 or 32-48)
+                    </label>
+                    <input
+                      type="text"
+                      value={pageRange}
+                      onChange={(e) => setPageRange(e.target.value)}
+                      placeholder="e.g. 1-18"
+                      className="w-full px-3 py-1.5 border border-slate-300 rounded"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-between pt-4 border-t border-slate-100">
@@ -778,6 +818,24 @@ export default function SubmissionWizard({
                   </label>
                 </div>
               </div>
+
+              {/* References & Page Range Summary */}
+              {(references || pageRange) && (
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2">
+                  {pageRange && (
+                    <div>
+                      <span className="font-bold text-slate-500 uppercase">Page Range:</span>
+                      <div className="text-slate-800">{pageRange}</div>
+                    </div>
+                  )}
+                  {references && (
+                    <div>
+                      <span className="font-bold text-slate-500 uppercase">References:</span>
+                      <div className="text-slate-800">{references.split('\n').filter(Boolean).length} reference(s) provided</div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between pt-4 border-t border-slate-100">

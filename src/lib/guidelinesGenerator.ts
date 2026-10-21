@@ -100,7 +100,7 @@ ${journal.title} strictly adheres to the guidelines established by the Committee
 ## 7. Editorial Office Inquiries
 For questions regarding manuscript suitability, special thematic issues, or editorial board appointments, please contact the editorial office:
 - **Email**: [${journal.contactEmail}](mailto:${journal.contactEmail})
-- **Publisher**: NextGen Innovation & Research Journals (Lagos, Nigeria)
+- **Publisher**: NextGen Innovation & Research Journal, London, UK
 - **Portal**: [https://nextgen-press.org/journals/${journal.slug}](https://nextgen-press.org/journals/${journal.slug})
 `;
 }

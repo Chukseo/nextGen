@@ -39,8 +39,11 @@ export async function GET(
       return NextResponse.json({ error: 'Published article not found' }, { status: 404 });
     }
 
-    // 1. If an uploaded publication PDF exists (e.g. from direct import or typeset upload), serve it directly
-    if (article.pdfUrl && (article.pdfUrl.startsWith('http://') || article.pdfUrl.startsWith('https://'))) {
+    const { searchParams } = new URL(req.url);
+    const forceCached = searchParams.get('cached') === 'true';
+
+    // If cached is explicitly requested and remote PDF exists, serve it
+    if (forceCached && article.pdfUrl && (article.pdfUrl.startsWith('http://') || article.pdfUrl.startsWith('https://'))) {
       try {
         const response = await fetch(article.pdfUrl);
         if (response.ok) {
@@ -63,27 +66,6 @@ export async function GET(
       } catch (err) {
         console.warn('Could not stream direct pdfUrl, falling back to generator:', err);
       }
-    }
-
-    if (article.pdfStorageKey) {
-      try {
-        const directBuffer = await getFileBuffer(article.pdfStorageKey, 'published-articles');
-        if (directBuffer && directBuffer.length > 0) {
-          prisma.publishedArticle.update({
-            where: { id: article.id },
-            data: { downloadsCount: { increment: 1 } },
-          }).catch(() => {});
-
-          return new Response(new Uint8Array(directBuffer), {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `inline; filename="${article.journal.abbreviation || 'Article'}_${article.articleNumber || 'publication'}.pdf"`,
-              'Cache-Control': 'public, max-age=3600',
-            },
-          });
-        }
-      } catch (err) {}
     }
 
     const latestDecision = article.submission.editorialDecisions?.[0];
@@ -125,7 +107,7 @@ export async function GET(
       issueNumber: article.issue?.issueNumber || 1,
       year: article.issue?.year || new Date().getFullYear(),
       articleNumber: article.articleNumber,
-      pageRange: article.pageRange,
+      pageRange: article.pageRange || article.submission?.pageRange || null,
       doi: article.doi || '',
       articleType: article.submission.articleType,
       title: article.title,

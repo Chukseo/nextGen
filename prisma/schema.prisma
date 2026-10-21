@@ -157,6 +157,8 @@ model Submission {
   acknowledgements    String?
   coverLetter         String?
   declarationsConfirmed Boolean @default(true)
+  pageRange           String?
+  referencesRaw       String?  @db.Text
 
   assignedEditorId    String?
 

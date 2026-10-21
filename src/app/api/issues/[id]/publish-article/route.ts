@@ -106,6 +106,7 @@ export async function POST(
     }
 
     const publishedDate = new Date();
+    const finalPageRange = pageRange || submission.pageRange || null;
 
     const citationString = generateAPACitation({
       title: submission.title,
@@ -113,7 +114,7 @@ export async function POST(
       volumeNumber: issue.volume.volumeNumber,
       issueNumber: issue.issueNumber,
       year: issue.year,
-      pages: pageRange,
+      pages: finalPageRange,
       doi: finalDoi,
       authors: submission.coAuthors.map((a) => ({ firstName: a.firstName, lastName: a.lastName })),
     });
@@ -152,6 +153,24 @@ export async function POST(
           { label: 'Acknowledgements', text: submission.acknowledgements },
         ];
 
+        let parsedRefsForPdf: { orderIndex: number; rawText: string; doi?: string | null }[] = [];
+        if (submission.referencesRaw) {
+          let list: string[] = [];
+          try {
+            list = JSON.parse(submission.referencesRaw);
+          } catch {
+            list = submission.referencesRaw.split('\n').map((r: string) => r.trim()).filter(Boolean);
+          }
+          parsedRefsForPdf = list.map((rawText, idx) => {
+            const doiMatch = rawText.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/);
+            return {
+              orderIndex: idx + 1,
+              rawText,
+              doi: doiMatch ? doiMatch[1].replace(/[.,;)]$/, '') : null,
+            };
+          });
+        }
+
         const pdfBytes = await generateScholarlyArticlePdf({
           journalTitle: issue.journal.title,
           journalAbbreviation: issue.journal.abbreviation,
@@ -163,7 +182,7 @@ export async function POST(
           issueNumber: issue.issueNumber,
           year: issue.year,
           articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
-          pageRange,
+          pageRange: finalPageRange,
           doi: finalDoi,
           articleType: submission.articleType,
           title: submission.title,
@@ -171,6 +190,7 @@ export async function POST(
           manuscriptFullText,
           manuscriptBlocks,
           declarations,
+          references: parsedRefsForPdf,
           publishedAt: publishedDate,
           receivedAt: submission.createdAt,
           acceptedAt: latestDecision?.decidedAt || publishedDate,
@@ -228,7 +248,7 @@ export async function POST(
           doi: finalDoi,
           doiStatus: submission.doiRecord?.status || 'DRAFT',
           articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
-          pageRange,
+          pageRange: finalPageRange,
           pdfStorageKey: resolvedPdfStorageKey,
           pdfUrl: resolvedPdfUrl,
           license,
@@ -245,7 +265,7 @@ export async function POST(
           doi: finalDoi,
           doiStatus: submission.doiRecord?.status || 'DRAFT',
           articleNumber: articleNumber || String(seqNum).padStart(3, '0'),
-          pageRange,
+          pageRange: finalPageRange,
           pdfStorageKey: resolvedPdfStorageKey,
           pdfUrl: resolvedPdfUrl,
           license,
@@ -278,6 +298,31 @@ export async function POST(
           publishedAt: publishedDate,
         },
       });
+
+      // 4. Populate ArticleReference records if submission has referencesRaw
+      if (submission.referencesRaw) {
+        let parsedReferences: string[] = [];
+        try {
+          parsedReferences = JSON.parse(submission.referencesRaw);
+        } catch {
+          parsedReferences = submission.referencesRaw.split('\n').map((r: string) => r.trim()).filter(Boolean);
+        }
+        await tx.articleReference.deleteMany({
+          where: { publishedArticleId: pubArt.id },
+        });
+        for (let i = 0; i < parsedReferences.length; i++) {
+          const rawText = parsedReferences[i];
+          const doiMatch = rawText.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/);
+          await tx.articleReference.create({
+            data: {
+              publishedArticleId: pubArt.id,
+              orderIndex: i + 1,
+              rawText,
+              doi: doiMatch ? doiMatch[1].replace(/[.,;)]$/, '') : null,
+            },
+          });
+        }
+      }
 
       // 4. Ensure DOI record exists or updates safely (collision-free)
       await tx.dOIRecord.upsert({
