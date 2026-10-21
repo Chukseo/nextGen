@@ -471,6 +471,140 @@ export async function extractDocxText(buffer: Buffer): Promise<string> {
   }
 }
 
+export interface StampPdfData {
+  journalTitle: string;
+  journalAbbreviation: string;
+  journalSlug?: string;
+  journalUrl?: string;
+  volumeNumber: number;
+  issueNumber: number;
+  year: number;
+  articleNumber?: string | null;
+  pageRange?: string | null;
+  doi?: string | null;
+  onlineIssn?: string | null;
+  printIssn?: string | null;
+  title?: string;
+  authors?: { firstName: string; lastName: string }[];
+}
+
+// Stamp an existing manuscript PDF (preserving full text, figures, and tables) with scholarly headers, footers, and aligned pagination
+export async function stampScholarlyPdf(
+  inputBuffer: Buffer,
+  meta: StampPdfData
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(inputBuffer, { ignoreEncryption: true });
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helveticaOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+
+  if (meta.title) pdfDoc.setTitle(sanitizeForPdf(meta.title));
+  if (meta.authors && meta.authors.length > 0) {
+    pdfDoc.setAuthor(meta.authors.map(a => `${a.firstName} ${a.lastName}`).join(', '));
+  }
+  pdfDoc.setSubject(`Published in ${sanitizeForPdf(meta.journalTitle)}`);
+  pdfDoc.setProducer('NextGen Innovation & Research Journal, London, UK');
+  pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
+
+  // Palette
+  const navyDark = rgb(11 / 255, 25 / 255, 44 / 255);
+  const slateMuted = rgb(100 / 255, 116 / 255, 139 / 255);
+
+  let startPageNum = 1;
+  if (meta.pageRange) {
+    const match = meta.pageRange.match(/\b(\d+)\b/);
+    if (match) {
+      const p = parseInt(match[1], 10);
+      if (!isNaN(p) && p > 0) startPageNum = p;
+    }
+  }
+
+  const pageCount = pdfDoc.getPageCount();
+  const bottomY = 32;
+
+  for (let i = 0; i < pageCount; i++) {
+    const page = pdfDoc.getPage(i);
+    const { width, height } = page.getSize();
+    const marginX = 50;
+    const actualPageNum = startPageNum + i;
+
+    // 1. Cover the bottom margin with a clean white band to mask any old/stale footer
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: width,
+      height: 48,
+      color: rgb(1, 1, 1),
+    });
+
+    // 2. Draw standard NextGen Footer
+    page.drawLine({
+      start: { x: marginX, y: bottomY + 10 },
+      end: { x: width - marginX, y: bottomY + 10 },
+      thickness: 0.5,
+      color: rgb(226 / 255, 232 / 255, 240 / 255),
+    });
+
+    const copyrightText = `© ${meta.year} NextGen Innovation & Research Journal, London, UK. CC BY 4.0`;
+    page.drawText(copyrightText, {
+      x: marginX,
+      y: bottomY + 1,
+      size: 7,
+      font: helvetica,
+      color: slateMuted,
+    });
+
+    const pageStr = `${sanitizeForPdf(meta.journalAbbreviation)} • Page ${actualPageNum}`;
+    const pageStrWidth = helvetica.widthOfTextAtSize(pageStr, 7);
+    page.drawText(pageStr, {
+      x: width - marginX - pageStrWidth,
+      y: bottomY + 1,
+      size: 7,
+      font: helveticaBold,
+      color: navyDark,
+    });
+
+    // 3. Header: on follow-on pages (i > 0), ensure running header is present
+    if (i > 0) {
+      const headerY = height - 32;
+      page.drawRectangle({
+        x: 0,
+        y: height - 40,
+        width: width,
+        height: 40,
+        color: rgb(1, 1, 1),
+      });
+
+      page.drawText(`${sanitizeForPdf(meta.journalAbbreviation)} (${meta.year})`, {
+        x: marginX,
+        y: headerY,
+        size: 7.5,
+        font: helveticaOblique,
+        color: slateMuted,
+      });
+
+      const headerRight = `Vol. ${meta.volumeNumber}, No. ${meta.issueNumber} • Page ${actualPageNum}${meta.doi ? ` | DOI: ${meta.doi}` : ''}`;
+      const headerRightWidth = helvetica.widthOfTextAtSize(headerRight, 7.5);
+      page.drawText(headerRight, {
+        x: width - marginX - headerRightWidth,
+        y: headerY,
+        size: 7.5,
+        font: helvetica,
+        color: slateMuted,
+      });
+
+      page.drawLine({
+        start: { x: marginX, y: headerY - 6 },
+        end: { x: width - marginX, y: headerY - 6 },
+        thickness: 0.5,
+        color: rgb(226 / 255, 232 / 255, 240 / 255),
+      });
+    }
+  }
+
+  return await pdfDoc.save();
+}
+
 export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
 

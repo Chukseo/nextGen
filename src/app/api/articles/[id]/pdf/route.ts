@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } from '@/lib/pdfGenerator';
+import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx, stampScholarlyPdf } from '@/lib/pdfGenerator';
 import { getFileBuffer, uploadFile } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
@@ -70,67 +70,181 @@ export async function GET(
 
     const latestDecision = article.submission.editorialDecisions?.[0];
 
-    // Extract full text and tables from submitted manuscript file if present
-    let manuscriptFullText: string | null = null;
-    let manuscriptBlocks: any = null;
-    const manuscriptFile = article.submission.files?.find(
-      (f: any) => f.fileType === 'MANUSCRIPT_DOCX' || f.fileType === 'REVISION' || f.fileType === 'COPYEDITED'
+    // 1. Check for submitted DOCX manuscript file
+    const docxFile = article.submission.files?.find(
+      (f: any) =>
+        f.fileType === 'MANUSCRIPT_DOCX' ||
+        f.fileType === 'REVISION' ||
+        f.fileType === 'COPYEDITED' ||
+        f.originalFileName?.toLowerCase().endsWith('.docx') ||
+        f.originalFileName?.toLowerCase().endsWith('.doc')
     );
 
-    if (manuscriptFile?.storageKey) {
+    let manuscriptFullText: string | null = null;
+    let manuscriptBlocks: any = null;
+
+    if (docxFile?.storageKey) {
       try {
-        const fileBuffer = await getFileBuffer(manuscriptFile.storageKey, 'manuscripts-private');
-        const parsed = await parseManuscriptDocx(fileBuffer);
-        manuscriptFullText = parsed.fullText;
-        manuscriptBlocks = parsed.blocks;
+        const bucket = docxFile.storageKey.startsWith('published') ? 'published-articles' : 'manuscripts-private';
+        let fileBuffer: Buffer | null = null;
+        try {
+          fileBuffer = await getFileBuffer(docxFile.storageKey, bucket as any);
+        } catch {
+          const altBucket = bucket === 'published-articles' ? 'manuscripts-private' : 'published-articles';
+          fileBuffer = await getFileBuffer(docxFile.storageKey, altBucket as any);
+        }
+        if (fileBuffer) {
+          const parsed = await parseManuscriptDocx(fileBuffer);
+          manuscriptFullText = parsed.fullText;
+          manuscriptBlocks = parsed.blocks;
+        }
       } catch (fileErr) {
-        console.warn('Could not extract submitted manuscript full text:', fileErr);
+        console.warn('Could not extract submitted DOCX manuscript full text:', fileErr);
       }
     }
 
-    const declarations = [
-      { label: 'Funding Information', text: article.submission.fundingInfo },
-      { label: 'Conflict of Interest', text: article.submission.conflictOfInterest },
-      { label: 'Data Availability', text: article.submission.dataAvailability },
-      { label: 'Ethical Approval & Consent', text: article.submission.ethicsStatement || article.submission.consentStatement },
-      { label: 'Acknowledgements', text: article.submission.acknowledgements },
-    ];
+    let pdfBytes: Uint8Array;
 
-    const pdfBytes = await generateScholarlyArticlePdf({
-      journalTitle: article.journal.title,
-      journalAbbreviation: article.journal.abbreviation,
-      journalSlug: article.journal.slug,
-      journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${article.journal.slug}`,
-      onlineIssn: article.journal.onlineIssn,
-      printIssn: article.journal.printIssn,
-      volumeNumber: article.issue?.volume?.volumeNumber || 1,
-      issueNumber: article.issue?.issueNumber || 1,
-      year: article.issue?.year || new Date().getFullYear(),
-      articleNumber: article.articleNumber,
-      pageRange: article.pageRange || article.submission?.pageRange || null,
-      doi: article.doi || '',
-      articleType: article.submission.articleType,
-      title: article.title,
-      abstract: article.abstract,
-      keywords: article.keywords.map(k => k.keyword),
-      manuscriptFullText,
-      manuscriptBlocks,
-      declarations,
-      references: article.references,
-      publishedAt: article.publishedAt,
-      receivedAt: article.submission.createdAt,
-      acceptedAt: latestDecision?.decidedAt || article.publishedAt,
-      citationString: article.citationString || undefined,
-      license: article.license,
-      authors: article.submission.coAuthors.map(a => ({
-        firstName: a.firstName,
-        lastName: a.lastName,
-        affiliation: a.affiliation,
-        orcid: a.orcid,
-        isCorresponding: a.isCorresponding,
-        email: a.email,
-      })),
-    });
+    // 2. If docx blocks were extracted, generate typeset PDF with full manuscript text
+    if (manuscriptBlocks && manuscriptBlocks.length > 0) {
+      const declarations = [
+        { label: 'Funding Information', text: article.submission.fundingInfo },
+        { label: 'Conflict of Interest', text: article.submission.conflictOfInterest },
+        { label: 'Data Availability', text: article.submission.dataAvailability },
+        { label: 'Ethical Approval & Consent', text: article.submission.ethicsStatement || article.submission.consentStatement },
+        { label: 'Acknowledgements', text: article.submission.acknowledgements },
+      ];
+
+      pdfBytes = await generateScholarlyArticlePdf({
+        journalTitle: article.journal.title,
+        journalAbbreviation: article.journal.abbreviation,
+        journalSlug: article.journal.slug,
+        journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${article.journal.slug}`,
+        onlineIssn: article.journal.onlineIssn,
+        printIssn: article.journal.printIssn,
+        volumeNumber: article.issue?.volume?.volumeNumber || 1,
+        issueNumber: article.issue?.issueNumber || 1,
+        year: article.issue?.year || new Date().getFullYear(),
+        articleNumber: article.articleNumber,
+        pageRange: article.pageRange || article.submission?.pageRange || null,
+        doi: article.doi || '',
+        articleType: article.submission.articleType,
+        title: article.title,
+        abstract: article.abstract,
+        keywords: article.keywords.map(k => k.keyword),
+        manuscriptFullText,
+        manuscriptBlocks,
+        declarations,
+        references: article.references,
+        publishedAt: article.publishedAt,
+        receivedAt: article.submission.createdAt,
+        acceptedAt: latestDecision?.decidedAt || article.publishedAt,
+        citationString: article.citationString || undefined,
+        license: article.license,
+        authors: article.submission.coAuthors.map(a => ({
+          firstName: a.firstName,
+          lastName: a.lastName,
+          affiliation: a.affiliation,
+          orcid: a.orcid,
+          isCorresponding: a.isCorresponding,
+          email: a.email,
+        })),
+      });
+    } else {
+      // 3. If no DOCX was found, check for submitted or stored PDF manuscript (e.g. original Okmutie.pdf)
+      const pdfFile = article.submission.files?.find(
+        (f: any) =>
+          f.fileType === 'MANUSCRIPT_PDF' ||
+          f.fileType === 'FINAL_TYPESET_PDF' ||
+          f.originalFileName?.toLowerCase().endsWith('.pdf')
+      );
+
+      let rawPdfBuffer: Buffer | null = null;
+      const pdfKey = pdfFile?.storageKey || article.pdfStorageKey;
+      if (pdfKey) {
+        try {
+          const bucket = pdfKey.startsWith('published') ? 'published-articles' : 'manuscripts-private';
+          rawPdfBuffer = await getFileBuffer(pdfKey, bucket as any);
+        } catch {
+          try {
+            const altBucket = pdfKey.startsWith('published') ? 'manuscripts-private' : 'published-articles';
+            rawPdfBuffer = await getFileBuffer(pdfKey, altBucket as any);
+          } catch {}
+        }
+      }
+
+      if (!rawPdfBuffer && article.pdfUrl && (article.pdfUrl.startsWith('http://') || article.pdfUrl.startsWith('https://'))) {
+        try {
+          const resp = await fetch(article.pdfUrl);
+          if (resp.ok) {
+            rawPdfBuffer = Buffer.from(await resp.arrayBuffer());
+          }
+        } catch {}
+      }
+
+      if (rawPdfBuffer && rawPdfBuffer.length > 500) {
+        // Stamp the PDF with aligned pagination, London UK footer, and scholarly masthead
+        pdfBytes = await stampScholarlyPdf(rawPdfBuffer, {
+          journalTitle: article.journal.title,
+          journalAbbreviation: article.journal.abbreviation,
+          journalSlug: article.journal.slug,
+          volumeNumber: article.issue?.volume?.volumeNumber || 1,
+          issueNumber: article.issue?.issueNumber || 1,
+          year: article.issue?.year || new Date().getFullYear(),
+          articleNumber: article.articleNumber,
+          pageRange: article.pageRange || article.submission?.pageRange || null,
+          doi: article.doi || '',
+          onlineIssn: article.journal.onlineIssn,
+          printIssn: article.journal.printIssn,
+          title: article.title,
+          authors: article.submission.coAuthors.map(a => ({ firstName: a.firstName, lastName: a.lastName })),
+        });
+      } else {
+        // Fallback to generating scholarly article layout
+        const declarations = [
+          { label: 'Funding Information', text: article.submission.fundingInfo },
+          { label: 'Conflict of Interest', text: article.submission.conflictOfInterest },
+          { label: 'Data Availability', text: article.submission.dataAvailability },
+          { label: 'Ethical Approval & Consent', text: article.submission.ethicsStatement || article.submission.consentStatement },
+          { label: 'Acknowledgements', text: article.submission.acknowledgements },
+        ];
+
+        pdfBytes = await generateScholarlyArticlePdf({
+          journalTitle: article.journal.title,
+          journalAbbreviation: article.journal.abbreviation,
+          journalSlug: article.journal.slug,
+          journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${article.journal.slug}`,
+          onlineIssn: article.journal.onlineIssn,
+          printIssn: article.journal.printIssn,
+          volumeNumber: article.issue?.volume?.volumeNumber || 1,
+          issueNumber: article.issue?.issueNumber || 1,
+          year: article.issue?.year || new Date().getFullYear(),
+          articleNumber: article.articleNumber,
+          pageRange: article.pageRange || article.submission?.pageRange || null,
+          doi: article.doi || '',
+          articleType: article.submission.articleType,
+          title: article.title,
+          abstract: article.abstract,
+          keywords: article.keywords.map(k => k.keyword),
+          manuscriptFullText: article.abstract,
+          declarations,
+          references: article.references,
+          publishedAt: article.publishedAt,
+          receivedAt: article.submission.createdAt,
+          acceptedAt: latestDecision?.decidedAt || article.publishedAt,
+          citationString: article.citationString || undefined,
+          license: article.license,
+          authors: article.submission.coAuthors.map(a => ({
+            firstName: a.firstName,
+            lastName: a.lastName,
+            affiliation: a.affiliation,
+            orcid: a.orcid,
+            isCorresponding: a.isCorresponding,
+            email: a.email,
+          })),
+        });
+      }
+    }
 
     // Increment downloads count asynchronously
     prisma.publishedArticle.update({
