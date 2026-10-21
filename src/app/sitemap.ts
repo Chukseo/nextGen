@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXTAUTH_URL || 'https://nextgen-press.org';
+  const baseUrl = getBaseUrl();
 
   // 1. Static high-level routes
   const staticRoutes: MetadataRoute.Sitemap = [

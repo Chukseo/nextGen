@@ -10,6 +10,7 @@ import { formatDOISuffix } from '@/lib/crossref';
 import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } from '@/lib/pdfGenerator';
 import { uploadFile, getFileBuffer } from '@/lib/storage';
 import { generateUniqueArticleSlug } from '@/lib/slug';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -175,7 +176,7 @@ export async function POST(
           journalTitle: issue.journal.title,
           journalAbbreviation: issue.journal.abbreviation,
           journalSlug: issue.journal.slug,
-          journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${issue.journal.slug}`,
+          journalUrl: `${getBaseUrl()}/journals/${issue.journal.slug}`,
           onlineIssn: issue.journal.onlineIssn,
           printIssn: issue.journal.printIssn,
           volumeNumber: issue.volume.volumeNumber,

@@ -4,11 +4,44 @@ import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SupportChatbot from '@/components/SupportChatbot';
+import { getBaseUrl } from '@/lib/siteUrl';
+
+const SITE_URL = getBaseUrl();
 
 export const metadata: Metadata = {
-  title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
+    template: '%s | NextGen Innovation & Research Journals',
+  },
   description: 'Digital scholarly academic journal publisher advancing science, technology, artificial intelligence, computing, engineering, and interdisciplinary research.',
   keywords: 'academic publishing, scholarly journals, peer review, open access, crossref doi, artificial intelligence research, nextgen innovation & research journals',
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'NextGen Innovation & Research Journals',
+    title: 'NextGen Innovation & Research Journals',
+    description: 'Peer-reviewed open-access scholarly publishing across science, technology, AI, engineering, and interdisciplinary research.',
+    url: SITE_URL,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NextGen Innovation & Research Journals',
+    description: 'Peer-reviewed open-access scholarly publishing.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -24,8 +57,30 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'PublishingHouse',
+    name: 'NextGen Innovation & Research Journals',
+    alternateName: 'NextGen Research and Innovation Press',
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+    description: 'Peer-reviewed open-access scholarly academic publisher based in London, UK.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'London',
+      addressCountry: 'GB',
+    },
+    publishingPrinciples: `${SITE_URL}/editorial-policies`,
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
         <Providers>
           <Navbar />

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx, stampScholarlyPdf } from '@/lib/pdfGenerator';
 import { getFileBuffer, uploadFile } from '@/lib/storage';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -119,7 +120,7 @@ export async function GET(
         journalTitle: article.journal.title,
         journalAbbreviation: article.journal.abbreviation,
         journalSlug: article.journal.slug,
-        journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${article.journal.slug}`,
+        journalUrl: `${getBaseUrl()}/journals/${article.journal.slug}`,
         onlineIssn: article.journal.onlineIssn,
         printIssn: article.journal.printIssn,
         volumeNumber: article.issue?.volume?.volumeNumber || 1,
@@ -213,7 +214,7 @@ export async function GET(
           journalTitle: article.journal.title,
           journalAbbreviation: article.journal.abbreviation,
           journalSlug: article.journal.slug,
-          journalUrl: `${process.env.NEXTAUTH_URL || 'https://nextgenjournals.org'}/journals/${article.journal.slug}`,
+          journalUrl: `${getBaseUrl()}/journals/${article.journal.slug}`,
           onlineIssn: article.journal.onlineIssn,
           printIssn: article.journal.printIssn,
           volumeNumber: article.issue?.volume?.volumeNumber || 1,

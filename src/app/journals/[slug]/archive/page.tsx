@@ -1,18 +1,42 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import JournalHeader from '@/components/JournalHeader';
 import { BookOpen, Layers, ArrowRight, Star } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type Props = {
+  params: { slug: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const journal = await prisma.journal.findUnique({
+    where: { slug: params.slug },
+    select: { title: true, slug: true, abbreviation: true },
+  });
+
+  if (!journal) {
+    return { title: 'Archive | NextGen Innovation & Research Journals' };
+  }
+
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/journals/${journal.slug}/archive`;
+
+  return {
+    title: `Issue Archives | ${journal.title}`,
+    description: `Complete archive of past volumes and issues for ${journal.title} (${journal.abbreviation || 'Open Access'}).`,
+    alternates: { canonical },
+  };
+}
+
 export default async function JournalArchivePage({
   params,
-}: {
-  params: { slug: string };
-}) {
+}: Props) {
   const journal = await prisma.journal.findUnique({
     where: { slug: params.slug },
     include: {

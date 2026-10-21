@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { getBaseUrl } from './siteUrl';
 
 // Configuration interface
 export interface EmailConfig {
@@ -78,7 +79,7 @@ export function renderScholarlyEmail({
   footnote?: string;
   additionalSections?: Array<{ title: string; content: string }>;
 }): string {
-  const portalUrl = process.env.NEXTAUTH_URL || 'https://nextgenjournals.org';
+  const portalUrl = getBaseUrl();
   const fullActionUrl = actionButton
     ? actionButton.url.startsWith('http')
       ? actionButton.url

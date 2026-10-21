@@ -1,6 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import { BookOpen, Award, Shield, Globe, Users, CheckCircle } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
+
+export const metadata: Metadata = {
+  title: 'About NextGen Innovation & Research Journals',
+  description: 'Learn about NextGen Innovation & Research Journals, an academic scholarly publisher based in London, UK, committed to peer review integrity and open-access research.',
+  alternates: {
+    canonical: `${getBaseUrl()}/about`,
+  },
+};
 
 export default function AboutPage() {
   return (

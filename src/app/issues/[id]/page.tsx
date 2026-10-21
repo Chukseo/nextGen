@@ -1,17 +1,55 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Layers, ArrowLeft, Download, BookOpen } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type Props = {
+  params: { id: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const issue = await prisma.issue.findUnique({
+    where: { id: params.id },
+    include: {
+      journal: true,
+      volume: true,
+    },
+  });
+
+  if (!issue) {
+    return {
+      title: 'Issue Not Found | NextGen Innovation & Research Journals',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/issues/${issue.id}`;
+  const title = `Vol. ${issue.volume?.volumeNumber || 1}, No. ${issue.issueNumber} (${issue.year}) | ${issue.journal.title}`;
+  const desc = `Browse articles in ${issue.journal.title}, Volume ${issue.volume?.volumeNumber || 1}, Issue ${issue.issueNumber} (${issue.year}). Open Access peer-reviewed publications.`;
+
+  return {
+    title,
+    description: desc,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description: desc,
+      url: canonical,
+      siteName: issue.journal.title,
+    },
+  };
+}
+
 export default async function IssueDetailPage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: Props) {
   const issue = await prisma.issue.findUnique({
     where: { id: params.id },
     include: {

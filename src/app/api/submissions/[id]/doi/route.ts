@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { depositDOI, generateCrossrefXML, formatDOISuffix } from '@/lib/crossref';
 import { isMasterAdmin, isEditor } from '@/lib/permissions';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,7 @@ export async function GET(
     const suffix = submission.doiRecord?.suffix || formatDOISuffix(submission.journal.slug, publishedYear, sequence);
     const fullDoi = submission.doiRecord?.doi || `${prefix}/${suffix}`;
 
-    const siteUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const siteUrl = getBaseUrl();
     const resourceUrl = `${siteUrl}/articles/${submission.publishedArticle?.slug || submission.publishedArticle?.id || submission.id}`;
 
     const previewXml = generateCrossrefXML({

@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts, PDFPage } from 'pdf-lib';
 import mammoth from 'mammoth';
+import { getBaseUrl } from './siteUrl';
 
 export interface TableCell {
   text: string;
@@ -717,7 +718,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       });
 
       y -= 12;
-      const siteBase = process.env.NEXTAUTH_URL || 'https://nextgenjournals.org';
+      const siteBase = getBaseUrl();
       const journalUrl = data.journalUrl || (data.journalSlug ? `${siteBase}/journals/${data.journalSlug}` : siteBase);
       page.drawText(journalUrl, {
         x: marginX,

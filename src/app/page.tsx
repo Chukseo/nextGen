@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import {
   BookOpen,
   Search,
@@ -20,9 +21,24 @@ import {
   Globe
 } from 'lucide-react';
 import prisma from '@/lib/prisma';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Fresh research data
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = getBaseUrl();
+  return {
+    title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
+    description: 'Digital scholarly academic journal publisher based in London, UK advancing computer science, artificial intelligence, healthcare, and multidisciplinary research.',
+    alternates: { canonical: baseUrl },
+    openGraph: {
+      title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
+      description: 'Advancing global scholarly discovery with peer-reviewed open access journals.',
+      url: baseUrl,
+    },
+  };
+}
 
 export default async function HomePage() {
   let journals: any[] = [];

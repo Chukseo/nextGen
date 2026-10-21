@@ -1,17 +1,41 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { generateDefaultAuthorGuidelines } from '@/lib/guidelinesGenerator';
+import { getBaseUrl } from '@/lib/siteUrl';
 import JournalGuidelinesClient from './JournalGuidelinesClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type Props = {
+  params: { slug: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const journal = await prisma.journal.findUnique({
+    where: { slug: params.slug },
+    select: { title: true, slug: true, abbreviation: true },
+  });
+
+  if (!journal) {
+    return { title: 'Author Guidelines | NextGen Innovation & Research Journals' };
+  }
+
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/journals/${journal.slug}/guidelines`;
+
+  return {
+    title: `Author Submission Guidelines | ${journal.title}`,
+    description: `Manuscript preparation, formatting, citation style, and submission guidelines for ${journal.title}.`,
+    alternates: { canonical },
+  };
+}
+
 export default async function JournalGuidelinesPage({
   params,
-}: {
-  params: { slug: string };
-}) {
+}: Props) {
   const journal = await prisma.journal.findUnique({
     where: { slug: params.slug },
     include: {

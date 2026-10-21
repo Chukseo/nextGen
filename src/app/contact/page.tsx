@@ -1,5 +1,15 @@
 import React from 'react';
+import { Metadata } from 'next';
 import { Mail, Globe, MapPin, MessageSquare, Phone } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
+
+export const metadata: Metadata = {
+  title: 'Contact Editorial Office & Publisher',
+  description: 'Contact NextGen Innovation & Research Journals editorial office, technical support, and publisher in London, UK.',
+  alternates: {
+    canonical: `${getBaseUrl()}/contact`,
+  },
+};
 
 export default function ContactPage() {
   return (

@@ -1,10 +1,27 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Search, BookOpen, ArrowRight, Download, Filter } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/articles`;
+  return {
+    title: 'Published Scholarly Articles & Research Repository',
+    description: 'Browse, search, and download peer-reviewed open-access scholarly articles published across NextGen Innovation & Research Journals.',
+    alternates: { canonical },
+    openGraph: {
+      title: 'Published Scholarly Articles | NextGen Innovation & Research Journals',
+      description: 'Open access research repository and article discovery directory.',
+      url: canonical,
+    },
+  };
+}
 
 export default async function ArticlesSearchPage({
   searchParams,

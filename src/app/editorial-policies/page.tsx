@@ -1,6 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import { ShieldCheck, BookOpen, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
+
+export const metadata: Metadata = {
+  title: 'Editorial Policies & Publication Ethics',
+  description: 'Editorial policies, COPE compliance, double-anonymous peer review standards, Open Access CC BY 4.0 licensing, and publication ethics of NextGen Innovation & Research Journals.',
+  alternates: {
+    canonical: `${getBaseUrl()}/editorial-policies`,
+  },
+};
 
 export default function EditorialPoliciesPage() {
   return (

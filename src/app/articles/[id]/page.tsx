@@ -4,12 +4,11 @@ import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { getFileBuffer } from '@/lib/storage';
 import { parseManuscriptDocx } from '@/lib/pdfGenerator';
+import { getBaseUrl } from '@/lib/siteUrl';
 import ArticleDetailClient from './ArticleDetailClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-const SITE_URL = process.env.NEXTAUTH_URL || 'https://nextgenpress.vercel.app';
 
 type PageProps = {
   params: { id: string };
@@ -49,6 +48,31 @@ async function getArticle(slugOrId: string) {
   });
 }
 
+function getArticleAuthors(article: any): { names: string[]; affiliations: string[]; raw: any[] } {
+  const coAuthors = article.submission?.coAuthors || [];
+  if (coAuthors.length > 0) {
+    const names = coAuthors.map((c: any) => `${c.firstName} ${c.lastName}`.trim()).filter(Boolean);
+    const affiliations = coAuthors.map((c: any) => c.affiliation).filter(Boolean);
+    return { names, affiliations, raw: coAuthors };
+  }
+
+  const leadName = article.submission?.author?.name;
+  if (leadName && !/NextGen|Admin|Staff|System/i.test(leadName)) {
+    const affiliation = article.submission?.author?.affiliation || '';
+    return {
+      names: [leadName.trim()],
+      affiliations: affiliation ? [affiliation] : [],
+      raw: [{ firstName: leadName, lastName: '', affiliation }],
+    };
+  }
+
+  return {
+    names: ['Scholarly Contributor'],
+    affiliations: [],
+    raw: [{ firstName: 'Scholarly', lastName: 'Contributor', affiliation: '' }],
+  };
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -60,41 +84,28 @@ export async function generateMetadata({
     };
   }
 
-  // Combine submitting author and co-authors in proper contribution order
-  const leadAuthorName = article.submission?.author?.name;
-  const coAuthorNames = (article.submission?.coAuthors || []).map(
-    (a) => `${a.firstName} ${a.lastName}`.trim()
-  );
+  const baseUrl = getBaseUrl();
+  const { names: fallbackAuthors, affiliations: authorAffiliations } = getArticleAuthors(article);
 
-  const authors = [
-    leadAuthorName,
-    ...coAuthorNames,
-  ]
-    .filter((name): name is string => Boolean(name && name.trim()))
-    .filter((name, index, all) => all.indexOf(name) === index);
-
-  const fallbackAuthors = authors.length > 0 ? authors : ['Scholar Contributor'];
-
-  const authorAffiliations = (article.submission?.coAuthors || [])
-    .map((a) => a.affiliation)
-    .filter(Boolean);
-
-  const canonical = `${SITE_URL}/articles/${article.slug || article.id}`;
+  const canonical = `${baseUrl}/articles/${article.slug || article.id}`;
   const citationDate = article.publishedAt
     .toISOString()
     .slice(0, 10)
     .replaceAll('-', '/');
 
-  // Only use a verified public PDF URL or the public API stream
+  // Direct public PDF URL or API download stream
   const pdfUrl = article.pdfUrl && /^https?:\/\//i.test(article.pdfUrl)
     ? article.pdfUrl
-    : `${SITE_URL}/api/articles/${article.id}/pdf`;
+    : `${baseUrl}/api/articles/${article.id}/pdf`;
+
+  const publisherName = article.journal.publisher || 'NextGen Innovation & Research Journals, London, UK';
 
   const citationMetadata: Record<string, string | string[]> = {
     citation_title: article.title,
     citation_author: fallbackAuthors,
     citation_publication_date: citationDate,
     citation_journal_title: article.journal.title,
+    citation_publisher: publisherName,
   };
 
   if (article.journal.abbreviation) {
@@ -143,7 +154,7 @@ export async function generateMetadata({
   citationMetadata['DC.title'] = article.title;
   citationMetadata['DC.creator'] = fallbackAuthors;
   citationMetadata['DC.date'] = article.publishedAt.toISOString().slice(0, 10);
-  citationMetadata['DC.publisher'] = article.journal.publisher || 'NextGen Innovation & Research Journals';
+  citationMetadata['DC.publisher'] = publisherName;
   citationMetadata['DC.format'] = 'text/html';
   citationMetadata['DC.language'] = 'en';
   if (article.doi && article.doiStatus === 'REGISTERED') {
@@ -154,7 +165,17 @@ export async function generateMetadata({
     title: `${article.title} | ${article.journal.title}`,
     description: article.abstract?.slice(0, 300) || '',
     alternates: { canonical },
-    robots: { index: true, follow: true },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     keywords: article.keywords.map((item) => item.keyword),
     authors: fallbackAuthors.map((name) => ({ name })),
     openGraph: {
@@ -216,5 +237,75 @@ export default async function ArticleDetailPage({
     }
   }
 
-  return <ArticleDetailClient article={article} manuscriptBlocks={manuscriptBlocks} />;
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/articles/${article.slug || article.id}`;
+  const pdfUrl = article.pdfUrl && /^https?:\/\//i.test(article.pdfUrl)
+    ? article.pdfUrl
+    : `${baseUrl}/api/articles/${article.id}/pdf`;
+
+  const { raw: authorObjects } = getArticleAuthors(article);
+  const [firstPage, lastPage] = (article.pageRange || '').split('-', 2);
+
+  const scholarlyJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ScholarlyArticle',
+    headline: article.title,
+    name: article.title,
+    description: article.abstract || undefined,
+    url: canonical,
+    datePublished: article.publishedAt.toISOString(),
+    inLanguage: 'en',
+    isPartOf: {
+      '@type': 'PublicationIssue',
+      issueNumber: article.issue?.issueNumber ? String(article.issue.issueNumber) : undefined,
+      isPartOf: {
+        '@type': ['Periodical', 'PublicationVolume'],
+        name: article.journal.title,
+        volumeNumber: article.issue?.volume?.volumeNumber ? String(article.issue.volume.volumeNumber) : undefined,
+        issn: article.journal.onlineIssn || undefined,
+        publisher: {
+          '@type': 'Organization',
+          name: article.journal.publisher || 'NextGen Innovation & Research Journals',
+          url: baseUrl,
+        },
+      },
+    },
+    author: authorObjects.map((a: any) => ({
+      '@type': 'Person',
+      name: `${a.firstName || ''} ${a.lastName || ''}`.trim() || 'Scholarly Author',
+      ...(a.affiliation && {
+        affiliation: {
+          '@type': 'Organization',
+          name: a.affiliation,
+        },
+      }),
+    })),
+    publisher: {
+      '@type': 'Organization',
+      name: article.journal.publisher || 'NextGen Innovation & Research Journals',
+      url: baseUrl,
+    },
+    ...(firstPage && { pageStart: firstPage.trim() }),
+    ...(lastPage && { pageEnd: lastPage.trim() }),
+    ...(article.pageRange && { pagination: article.pageRange }),
+    ...(article.doi && { identifier: `https://doi.org/${article.doi}` }),
+    mainEntityOfPage: canonical,
+    encoding: {
+      '@type': 'MediaObject',
+      encodingFormat: 'application/pdf',
+      contentUrl: pdfUrl,
+    },
+    keywords: article.keywords.map((k) => k.keyword),
+    license: 'https://creativecommons.org/licenses/by/4.0/',
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(scholarlyJsonLd) }}
+      />
+      <ArticleDetailClient article={article} manuscriptBlocks={manuscriptBlocks} />
+    </>
+  );
 }

@@ -1,10 +1,27 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { BookOpen, ArrowRight, ShieldCheck, FileText, CheckCircle } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/journals`;
+  return {
+    title: 'Academic Journals Catalogue',
+    description: 'Explore peer-reviewed open-access journals published by NextGen Innovation & Research Journals across computing, artificial intelligence, science, and interdisciplinary fields.',
+    alternates: { canonical },
+    openGraph: {
+      title: 'Academic Journals Catalogue | NextGen Innovation & Research Journals',
+      description: 'Explore peer-reviewed open-access scholarly journals.',
+      url: canonical,
+    },
+  };
+}
 
 export default async function JournalsPage() {
   const journals = await prisma.journal.findMany({

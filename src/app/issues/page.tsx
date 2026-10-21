@@ -1,10 +1,27 @@
 import React from 'react';
 import Link from 'next/link';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Layers, Calendar, ArrowRight, BookOpen, Star, Filter } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/issues`;
+  return {
+    title: 'Published Journal Issues Archive',
+    description: 'Browse complete volumes and published issues across all scholarly journals by NextGen Innovation & Research Journals.',
+    alternates: { canonical },
+    openGraph: {
+      title: 'Published Issues Archive | NextGen Innovation & Research Journals',
+      description: 'Explore volumes and issues across all active journals.',
+      url: canonical,
+    },
+  };
+}
 
 export default async function IssuesPage({
   searchParams,

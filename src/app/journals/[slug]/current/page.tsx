@@ -1,18 +1,42 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import JournalHeader from '@/components/JournalHeader';
 import { BookOpen, ArrowRight, Download, FileText, Star, ArrowLeft } from 'lucide-react';
+import { getBaseUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type Props = {
+  params: { slug: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const journal = await prisma.journal.findUnique({
+    where: { slug: params.slug },
+    select: { title: true, slug: true, abbreviation: true },
+  });
+
+  if (!journal) {
+    return { title: 'Current Issue | NextGen Innovation & Research Journals' };
+  }
+
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/journals/${journal.slug}/current`;
+
+  return {
+    title: `Current Issue | ${journal.title}`,
+    description: `Latest research articles and publications in the current issue of ${journal.title}.`,
+    alternates: { canonical },
+  };
+}
+
 export default async function JournalCurrentIssuePage({
   params,
-}: {
-  params: { slug: string };
-}) {
+}: Props) {
   const journal = await prisma.journal.findUnique({
     where: { slug: params.slug },
     include: {
