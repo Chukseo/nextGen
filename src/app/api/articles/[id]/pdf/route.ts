@@ -17,6 +17,7 @@ export async function GET(
       where: {
         OR: [
           { id: articleId },
+          { slug: articleId },
           { submissionId: articleId },
         ],
         submission: { status: 'PUBLISHED' },
@@ -61,6 +62,8 @@ export async function GET(
               'Content-Type': 'application/pdf',
               'Content-Disposition': `inline; filename="${article.journal.abbreviation || 'Article'}_${article.articleNumber || 'publication'}.pdf"`,
               'Cache-Control': 'public, max-age=3600',
+              'X-Robots-Tag': 'index, follow',
+              'X-Content-Type-Options': 'nosniff',
             },
           });
         }
@@ -281,28 +284,15 @@ export async function GET(
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="${filename}"`,
         'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'X-Robots-Tag': 'index, follow',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error: any) {
     console.error('PDF generation endpoint error:', error);
-    return new Response(
-      `<!DOCTYPE html>
-<html>
-<head><title>Article PDF Notice</title><meta charset="utf-8"></head>
-<body style="font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0b192c; color: #f8fafc;">
-  <div style="max-width: 480px; padding: 2rem; background: #1e293b; border-radius: 12px; border: 1px solid #334155; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-    <h2 style="margin-top: 0; color: #60a5fa;">Article Typesetter Notice</h2>
-    <p style="color: #94a3b8; line-height: 1.6; font-size: 14px;">The official typeset PDF is compiling or updating for this article. Please refresh in a moment to download.</p>
-    <a href="javascript:history.back()" style="display: inline-block; margin-top: 1.25rem; padding: 0.6rem 1.25rem; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px;">Return to Article Page</a>
-  </div>
-</body>
-</html>`,
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-        },
-      }
+    return NextResponse.json(
+      { error: 'The official article PDF is temporarily unavailable.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' } }
     );
   }
 }

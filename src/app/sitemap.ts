@@ -138,7 +138,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    return [...staticRoutes, ...journalRoutes, ...issueRoutes, ...articleRoutes];
+    const volumes = await prisma.volume.findMany({
+      where: { issues: { some: { status: 'PUBLISHED' } } },
+      select: { id: true, createdAt: true },
+    });
+    const volumeRoutes: MetadataRoute.Sitemap = volumes.map((volume) => ({
+      url: `${baseUrl}/volumes/${volume.id}`,
+      lastModified: volume.createdAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.75,
+    }));
+
+    const authors = await prisma.submissionAuthor.findMany({
+      where: { submission: { status: 'PUBLISHED', publishedArticle: { isNot: null } } },
+      select: { id: true, submission: { select: { updatedAt: true } } },
+    });
+    const authorRoutes: MetadataRoute.Sitemap = authors.map((author) => ({
+      url: `${baseUrl}/authors/${author.id}`,
+      lastModified: author.submission.updatedAt,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }));
+
+    return [...staticRoutes, ...journalRoutes, ...volumeRoutes, ...issueRoutes, ...articleRoutes, ...authorRoutes];
   } catch (err) {
     console.warn('Sitemap generation database query fallback:', err);
     return staticRoutes;

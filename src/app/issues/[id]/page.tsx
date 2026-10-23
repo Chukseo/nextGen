@@ -69,7 +69,29 @@ export default async function IssueDetailPage({
     notFound();
   }
 
+  const baseUrl = getBaseUrl();
+  const issueUrl = `${baseUrl}/issues/${issue.id}`;
+  const issueJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'PublicationIssue',
+    name: issue.title,
+    issueNumber: String(issue.issueNumber),
+    datePublished: issue.publicationDate?.toISOString(),
+    url: issueUrl,
+    isPartOf: {
+      '@type': 'PublicationVolume',
+      volumeNumber: String(issue.volume.volumeNumber),
+      isPartOf: {
+        '@type': 'Periodical',
+        name: issue.journal.title,
+        ...(issue.journal.onlineIssn ? { issn: issue.journal.onlineIssn } : {}),
+      },
+    },
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(issueJsonLd) }} />
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-12 space-y-8">
       <Link
         href="/issues"
@@ -208,5 +230,6 @@ export default async function IssueDetailPage({
         </div>
       </div>
     </div>
+    </>
   );
 }

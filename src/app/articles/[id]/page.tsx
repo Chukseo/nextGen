@@ -94,9 +94,7 @@ export async function generateMetadata({
     .replaceAll('-', '/');
 
   // Direct public PDF URL or API download stream
-  const pdfUrl = article.pdfUrl && /^https?:\/\//i.test(article.pdfUrl)
-    ? article.pdfUrl
-    : `${baseUrl}/api/articles/${article.id}/pdf`;
+  const pdfUrl = `${canonical}/pdf`;
 
   const publisherName = article.journal.publisher || 'NextGen Innovation & Research Journals, London, UK';
 
@@ -259,14 +257,17 @@ export default async function ArticleDetailPage({
       '@type': 'PublicationIssue',
       issueNumber: article.issue?.issueNumber ? String(article.issue.issueNumber) : undefined,
       isPartOf: {
-        '@type': ['Periodical', 'PublicationVolume'],
-        name: article.journal.title,
+        '@type': 'PublicationVolume',
         volumeNumber: article.issue?.volume?.volumeNumber ? String(article.issue.volume.volumeNumber) : undefined,
-        issn: article.journal.onlineIssn || undefined,
-        publisher: {
-          '@type': 'Organization',
-          name: article.journal.publisher || 'NextGen Innovation & Research Journals',
-          url: baseUrl,
+        isPartOf: {
+          '@type': 'Periodical',
+          name: article.journal.title,
+          issn: article.journal.onlineIssn || undefined,
+          publisher: {
+            '@type': 'Organization',
+            name: article.journal.publisher || 'NextGen Innovation & Research Journals',
+            url: baseUrl,
+          },
         },
       },
     },

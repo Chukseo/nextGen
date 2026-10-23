@@ -56,7 +56,7 @@ export default function ArticleDetailClient({
     authors: authors.map((a: any) => ({ firstName: a.firstName, lastName: a.lastName })),
   };
 
-  const downloadUrl = `/api/articles/${article.id}/pdf`;
+  const downloadUrl = `/articles/${article.slug || article.id}/pdf`;
 
   const handleDownloadClick = () => {
     setDownloadsCount((prev) => prev + 1);
@@ -116,7 +116,9 @@ export default function ArticleDetailClient({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-slate-800">
             {authors.map((author: any, idx: number) => (
               <span key={author.id} className="inline-flex items-center">
-                <span>{author.firstName} {author.lastName}</span>
+                <Link href={`/authors/${author.id}`} className="hover:text-blue-700 hover:underline">
+                  {author.firstName} {author.lastName}
+                </Link>
                 <sup className="text-blue-700 ml-0.5 font-bold">{idx + 1}</sup>
                 {author.isCorresponding && (
                   <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1 ml-1 rounded">

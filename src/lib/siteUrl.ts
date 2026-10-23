@@ -8,8 +8,11 @@ export function getBaseUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL;
   if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
     let clean = envUrl.replace(/\/+$/, '');
-    if (clean === 'https://nextgenuk.online' || clean === 'http://nextgenuk.online') {
-      clean = 'https://www.nextgenuk.online';
+    if (clean === 'http://nextgenuk.online' || clean === 'http://www.nextgenuk.online') {
+      clean = 'https://nextgenuk.online';
+    }
+    if (clean === 'https://www.nextgenuk.online') {
+      clean = 'https://nextgenuk.online';
     }
     return clean;
   }
@@ -25,5 +28,5 @@ export function getBaseUrl(): string {
   }
 
   // 3. Canonical live production domain
-  return 'https://www.nextgenuk.online';
+  return 'https://nextgenuk.online';
 }
