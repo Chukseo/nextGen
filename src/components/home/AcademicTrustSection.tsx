@@ -23,21 +23,17 @@ export interface IndexingPlatform {
   featured: boolean;
 }
 
-// Inline SVG logos — copyright-safe interpretations using official brand colours.
+// Official Brand Logos
 const GoogleScholarLogo = () => (
-  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Google Scholar" role="img" className="w-16 h-16">
-    <rect width="120" height="120" rx="20" fill="#f8f9fa"/>
-    {/* Mortarboard cap */}
-    <polygon points="60,22 100,42 60,58 20,42" fill="#4285F4"/>
-    <polygon points="20,42 60,58 60,78 20,62" fill="#3367D6"/>
-    <polygon points="100,42 60,58 60,78 100,62" fill="#5B9BF5"/>
-    {/* Scholar "S" */}
-    <text x="60" y="108" textAnchor="middle" fontSize="26" fontWeight="800" fontFamily="serif" fill="#4285F4">Scholar</text>
-  </svg>
+  <img
+    src="/logos/google-scholar.png"
+    alt="Google Scholar"
+    className="h-10 sm:h-11 w-auto max-w-full object-contain select-none"
+  />
 );
 
 const ZenodoLogo = () => (
-  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Zenodo" role="img" className="w-16 h-16">
+  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Zenodo" role="img" className="w-14 h-14">
     <rect width="120" height="120" rx="20" fill="#1A1A2E"/>
     {/* Z lettermark */}
     <path d="M22 30h76l-56 60h56" stroke="#1EAAF1" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -50,22 +46,16 @@ const OpenAIRELogo = () => (
   <img
     src="/logos/openaire.png"
     alt="OpenAIRE"
-    className="h-11 sm:h-12 w-auto max-w-full object-contain select-none"
+    className="h-10 sm:h-11 w-auto max-w-full object-contain select-none"
   />
 );
 
 const DOAJLogo = () => (
-  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="DOAJ – Directory of Open Access Journals" role="img" className="w-16 h-16">
-    <rect width="120" height="120" rx="20" fill="#ffffff"/>
-    <rect x="2" y="2" width="116" height="116" rx="18" stroke="#E8F5E9" strokeWidth="2"/>
-    {/* Open lock / access icon */}
-    <rect x="30" y="54" width="60" height="42" rx="8" fill="#2E7D32"/>
-    <path d="M42 54V42a18 18 0 1 1 36 0" stroke="#2E7D32" strokeWidth="7" strokeLinecap="round" fill="none"/>
-    <circle cx="60" cy="72" r="7" fill="#ffffff"/>
-    <rect x="57" y="72" width="6" height="12" rx="3" fill="#ffffff"/>
-    {/* DOAJ wordmark */}
-    <text x="60" y="115" textAnchor="middle" fontSize="13" fontWeight="800" fontFamily="sans-serif" fill="#2E7D32">DOAJ</text>
-  </svg>
+  <img
+    src="/logos/doaj.png"
+    alt="DOAJ — Directory of Open Access Journals"
+    className="h-9 sm:h-10 w-auto max-w-full object-contain rounded-md shadow-xs select-none"
+  />
 );
 
 // Planned / pipeline platforms (shown in secondary row when featured: false)
