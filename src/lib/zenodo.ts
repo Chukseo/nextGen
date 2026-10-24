@@ -299,6 +299,28 @@ export async function getRecord(id: string | number): Promise<ZenodoDeposition> 
 }
 
 /**
+ * Validate and normalize an ORCID string.
+ * Zenodo requires the bare 16-digit format: 0000-0000-0000-0000 (or ending in X).
+ * Returns the normalized ORCID or null if invalid/absent.
+ */
+function normalizeOrcid(raw: string | null | undefined): string | null {
+  if (!raw || typeof raw !== 'string') return null;
+
+  // Strip URL prefix variants (http://orcid.org/, https://orcid.org/, orcid.org/)
+  const stripped = raw
+    .trim()
+    .replace(/^https?:\/\/(www\.)?orcid\.org\//i, '')
+    .replace(/^orcid\.org\//i, '')
+    .trim();
+
+  // Must match exactly: XXXX-XXXX-XXXX-XXXX or XXXX-XXXX-XXXX-XXXXX (last char may be X)
+  const orcidPattern = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/i;
+  if (!orcidPattern.test(stripped)) return null;
+
+  return stripped.toUpperCase();
+}
+
+/**
  * Helper to build Zenodo metadata from an article record
  */
 export function buildZenodoMetadataFromArticle(article: any): ZenodoMetadata {
@@ -313,18 +335,20 @@ export function buildZenodoMetadataFromArticle(article: any): ZenodoMetadata {
   if (coAuthors.length > 0) {
     creators = coAuthors.map((ca: any) => {
       const name = `${ca.firstName || ''} ${ca.lastName || ''}`.trim() || 'Author';
+      const orcid = normalizeOrcid(ca.orcid);
       return {
         name,
         ...(ca.affiliation ? { affiliation: ca.affiliation.trim() } : {}),
-        ...(ca.orcid ? { orcid: ca.orcid.replace(/^https?:\/\/orcid\.org\//, '').trim() } : {}),
+        ...(orcid ? { orcid } : {}),
       };
     });
   } else if (article.submission?.author?.name && !/Admin|NextGen|Staff/i.test(article.submission.author.name)) {
+    const orcid = normalizeOrcid(article.submission.author.orcid);
     creators = [
       {
         name: article.submission.author.name.trim(),
         ...(article.submission.author.affiliation ? { affiliation: article.submission.author.affiliation.trim() } : {}),
-        ...(article.submission.author.orcid ? { orcid: article.submission.author.orcid.trim() } : {}),
+        ...(orcid ? { orcid } : {}),
       },
     ];
   } else {
@@ -362,13 +386,9 @@ export function buildZenodoMetadataFromArticle(article: any): ZenodoMetadata {
     license: 'cc-by-4.0',
     language: 'eng',
     imprint_publisher: article.journal?.publisher || 'NextGen Innovation & Research Journals',
-    related_identifiers: [
-      {
-        identifier: canonicalUrl,
-        relation: 'isIdenticalTo',
-        resource_type: 'publication-article',
-      },
-    ],
+    // Note: related_identifiers with non-DOI URLs can cause validation errors on Zenodo.
+    // Only include if we have a real DOI to cross-reference; the article URL is covered by
+    // the journal_title / journal_volume / journal_issue fields.
   };
 
   if (keywords.length > 0) {
