@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import prisma from '@/lib/prisma';
 import { getBaseUrl } from '@/lib/siteUrl';
+import AcademicTrustSection from '@/components/home/AcademicTrustSection';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Fresh research data
@@ -208,6 +209,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured Published Research Articles (Always Featured Across All Journals) */}
+      <AcademicTrustSection />
 
       {/* Featured Published Research Articles (Always Featured Across All Journals) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-6">
