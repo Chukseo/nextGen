@@ -8,6 +8,7 @@ import { uploadFile } from '@/lib/storage';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
 import { generateUniqueArticleSlug } from '@/lib/slug';
+import { publishArticleToZenodo } from '@/lib/zenodo';
 
 export const dynamic = 'force-dynamic';
 
@@ -234,121 +235,136 @@ export async function POST(req: Request) {
       doi: finalDoi,
     });
 
-    // Execute atomic import transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Create Submission with status PUBLISHED
-      const submission = await tx.submission.create({
-        data: {
-          submissionNumber,
-          journalId,
-          authorId: user.id,
-          articleType: articleType as any,
-          title,
-          subtitle: subtitle || null,
-          abstract,
-          discipline: discipline || 'General Academic Research',
-          status: 'PUBLISHED',
-          reviewModel: 'DOUBLE_ANONYMOUS',
-          conflictOfInterest,
-          ethicsStatement,
-          fundingInfo,
-          dataAvailability,
-          submittedAt: publishedDate,
-          acceptedAt: publishedDate,
-          publishedAt: publishedDate,
-          coAuthors: {
-            create: parsedAuthors.map((a, idx) => ({
-              firstName: a.firstName,
-              lastName: a.lastName,
-              email: a.email || `author${idx + 1}@institution.edu`,
-              affiliation: a.affiliation || 'Research Institution',
-              country: a.country || 'International',
-              orcid: a.orcid || null,
-              isCorresponding: Boolean(a.isCorresponding),
-              authorOrder: a.authorOrder || idx + 1,
-            })),
+    // Execute atomic import transaction with safe connection timeout
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // 1. Create Submission with status PUBLISHED
+        const submission = await tx.submission.create({
+          data: {
+            submissionNumber,
+            journalId,
+            authorId: user.id,
+            articleType: articleType as any,
+            title,
+            subtitle: subtitle || null,
+            abstract,
+            discipline: discipline || 'General Academic Research',
+            status: 'PUBLISHED',
+            reviewModel: 'DOUBLE_ANONYMOUS',
+            conflictOfInterest,
+            ethicsStatement,
+            fundingInfo,
+            dataAvailability,
+            submittedAt: publishedDate,
+            acceptedAt: publishedDate,
+            publishedAt: publishedDate,
+            coAuthors: {
+              create: parsedAuthors.map((a, idx) => ({
+                firstName: a.firstName,
+                lastName: a.lastName,
+                email: a.email || `author${idx + 1}@institution.edu`,
+                affiliation: a.affiliation || 'Research Institution',
+                country: a.country || 'International',
+                orcid: a.orcid || null,
+                isCorresponding: Boolean(a.isCorresponding),
+                authorOrder: a.authorOrder || idx + 1,
+              })),
+            },
           },
-        },
-      });
+        });
 
-      // 2. Create ManuscriptFile if PDF uploaded
-      if (pdfStorageKey) {
-        await tx.manuscriptFile.create({
+        // 2. Create ManuscriptFile if PDF uploaded
+        if (pdfStorageKey) {
+          await tx.manuscriptFile.create({
+            data: {
+              submissionId: submission.id,
+              versionNumber: 1,
+              fileType: 'FINAL_TYPESET_PDF',
+              originalFileName: file?.name || `${submissionNumber}.pdf`,
+              storageKey: pdfStorageKey,
+              storageUrl: pdfUrl,
+              mimeType: 'application/pdf',
+              fileSize: file?.size || 1024 * 1024,
+              isConfidential: false,
+              uploadedById: user.id,
+            },
+          });
+        }
+
+        // 3. Resolve slug and create PublishedArticle
+        const articleSlug = await generateUniqueArticleSlug(title, prisma);
+        const publishedArticle = await tx.publishedArticle.create({
+          data: {
+            slug: articleSlug,
+            submissionId: submission.id,
+            journalId,
+            issueId: targetIssue.id,
+            title,
+            abstract,
+            doi: finalDoi,
+            doiStatus: 'REGISTERED',
+            articleNumber,
+            pageRange,
+            pdfStorageKey: pdfStorageKey || `published/${journal.slug}/${targetIssue.year}/${submissionNumber}.pdf`,
+            pdfUrl: pdfUrl || `/api/articles/${submission.id}/pdf`,
+            license: 'CC BY 4.0',
+            citationString,
+            publishedAt: publishedDate,
+          },
+        });
+
+        // 4. Create Keywords (single atomic batch)
+        if (parsedKeywords.length > 0) {
+          await tx.articleKeyword.createMany({
+            data: parsedKeywords.map((kw) => ({
+              publishedArticleId: publishedArticle.id,
+              keyword: kw,
+            })),
+          });
+        }
+
+        // 5. Create References (single atomic batch, fast & prevents pooler timeout)
+        if (parsedReferences.length > 0) {
+          await tx.articleReference.createMany({
+            data: parsedReferences.map((rawRef, i) => {
+              const doiMatch = rawRef.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/);
+              return {
+                publishedArticleId: publishedArticle.id,
+                orderIndex: i + 1,
+                rawText: rawRef,
+                doi: doiMatch ? doiMatch[1].replace(/[.,;)]$/, '') : null,
+              };
+            }),
+          });
+        }
+
+        // 6. Create DOI Record
+        await tx.dOIRecord.create({
           data: {
             submissionId: submission.id,
-            versionNumber: 1,
-            fileType: 'FINAL_TYPESET_PDF',
-            originalFileName: file?.name || `${submissionNumber}.pdf`,
-            storageKey: pdfStorageKey,
-            storageUrl: pdfUrl,
-            mimeType: 'application/pdf',
-            fileSize: file?.size || 1024 * 1024,
-            isConfidential: false,
-            uploadedById: user.id,
+            doi: finalDoi,
+            prefix,
+            suffix: finalSuffix,
+            agency: 'CROSSREF',
+            status: 'REGISTERED',
+            depositBatchId: `direct-import-${Date.now()}`,
+            responseMessage: 'Directly imported and registered in publisher index.',
+            registeredAt: publishedDate,
+            lastAttemptAt: publishedDate,
           },
         });
+
+        return { submission, publishedArticle };
+      },
+      {
+        maxWait: 15000, // 15 seconds to acquire pool connection
+        timeout: 45000, // 45 seconds for interactive transaction to finish
       }
+    );
 
-      // 3. Resolve slug and create PublishedArticle
-      const articleSlug = await generateUniqueArticleSlug(title, prisma);
-      const publishedArticle = await tx.publishedArticle.create({
-        data: {
-          slug: articleSlug,
-          submissionId: submission.id,
-          journalId,
-          issueId: targetIssue.id,
-          title,
-          abstract,
-          doi: finalDoi,
-          doiStatus: 'REGISTERED',
-          articleNumber,
-          pageRange,
-          pdfStorageKey: pdfStorageKey || `published/${journal.slug}/${targetIssue.year}/${submissionNumber}.pdf`,
-          pdfUrl: pdfUrl || `/api/articles/${submission.id}/pdf`,
-          license: 'CC BY 4.0',
-          citationString,
-          publishedAt: publishedDate,
-        },
-      });
-
-      // 4. Create Keywords
-      for (const kw of parsedKeywords) {
-        await tx.articleKeyword.create({
-          data: {
-            publishedArticleId: publishedArticle.id,
-            keyword: kw,
-          },
-        });
-      }
-
-      // 5. Create References
-      for (let i = 0; i < parsedReferences.length; i++) {
-        await tx.articleReference.create({
-          data: {
-            publishedArticleId: publishedArticle.id,
-            orderIndex: i + 1,
-            rawText: parsedReferences[i],
-          },
-        });
-      }
-
-      // 6. Create DOI Record
-      await tx.dOIRecord.create({
-        data: {
-          submissionId: submission.id,
-          doi: finalDoi,
-          prefix,
-          suffix: finalSuffix,
-          agency: 'CROSSREF',
-          status: 'REGISTERED',
-          depositBatchId: `direct-import-${Date.now()}`,
-          responseMessage: 'Directly imported and registered in publisher index.',
-          registeredAt: publishedDate,
-          lastAttemptAt: publishedDate,
-        },
-      });
-
-      return { submission, publishedArticle };
+    // Asynchronously trigger Zenodo deposition in background (non-blocking)
+    publishArticleToZenodo(result.publishedArticle.id).catch((err) => {
+      console.warn('[Zenodo] Direct import automatic background deposit warning:', err);
     });
 
     await logAuditEvent({

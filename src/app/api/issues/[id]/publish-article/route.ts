@@ -312,16 +312,17 @@ export async function POST(
         await tx.articleReference.deleteMany({
           where: { publishedArticleId: pubArt.id },
         });
-        for (let i = 0; i < parsedReferences.length; i++) {
-          const rawText = parsedReferences[i];
-          const doiMatch = rawText.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/);
-          await tx.articleReference.create({
-            data: {
-              publishedArticleId: pubArt.id,
-              orderIndex: i + 1,
-              rawText,
-              doi: doiMatch ? doiMatch[1].replace(/[.,;)]$/, '') : null,
-            },
+        if (parsedReferences.length > 0) {
+          await tx.articleReference.createMany({
+            data: parsedReferences.map((rawText, i) => {
+              const doiMatch = rawText.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/);
+              return {
+                publishedArticleId: pubArt.id,
+                orderIndex: i + 1,
+                rawText,
+                doi: doiMatch ? doiMatch[1].replace(/[.,;)]$/, '') : null,
+              };
+            }),
           });
         }
       }
@@ -345,6 +346,10 @@ export async function POST(
       });
 
       return pubArt;
+    },
+    {
+      maxWait: 15000,
+      timeout: 45000,
     });
 
     // Notify author
