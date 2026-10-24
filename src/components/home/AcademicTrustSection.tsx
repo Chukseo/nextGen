@@ -47,19 +47,11 @@ const ZenodoLogo = () => (
 );
 
 const OpenAIRELogo = () => (
-  <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="OpenAIRE" role="img" className="w-16 h-16">
-    <rect width="120" height="120" rx="20" fill="#003366"/>
-    {/* Network nodes */}
-    <circle cx="60" cy="45" r="12" fill="#ffffff" opacity="0.95"/>
-    <circle cx="28" cy="78" r="9" fill="#4FC3F7"/>
-    <circle cx="92" cy="78" r="9" fill="#4FC3F7"/>
-    <circle cx="60" cy="96" r="7" fill="#81D4FA"/>
-    <line x1="60" y1="57" x2="28" y2="69" stroke="#4FC3F7" strokeWidth="2.5"/>
-    <line x1="60" y1="57" x2="92" y2="69" stroke="#4FC3F7" strokeWidth="2.5"/>
-    <line x1="28" y1="87" x2="60" y2="89" stroke="#81D4FA" strokeWidth="2"/>
-    <line x1="92" y1="87" x2="60" y2="89" stroke="#81D4FA" strokeWidth="2"/>
-    <text x="60" y="117" textAnchor="middle" fontSize="11" fontWeight="700" fontFamily="sans-serif" fill="#4FC3F7">OpenAIRE</text>
-  </svg>
+  <img
+    src="/logos/openaire.png"
+    alt="OpenAIRE"
+    className="h-11 sm:h-12 w-auto max-w-full object-contain select-none"
+  />
 );
 
 const DOAJLogo = () => (
@@ -283,7 +275,7 @@ function PlatformCard({
       `}
     >
       {/* Logo container */}
-      <div className="w-20 h-20 flex items-center justify-center rounded-xl bg-slate-50/80 border border-slate-100 transition-transform duration-300 group-hover:scale-105 motion-reduce:scale-100">
+      <div className="w-full max-w-[150px] h-20 px-3 flex items-center justify-center rounded-xl bg-slate-50/80 border border-slate-100 transition-transform duration-300 group-hover:scale-105 motion-reduce:scale-100">
         {platform.logo}
       </div>
 
