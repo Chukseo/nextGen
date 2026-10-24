@@ -11,6 +11,7 @@ import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } fro
 import { uploadFile, getFileBuffer } from '@/lib/storage';
 import { generateUniqueArticleSlug } from '@/lib/slug';
 import { getBaseUrl } from '@/lib/siteUrl';
+import { publishArticleToZenodo } from '@/lib/zenodo';
 
 export const dynamic = 'force-dynamic';
 
@@ -366,6 +367,13 @@ export async function POST(
         doi: finalDoi,
       },
     });
+
+    // Trigger asynchronous Zenodo publishing pipeline without blocking HTTP response
+    if (process.env.ZENODO_ENABLED !== 'false') {
+      publishArticleToZenodo(published.id).catch((zenodoErr) => {
+        console.error(`[Zenodo Background Pipeline] Error publishing article ${published.id}:`, zenodoErr);
+      });
+    }
 
     return NextResponse.json({
       success: true,

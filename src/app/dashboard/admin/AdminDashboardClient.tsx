@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Shield,
   Users,
@@ -29,6 +30,7 @@ import {
   Star,
   Layers,
   Calendar,
+  Globe,
 } from 'lucide-react';
 import ImportArticleModal from '@/components/ImportArticleModal';
 import AdminEditorialBoardModal from '@/components/AdminEditorialBoardModal';
@@ -55,7 +57,59 @@ export default function AdminDashboardClient({
   productionSubmissions?: any[];
   currentUser?: any;
 }) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'journals' | 'issues' | 'articles' | 'doi' | 'audit'>('overview');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'journals' | 'issues' | 'articles' | 'zenodo' | 'doi' | 'audit'>('overview');
+
+  // Zenodo controls state
+  const [zenodoLoading, setZenodoLoading] = useState<Record<string, boolean>>({});
+  const [zenodoBatchLoading, setZenodoBatchLoading] = useState(false);
+
+  const handleZenodoAction = async (articleId: string, action: 'publish' | 'republish' | 'sync') => {
+    setZenodoLoading((prev) => ({ ...prev, [articleId]: true }));
+    try {
+      const res = await fetch(`/api/admin/articles/${articleId}/zenodo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Zenodo operation failed');
+      }
+      setFeedback({
+        type: 'success',
+        text: `Zenodo ${action} completed successfully! Assigned DOI: ${data.result?.doi || 'Generated'}`,
+      });
+      router.refresh();
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message || 'Zenodo operation failed' });
+    } finally {
+      setZenodoLoading((prev) => ({ ...prev, [articleId]: false }));
+    }
+  };
+
+  const handleZenodoBatchBackfill = async () => {
+    if (!confirm('This will deposit all eligible published articles missing Zenodo records to Zenodo. Proceed?')) {
+      return;
+    }
+    setZenodoBatchLoading(true);
+    try {
+      const res = await fetch('/api/admin/zenodo/backfill', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Batch backfill failed');
+      const succeeded = data.results?.filter((r: any) => r.success).length || 0;
+      const failed = data.results?.filter((r: any) => !r.success).length || 0;
+      setFeedback({
+        type: 'success',
+        text: `Zenodo batch backfill complete: ${succeeded} published, ${failed} failed.`,
+      });
+      router.refresh();
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: err.message });
+    } finally {
+      setZenodoBatchLoading(false);
+    }
+  };
 
   // User modal
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -571,6 +625,10 @@ export default function AdminDashboardClient({
           { key: 'journals', label: `Journals (${journals.length})` },
           { key: 'issues', label: `Issues & Volumes (${issues.length})` },
           { key: 'articles', label: `Published Articles (${publishedArticles.length})` },
+          {
+            key: 'zenodo',
+            label: `Zenodo DOI Sync (${publishedArticles.filter((a: any) => a.zenodoDepositStatus === 'PUBLISHED').length}/${publishedArticles.length})`,
+          },
           { key: 'doi', label: `Crossref DOI Subsystem (${doiRecords.length})` },
           { key: 'audit', label: `Security Audit Logs (${auditEvents.length})` },
         ].map((tab) => (
@@ -1224,14 +1282,91 @@ export default function AdminDashboardClient({
                           </a>
                         </h4>
                         <p className="text-xs text-slate-600 font-medium">{authors}</p>
-                        {article.doi && (
-                          <div className="text-[11px] font-mono text-slate-500">
-                            DOI: {article.doi}
-                          </div>
-                        )}
+
+                        {/* Zenodo Status & DOI Display */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+                          {article.zenodoDoi ? (
+                            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-medium">
+                              <CheckCircle className="w-3 h-3 text-emerald-600" />
+                              <span>Zenodo DOI:</span>
+                              <a
+                                href={`https://doi.org/${article.zenodoDoi}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-mono underline font-bold"
+                              >
+                                {article.zenodoDoi}
+                              </a>
+                            </div>
+                          ) : (
+                            <span
+                              className={`px-2 py-0.5 rounded font-medium ${
+                                article.zenodoDepositStatus === 'UPLOADING'
+                                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  : article.zenodoDepositStatus === 'FAILED'
+                                  ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+                              }`}
+                            >
+                              Zenodo: {article.zenodoDepositStatus || 'NOT_DEPOSITED'}
+                            </span>
+                          )}
+
+                          {article.zenodoUrl && (
+                            <a
+                              href={article.zenodoUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-blue-700 hover:underline flex items-center gap-1 font-medium"
+                            >
+                              <span>View Zenodo</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+
+                          {article.zenodoLastError && (
+                            <span className="text-rose-600 truncate max-w-xs font-mono text-[10px]" title={article.zenodoLastError}>
+                              Error: {article.zenodoLastError}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+                        {/* Zenodo Action Buttons */}
+                        {article.zenodoDepositStatus === 'PUBLISHED' ? (
+                          <>
+                            <button
+                              onClick={() => handleZenodoAction(article.id, 'sync')}
+                              disabled={zenodoLoading[article.id]}
+                              title="Sync latest article metadata to Zenodo"
+                              className="inline-flex items-center space-x-1 text-xs font-semibold px-2.5 py-1.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors disabled:opacity-50"
+                            >
+                              <RefreshCw className={`w-3 h-3 ${zenodoLoading[article.id] ? 'animate-spin' : ''}`} />
+                              <span>Sync</span>
+                            </button>
+                            <button
+                              onClick={() => handleZenodoAction(article.id, 'republish')}
+                              disabled={zenodoLoading[article.id]}
+                              title="Force republish metadata to Zenodo"
+                              className="inline-flex items-center space-x-1 text-xs font-semibold px-2.5 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors disabled:opacity-50"
+                            >
+                              <UploadCloud className={`w-3 h-3 ${zenodoLoading[article.id] ? 'animate-spin' : ''}`} />
+                              <span>Republish</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleZenodoAction(article.id, 'publish')}
+                            disabled={zenodoLoading[article.id]}
+                            title="Deposit PDF and publish article to Zenodo"
+                            className="inline-flex items-center space-x-1 text-xs font-semibold px-2.5 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-50 shadow-xs"
+                          >
+                            <Globe className={`w-3 h-3 ${zenodoLoading[article.id] ? 'animate-spin' : ''}`} />
+                            <span>{zenodoLoading[article.id] ? 'Publishing…' : 'Publish to Zenodo'}</span>
+                          </button>
+                        )}
+
                         <a
                           href={`/articles/${article.slug || article.id}`}
                           target="_blank"
@@ -1331,6 +1466,223 @@ export default function AdminDashboardClient({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ZENODO REGISTRY & SYNC TAB */}
+      {activeTab === 'zenodo' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div>
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-blue-700" />
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Zenodo Publishing Pipeline & DOI Sync Status
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+                Automatically submits published manuscripts and full-text PDFs to the CERN / OpenAIRE Zenodo archive,
+                mints persistent Zenodo DOIs (10.5281/zenodo.*), and indexes articles to the NextGenJournals community.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleZenodoBatchBackfill}
+                disabled={zenodoBatchLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-3.5 py-2.5 rounded-lg transition-colors flex items-center space-x-2 shadow-xs disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${zenodoBatchLoading ? 'animate-spin' : ''}`} />
+                <span>{zenodoBatchLoading ? 'Depositing Batch…' : 'Batch Deposit Missing to Zenodo'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Metrics summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div className="text-xs font-semibold uppercase text-slate-500">Total Published</div>
+              <div className="text-2xl font-bold text-slate-900 mt-1">{publishedArticles.length}</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Live on NextGen journals</div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm bg-gradient-to-br from-white to-emerald-50/30">
+              <div className="text-xs font-semibold uppercase text-emerald-800">Zenodo Live & Minted</div>
+              <div className="text-2xl font-bold text-emerald-700 mt-1">
+                {publishedArticles.filter((a) => a.zenodoDepositStatus === 'PUBLISHED').length}
+              </div>
+              <div className="text-[11px] text-emerald-600 mt-0.5">With persistent 10.5281 DOI</div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm bg-gradient-to-br from-white to-amber-50/30">
+              <div className="text-xs font-semibold uppercase text-amber-800">Pending Zenodo Deposit</div>
+              <div className="text-2xl font-bold text-amber-700 mt-1">
+                {publishedArticles.filter((a) => a.zenodoDepositStatus !== 'PUBLISHED').length}
+              </div>
+              <div className="text-[11px] text-amber-600 mt-0.5">Awaiting automated sync</div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-blue-200 shadow-sm bg-gradient-to-br from-white to-blue-50/30">
+              <div className="text-xs font-semibold uppercase text-blue-800">Target Community</div>
+              <div className="text-sm font-bold text-blue-700 mt-1.5 flex items-center gap-1.5">
+                <span>NextGenJournals</span>
+                <a
+                  href="https://zenodo.org/communities/nextgenjournals"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-500 hover:text-blue-700"
+                  title="Open Zenodo Community"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+              <div className="text-[11px] text-blue-600 mt-1 font-mono">zenodo.org/communities/nextgenjournals</div>
+            </div>
+          </div>
+
+          {/* Sync Status Table */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-2 bg-slate-50/60">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                All Published Articles & Zenodo Sync Status
+              </h4>
+              <span className="text-xs text-slate-500">
+                {publishedArticles.length} articles recorded
+              </span>
+            </div>
+
+            <table className="w-full text-left text-xs text-slate-700">
+              <thead className="bg-slate-50 text-slate-500 uppercase border-b border-slate-200 text-[10px] tracking-wider">
+                <tr>
+                  <th className="py-3 px-4">Article Title & Journal</th>
+                  <th className="py-3 px-4">Zenodo DOI</th>
+                  <th className="py-3 px-4">Zenodo Record</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Last Sync</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {publishedArticles.map((article: any) => {
+                  const isPublishedOnZenodo = article.zenodoDepositStatus === 'PUBLISHED';
+                  const isBusy = !!zenodoLoading[article.id];
+                  return (
+                    <tr key={article.id} className="hover:bg-slate-50/50">
+                      <td className="py-3 px-4 max-w-sm">
+                        <div className="font-semibold text-slate-900 line-clamp-1 hover:text-blue-700">
+                          <a href={`/articles/${article.slug || article.id}`} target="_blank" rel="noreferrer">
+                            {article.title}
+                          </a>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
+                          <span className="font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded text-[10px]">
+                            {article.journal?.abbreviation}
+                          </span>
+                          {article.issue?.volume && (
+                            <span>
+                              Vol. {article.issue.volume.volumeNumber}, No. {article.issue.issueNumber} ({article.issue.year})
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {article.zenodoDoi ? (
+                          <a
+                            href={`https://doi.org/${article.zenodoDoi}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-mono text-blue-700 hover:underline flex items-center space-x-1"
+                          >
+                            <span>{article.zenodoDoi}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 font-mono text-[11px]">Pending</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {article.zenodoUrl ? (
+                          <a
+                            href={article.zenodoUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-700 hover:underline flex items-center space-x-1 font-mono text-[11px]"
+                          >
+                            <span>#{article.zenodoRecordId || 'Record'}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 text-[11px]">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`font-bold px-2 py-0.5 rounded text-[10px] inline-flex items-center gap-1 ${
+                            isPublishedOnZenodo
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : article.zenodoDepositStatus === 'UPLOADING'
+                              ? 'bg-amber-100 text-amber-800'
+                              : article.zenodoDepositStatus === 'FAILED'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {isPublishedOnZenodo && <CheckCircle className="w-2.5 h-2.5" />}
+                          {article.zenodoDepositStatus === 'UPLOADING' && <RefreshCw className="w-2.5 h-2.5 animate-spin" />}
+                          <span>{article.zenodoDepositStatus || 'NOT_DEPOSITED'}</span>
+                        </span>
+                        {article.zenodoLastError && (
+                          <div
+                            className="text-[10px] text-rose-600 mt-1 max-w-xs truncate font-mono"
+                            title={article.zenodoLastError}
+                          >
+                            {article.zenodoLastError}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 text-[11px]">
+                        {article.zenodoPublishedAt
+                          ? new Date(article.zenodoPublishedAt).toLocaleString()
+                          : 'Not synced'}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {isPublishedOnZenodo ? (
+                            <>
+                              <button
+                                onClick={() => handleZenodoAction(article.id, 'sync')}
+                                disabled={isBusy}
+                                title="Sync latest article metadata to Zenodo"
+                                className="inline-flex items-center space-x-1 text-[11px] font-semibold px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors disabled:opacity-50"
+                              >
+                                <RefreshCw className={`w-3 h-3 ${isBusy ? 'animate-spin' : ''}`} />
+                                <span>Sync Metadata</span>
+                              </button>
+                              <button
+                                onClick={() => handleZenodoAction(article.id, 'republish')}
+                                disabled={isBusy}
+                                title="Force republish new version to Zenodo"
+                                className="inline-flex items-center space-x-1 text-[11px] font-semibold px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-colors disabled:opacity-50"
+                              >
+                                <UploadCloud className={`w-3 h-3 ${isBusy ? 'animate-spin' : ''}`} />
+                                <span>Republish</span>
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleZenodoAction(article.id, 'publish')}
+                              disabled={isBusy}
+                              title="Deposit PDF and publish article to Zenodo"
+                              className="inline-flex items-center space-x-1 text-[11px] font-semibold px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-50 shadow-xs"
+                            >
+                              <Globe className={`w-3 h-3 ${isBusy ? 'animate-spin' : ''}`} />
+                              <span>{isBusy ? 'Publishing…' : 'Publish to Zenodo'}</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

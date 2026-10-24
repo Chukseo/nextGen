@@ -364,6 +364,14 @@ model PublishedArticle {
   publishedAt    DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+  // Zenodo Publishing Pipeline
+  zenodoRecordId      String?
+  zenodoDoi           String?
+  zenodoUrl           String?
+  zenodoPublishedAt   DateTime?
+  zenodoDepositStatus String?   @default("NOT_DEPOSITED") // NOT_DEPOSITED, PENDING, UPLOADING, PUBLISHED, FAILED
+  zenodoLastError     String?   @db.Text
+
   submission     Submission         @relation(fields: [submissionId], references: [id])
   journal        Journal            @relation(fields: [journalId], references: [id])
   issue          Issue              @relation(fields: [issueId], references: [id])

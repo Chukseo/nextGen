@@ -76,7 +76,15 @@ export default async function AuthorPage({ params }: Props) {
         {articles.map((article) => <li className="py-5" key={article.id}>
           <Link className="font-semibold text-blue-700 hover:underline" href={`/articles/${article.slug || article.id}`}>{article.title}</Link>
           <p className="mt-1 text-xs text-slate-600">{article.journal.title}. Vol. {article.issue.volume.volumeNumber}, No. {article.issue.issueNumber}, {new Date(article.publishedAt).getFullYear()}{article.pageRange ? `, pp. ${article.pageRange}` : ''}.</p>
-          <div className="mt-2 flex gap-4 text-xs"><Link className="text-blue-700 hover:underline" href={`/articles/${article.slug || article.id}`}>Read article</Link><a className="text-blue-700 hover:underline" href={`/articles/${article.slug || article.id}/pdf`}>PDF</a>{article.doi && <a className="text-blue-700 hover:underline" href={`https://doi.org/${article.doi}`}>DOI</a>}</div>
+          <div className="mt-2 flex gap-4 text-xs">
+            <Link className="text-blue-700 hover:underline" href={`/articles/${article.slug || article.id}`}>Read article</Link>
+            <a className="text-blue-700 hover:underline" href={`/articles/${article.slug || article.id}/pdf`}>PDF</a>
+            {(article.zenodoDoi || (article.doi && !article.doi.startsWith('10.5555'))) && (
+              <a className="text-blue-700 hover:underline" href={`https://doi.org/${article.zenodoDoi || article.doi}`} target="_blank" rel="noreferrer">
+                DOI: {article.zenodoDoi || article.doi}
+              </a>
+            )}
+          </div>
         </li>)}
       </ol>
     </section>

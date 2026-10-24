@@ -311,9 +311,9 @@ export default async function HomePage() {
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                    {article.doi ? (
-                      <span className="font-mono text-[11px] text-slate-500 truncate max-w-[150px]" title={article.doi}>
-                        DOI: {article.doi}
+                    {(article.zenodoDoi || (article.doi && !article.doi.startsWith('10.5555'))) ? (
+                      <span className="font-mono text-[11px] text-slate-500 truncate max-w-[150px]" title={article.zenodoDoi || article.doi}>
+                        DOI: {article.zenodoDoi || article.doi}
                       </span>
                     ) : (
                       <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">

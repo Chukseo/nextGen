@@ -263,9 +263,13 @@ export default async function ArticlesSearchPage({
                     )}
 
                     <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                      {article.doi && (
+                      {(article.zenodoDoi || (article.doi && !article.doi.startsWith('10.5555'))) ? (
                         <span className="font-mono text-slate-600">
-                          <strong>DOI:</strong> {article.doi}
+                          <strong>DOI:</strong> {article.zenodoDoi || article.doi}
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
+                          Open Access
                         </span>
                       )}
                       <div className="flex items-center space-x-3 ml-auto">

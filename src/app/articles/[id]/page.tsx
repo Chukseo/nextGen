@@ -132,9 +132,12 @@ export async function generateMetadata({
     }
   }
 
-  // Only advertise registered DOIs
-  if (article.doi && article.doiStatus === 'REGISTERED') {
-    citationMetadata.citation_doi = article.doi;
+  // Active DOI Resolution: Prioritize official Zenodo DOI, or registered non-placeholder Crossref DOI
+  const activeDoi = article.zenodoDoi || (article.doi && !article.doi.startsWith('10.5555') && article.doiStatus === 'REGISTERED' ? article.doi : null);
+  const zenodoRecordUrl = article.zenodoUrl || (article.zenodoRecordId ? `https://zenodo.org/records/${article.zenodoRecordId}` : undefined);
+
+  if (activeDoi) {
+    citationMetadata.citation_doi = activeDoi;
   }
 
   if (pdfUrl) {
@@ -155,8 +158,8 @@ export async function generateMetadata({
   citationMetadata['DC.publisher'] = publisherName;
   citationMetadata['DC.format'] = 'text/html';
   citationMetadata['DC.language'] = 'en';
-  if (article.doi && article.doiStatus === 'REGISTERED') {
-    citationMetadata['DC.identifier'] = `doi:${article.doi}`;
+  if (activeDoi) {
+    citationMetadata['DC.identifier'] = `doi:${activeDoi}`;
   }
 
   return {
@@ -244,6 +247,9 @@ export default async function ArticleDetailPage({
   const { raw: authorObjects } = getArticleAuthors(article);
   const [firstPage, lastPage] = (article.pageRange || '').split('-', 2);
 
+  const activeDoi = article.zenodoDoi || (article.doi && !article.doi.startsWith('10.5555') && article.doiStatus === 'REGISTERED' ? article.doi : null);
+  const zenodoRecordUrl = article.zenodoUrl || (article.zenodoRecordId ? `https://zenodo.org/records/${article.zenodoRecordId}` : undefined);
+
   const scholarlyJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ScholarlyArticle',
@@ -289,7 +295,8 @@ export default async function ArticleDetailPage({
     ...(firstPage && { pageStart: firstPage.trim() }),
     ...(lastPage && { pageEnd: lastPage.trim() }),
     ...(article.pageRange && { pagination: article.pageRange }),
-    ...(article.doi && { identifier: `https://doi.org/${article.doi}` }),
+    ...(activeDoi && { identifier: activeDoi }),
+    ...(zenodoRecordUrl && { sameAs: zenodoRecordUrl }),
     mainEntityOfPage: canonical,
     encoding: {
       '@type': 'MediaObject',

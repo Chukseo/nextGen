@@ -45,6 +45,8 @@ export default function ArticleDetailClient({
       ]
     : [];
 
+  const activeDoi = article.zenodoDoi || (article.doi && !article.doi.startsWith('10.5555') ? article.doi : null);
+
   const citationData = {
     title: article.title,
     journalTitle: article.journal.title,
@@ -52,7 +54,7 @@ export default function ArticleDetailClient({
     issueNumber: article.issue?.issueNumber,
     year: publicationYear,
     pages: article.pageRange,
-    doi: article.doi,
+    doi: activeDoi,
     authors: authors.map((a: any) => ({ firstName: a.firstName, lastName: a.lastName })),
   };
 
@@ -154,21 +156,32 @@ export default function ArticleDetailClient({
         {/* Persistent Identifiers & Metrics Bar */}
         <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="space-y-1">
-            {article.doi && (
+            {activeDoi && (
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-slate-700">Crossref DOI:</span>
+                <span className="font-bold text-slate-700">DOI:</span>
                 <a
-                  href={`https://doi.org/${article.doi}`}
+                  href={`https://doi.org/${activeDoi}`}
                   target="_blank"
                   rel="noreferrer"
                   className="font-mono text-blue-700 hover:underline flex items-center space-x-1"
                 >
-                  <span>https://doi.org/{article.doi}</span>
+                  <span>https://doi.org/{activeDoi}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
-                  {article.doiStatus}
+                  {article.zenodoDoi ? 'Zenodo' : article.doiStatus}
                 </span>
+                {article.zenodoUrl && (
+                  <a
+                    href={article.zenodoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-slate-500 hover:text-blue-700 underline flex items-center space-x-0.5 ml-1"
+                  >
+                    <span>Zenodo Record</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
               </div>
             )}
             <div className="text-slate-500 flex flex-wrap items-center gap-3">
