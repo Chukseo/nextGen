@@ -172,9 +172,9 @@ export default async function HomePage() {
             <div className="w-10 h-10 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center shadow-xs">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">Diamond Open Access</h3>
+            <h3 className="font-bold text-slate-900 text-base">Open Access Publishing</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Free to read, download, and cite globally under CC BY 4.0. No paywalls or reading restrictions for the scientific community.
+              Free to read, download, and cite globally under CC BY 4.0. No paywalls, no author fees, and no reading restrictions for the scientific community.
             </p>
           </div>
 

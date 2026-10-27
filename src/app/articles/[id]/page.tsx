@@ -102,8 +102,10 @@ export async function generateMetadata({
     citation_title: article.title,
     citation_author: fallbackAuthors,
     citation_publication_date: citationDate,
+    citation_online_date: citationDate,
     citation_journal_title: article.journal.title,
     citation_publisher: publisherName,
+    citation_fulltext_world_readable: '',
   };
 
   if (article.journal.abbreviation) {
@@ -150,6 +152,14 @@ export async function generateMetadata({
     citationMetadata.citation_keywords = article.keywords.map((k) => k.keyword).join('; ');
   }
   citationMetadata.citation_language = 'en';
+
+  if (article.references && article.references.length > 0) {
+    citationMetadata.citation_reference = article.references.map((r) => {
+      let refStr = r.rawText;
+      if (r.doi) refStr += ` https://doi.org/${r.doi.replace(/^https?:\/\/doi\.org\//, '')}`;
+      return refStr;
+    });
+  }
 
   // Dublin Core
   citationMetadata['DC.title'] = article.title;

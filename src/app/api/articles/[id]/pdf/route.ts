@@ -202,6 +202,9 @@ export async function GET(
           printIssn: article.journal.printIssn,
           title: article.title,
           authors: article.submission.coAuthors.map(a => ({ firstName: a.firstName, lastName: a.lastName })),
+          publishedAt: article.publishedAt,
+          receivedAt: article.submission.createdAt,
+          acceptedAt: latestDecision?.decidedAt || article.publishedAt,
         });
       } else {
         // Fallback to generating scholarly article layout

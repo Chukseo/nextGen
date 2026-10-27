@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 
     const resolvedPublisher = body.publisher || 'NextGen Innovation & Research Journals';
     const resolvedPeerReview = peerReviewPolicy || 'Rigorous double-anonymous peer review conducted by independent domain experts. Minimum two review reports required prior to editorial decision.';
-    const resolvedOpenAccess = openAccessPolicy || 'Diamond Open Access: immediate and unrestricted global access with no fees for readers or authors under CC BY 4.0.';
+    const resolvedOpenAccess = openAccessPolicy || 'Open Access: immediate and unrestricted global access with no fees for readers or authors under CC BY 4.0.';
     const resolvedLicensing = body.licensingPolicy || 'Creative Commons Attribution 4.0 International (CC BY 4.0)';
     const resolvedApc = body.apcInfo || 'All article processing charges (APCs) are fully sponsored by NextGen Innovation & Research Journals for the current publishing year.';
     const resolvedAims = aimsScope || `${title} publishes original peer-reviewed research, comprehensive literature reviews, and technical notes spanning foundational theory, experimental benchmarks, and applied innovations.`;

@@ -606,17 +606,18 @@ export default function SubmissionWizard({
                 <div className="space-y-3 text-xs">
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">
-                      Bibliographic References (Optional — one reference per line)
+                      Bibliographic References <span className="text-red-600">*</span> — one reference per line
                     </label>
                     <textarea
                       rows={6}
                       value={references}
                       onChange={(e) => setReferences(e.target.value)}
+                      required
                       placeholder={"Ogunmodede, T. A., & Ebijuwa, A. S. (2013). Problems of...  https://doi.org/10.xxxxx\nSmith, J. (2020). Example reference. Journal of Example, 5(2), 12-18."}
                       className="w-full px-3 py-2 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-600 outline-none font-serif text-slate-800"
                     />
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      Enter each reference on a separate line. DOIs embedded in the text will be automatically detected and linked.
+                      Required for Google Scholar indexing. Enter each reference on a separate line. DOIs embedded in the text will be automatically detected and linked.
                     </p>
                   </div>
                   <div>
@@ -645,7 +646,7 @@ export default function SubmissionWizard({
               </button>
               <button
                 type="button"
-                disabled={!title || !abstract || abstract.length < 50}
+                disabled={!title || !abstract || abstract.length < 50 || !references.trim()}
                 onClick={() => setCurrentStep(3)}
                 className="bg-navy-900 hover:bg-navy-950 text-white font-semibold text-xs px-6 py-2.5 rounded-lg flex items-center space-x-1.5 transition-colors shadow disabled:opacity-50"
               >

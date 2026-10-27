@@ -35,6 +35,7 @@ import {
 import ImportArticleModal from '@/components/ImportArticleModal';
 import AdminEditorialBoardModal from '@/components/AdminEditorialBoardModal';
 import AdminAuthorGuidelinesModal from '@/components/AdminAuthorGuidelinesModal';
+import EditSubmissionMetadataModal from '@/components/EditSubmissionMetadataModal';
 
 export default function AdminDashboardClient({
   metrics,
@@ -407,6 +408,8 @@ export default function AdminDashboardClient({
 
   const [articleSearch, setArticleSearch] = useState('');
   const [articlesSubTab, setArticlesSubTab] = useState<'published' | 'production'>('published');
+  const [editingSubmission, setEditingSubmission] = useState<any | null>(null);
+  const [editMetadataModalOpen, setEditMetadataModalOpen] = useState(false);
 
   const handleUnpublishArticle = async (articleId: string) => {
     if (!window.confirm('Unpublish this article? It will be removed from its issue and reverted to the Production stage for re-publishing.')) return;
@@ -1441,6 +1444,18 @@ export default function AdminDashboardClient({
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingSubmission(sub);
+                            setEditMetadataModalOpen(true);
+                          }}
+                          className="inline-flex items-center space-x-1 text-xs font-semibold px-3 py-1.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 transition-colors"
+                          title="Edit manuscript metadata, abstract, and authors"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit Metadata</span>
+                        </button>
+
                         <button
                           onClick={() => handleRepublishArticle(sub.id)}
                           disabled={loading}
@@ -2738,6 +2753,20 @@ export default function AdminDashboardClient({
         isOpen={!!guidelinesModalJournal}
         onClose={() => setGuidelinesModalJournal(null)}
         journal={guidelinesModalJournal}
+      />
+
+      {/* EDIT SUBMISSION METADATA MODAL */}
+      <EditSubmissionMetadataModal
+        submission={editingSubmission}
+        isOpen={editMetadataModalOpen}
+        onClose={() => {
+          setEditMetadataModalOpen(false);
+          setEditingSubmission(null);
+        }}
+        onSuccess={(updated) => {
+          setFeedback({ type: 'success', text: 'Manuscript metadata and author list updated successfully.' });
+          setTimeout(() => window.location.reload(), 1200);
+        }}
       />
     </div>
   );

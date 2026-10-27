@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import ImportArticleModal from '@/components/ImportArticleModal';
 import AdminEditorialBoardModal from '@/components/AdminEditorialBoardModal';
+import EditSubmissionMetadataModal from '@/components/EditSubmissionMetadataModal';
 
 export default function EditorDashboardClient({
   submissions,
@@ -53,6 +54,7 @@ export default function EditorDashboardClient({
   const [doiModalOpen, setDoiModalOpen] = useState(false);
   const [createIssueModalOpen, setCreateIssueModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [editMetadataModalOpen, setEditMetadataModalOpen] = useState(false);
   const [boardModalJournal, setBoardModalJournal] = useState<any | null>(null);
 
   // Form states
@@ -972,6 +974,21 @@ export default function EditorDashboardClient({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      {/* Edit Metadata Button (Step 2: Metadata & Author List) */}
+                      {sub.status !== 'PUBLISHED' && (
+                        <button
+                          onClick={() => {
+                            setSelectedSub(sub);
+                            setEditMetadataModalOpen(true);
+                          }}
+                          className="bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 font-semibold px-3 py-1.5 rounded transition-colors shadow-xs flex items-center space-x-1"
+                          title="Edit manuscript metadata, abstract, and authors"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit Metadata</span>
+                        </button>
+                      )}
+
                       {/* Assign Reviewer Button */}
                       {(sub.status === 'SUBMITTED' || sub.status === 'INITIAL_SCREENING' || sub.status === 'UNDER_REVIEW' || sub.status === 'REVISION_SUBMITTED') && (
                         <button
@@ -1690,6 +1707,19 @@ export default function EditorDashboardClient({
         journal={boardModalJournal}
         onBoardUpdated={() => {
           setTimeout(() => window.location.reload(), 1000);
+        }}
+      />
+
+      {/* EDIT SUBMISSION METADATA MODAL */}
+      <EditSubmissionMetadataModal
+        submission={selectedSub}
+        isOpen={editMetadataModalOpen}
+        onClose={() => {
+          setEditMetadataModalOpen(false);
+        }}
+        onSuccess={(updated) => {
+          setFeedback({ type: 'success', text: 'Manuscript metadata updated successfully.' });
+          setTimeout(() => window.location.reload(), 1200);
         }}
       />
     </div>

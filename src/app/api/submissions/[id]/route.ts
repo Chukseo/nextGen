@@ -172,7 +172,6 @@ export async function PATCH(
       abstract,
       articleType,
       discipline,
-      keywords,
       conflictOfInterest,
       ethicsStatement,
       fundingInfo,
@@ -180,8 +179,15 @@ export async function PATCH(
       consentStatement,
       acknowledgements,
       coverLetter,
+      pageRange,
+      referencesRaw,
+      references,
       coAuthors,
     } = body;
+
+    const rawRefString = referencesRaw !== undefined
+      ? referencesRaw
+      : (typeof references === 'string' ? references : (Array.isArray(references) ? references.join('\n') : undefined));
 
     const updated = await prisma.$transaction(async (tx) => {
       // If coAuthors array is provided, replace author entries
@@ -211,7 +217,6 @@ export async function PATCH(
           ...(abstract && { abstract }),
           ...(articleType && { articleType }),
           ...(discipline && { discipline }),
-          ...(keywords && { keywords }),
           ...(conflictOfInterest !== undefined && { conflictOfInterest }),
           ...(ethicsStatement !== undefined && { ethicsStatement }),
           ...(fundingInfo !== undefined && { fundingInfo }),
@@ -219,6 +224,8 @@ export async function PATCH(
           ...(consentStatement !== undefined && { consentStatement }),
           ...(acknowledgements !== undefined && { acknowledgements }),
           ...(coverLetter !== undefined && { coverLetter }),
+          ...(pageRange !== undefined && { pageRange }),
+          ...(rawRefString !== undefined && { referencesRaw: rawRefString }),
         },
         include: {
           coAuthors: { orderBy: { authorOrder: 'asc' } },

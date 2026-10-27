@@ -175,7 +175,7 @@ async function main() {
       printIssn: '2834-9102',
       onlineIssn: '2834-9110',
       peerReviewPolicy: 'Rigorous double-anonymous peer review conducted by independent domain experts. Minimum two review reports required prior to editorial decision.',
-      openAccessPolicy: 'Diamond Open Access: immediate and unrestricted global access with no fees for readers or authors.',
+      openAccessPolicy: 'Open Access: immediate and unrestricted global access with no fees for readers or authors under CC BY 4.0.',
       licensingPolicy: 'Creative Commons Attribution 4.0 International (CC BY 4.0)',
       apcInfo: 'All article processing charges (APCs) are fully sponsored by NextGen Press Foundation for the current publishing year.',
       contactEmail: 'jstai-nextgenjournals@gmail.com',

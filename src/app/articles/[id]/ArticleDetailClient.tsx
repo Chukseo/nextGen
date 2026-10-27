@@ -248,102 +248,37 @@ export default function ArticleDetailClient({
         )}
       </section>
 
-      {/* Full Manuscript Body (Headings, Paragraphs, Tables, and Lists) */}
-      {manuscriptBlocks && manuscriptBlocks.length > 0 && (
-        <section className="bg-white p-6 sm:p-10 rounded-xl border border-slate-200 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-xl font-bold text-navy-950 scholarly-heading">
-              Full Text Article
+      {/* Bibliographic References Section (Standard Scholarly Citation Format) */}
+      {article.references && article.references.length > 0 && (
+        <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h2 className="text-lg font-bold text-navy-950 scholarly-heading">
+              References ({article.references.length})
             </h2>
             <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2.5 py-1 rounded">
-              Peer-Reviewed Manuscript
+              Verified Bibliographic Citations
             </span>
           </div>
-
-          <div className="space-y-5 text-sm text-slate-800 leading-relaxed scholarly-article-body">
-            {manuscriptBlocks.map((block: any, idx: number) => {
-              if (block.type === 'heading') {
-                if (block.level === 1) {
-                  return (
-                    <h2
-                      key={idx}
-                      className="text-xl sm:text-2xl font-bold text-navy-950 scholarly-heading pt-6 pb-2 border-b border-slate-100"
+          <ol className="list-decimal pl-5 space-y-3.5 text-xs text-slate-800 leading-relaxed font-serif">
+            {article.references.map((ref: any, idx: number) => (
+              <li key={ref.id || idx} className="pl-1 text-justify">
+                <span className="text-slate-800">{ref.rawText}</span>
+                {ref.doi && (
+                  <span className="block mt-1 font-sans">
+                    <a
+                      href={`https://doi.org/${ref.doi.replace(/^https?:\/\/doi\.org\//, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-mono text-[11px] inline-flex items-center space-x-1"
                     >
-                      {block.text}
-                    </h2>
-                  );
-                }
-                return (
-                  <h3
-                    key={idx}
-                    className="text-base sm:text-lg font-bold text-slate-900 scholarly-heading pt-4 pb-1"
-                  >
-                    {block.text}
-                  </h3>
-                );
-              }
-
-              if (block.type === 'table') {
-                return (
-                  <div key={idx} className="my-6 space-y-2">
-                    {block.caption && (
-                      <div className="text-xs font-bold text-navy-950 uppercase tracking-wider">
-                        {block.caption}
-                      </div>
-                    )}
-                    <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-xs">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <tbody>
-                          {block.rows.map((row: any, rIdx: number) => {
-                            const isHeader = rIdx === 0 || row.cells.some((c: any) => c.isHeader);
-                            return (
-                              <tr
-                                key={rIdx}
-                                className={
-                                  isHeader
-                                    ? 'bg-slate-100 font-bold text-navy-950 border-b-2 border-slate-300'
-                                    : rIdx % 2 === 1
-                                    ? 'bg-slate-50/60 text-slate-800 border-b border-slate-200'
-                                    : 'bg-white text-slate-800 border-b border-slate-200'
-                                }
-                              >
-                                {row.cells.map((cell: any, cIdx: number) => {
-                                  const CellTag = isHeader ? 'th' : 'td';
-                                  return (
-                                    <CellTag
-                                      key={cIdx}
-                                      className="py-2.5 px-3.5 border-r border-slate-200 last:border-r-0 align-top"
-                                    >
-                                      {cell.text}
-                                    </CellTag>
-                                  );
-                                })}
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              }
-
-              if (block.type === 'list_item') {
-                return (
-                  <div key={idx} className="flex items-start space-x-2.5 pl-4 text-slate-700 text-sm">
-                    <span className="text-blue-600 font-bold">•</span>
-                    <span>{block.text}</span>
-                  </div>
-                );
-              }
-
-              return (
-                <p key={idx} className="text-justify text-slate-800 leading-relaxed text-sm">
-                  {block.text}
-                </p>
-              );
-            })}
-          </div>
+                      <span>https://doi.org/{ref.doi.replace(/^https?:\/\/doi\.org\//, '')}</span>
+                      <ExternalLink className="w-3 h-3 inline ml-0.5" />
+                    </a>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 
@@ -373,34 +308,6 @@ export default function ArticleDetailClient({
           </div>
         </div>
       </section>
-
-      {/* Bibliographic References Section */}
-      {article.references && article.references.length > 0 && (
-        <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-navy-950 scholarly-heading border-b border-slate-100 pb-2">
-            References ({article.references.length})
-          </h2>
-          <ol className="list-decimal pl-5 space-y-3 text-xs text-slate-700">
-            {article.references.map((ref: any) => (
-              <li key={ref.id} className="leading-relaxed">
-                <span>{ref.rawText}</span>
-                {ref.doi && (
-                  <span className="block mt-0.5">
-                    <a
-                      href={`https://doi.org/${ref.doi}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-700 hover:underline font-mono"
-                    >
-                      https://doi.org/{ref.doi}
-                    </a>
-                  </span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
 
       {/* Citation Modal */}
       {citationModalOpen && (

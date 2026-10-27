@@ -487,6 +487,9 @@ export interface StampPdfData {
   printIssn?: string | null;
   title?: string;
   authors?: { firstName: string; lastName: string }[];
+  publishedAt?: Date | string | null;
+  receivedAt?: Date | string | null;
+  acceptedAt?: Date | string | null;
 }
 
 // Stamp an existing manuscript PDF (preserving full text, figures, and tables) with scholarly headers, footers, and aligned pagination
@@ -506,6 +509,13 @@ export async function stampScholarlyPdf(
   pdfDoc.setSubject(`Published in ${sanitizeForPdf(meta.journalTitle)}`);
   pdfDoc.setProducer('NextGen Innovation & Research Journal, London, UK');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
+  if (meta.publishedAt) {
+    const pDate = typeof meta.publishedAt === 'string' ? new Date(meta.publishedAt) : meta.publishedAt;
+    if (!isNaN(pDate.getTime())) {
+      pdfDoc.setCreationDate(pDate);
+    }
+  }
+  pdfDoc.setModificationDate(new Date());
 
   // Palette
   const navyDark = rgb(11 / 255, 25 / 255, 44 / 255);
@@ -616,6 +626,13 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   pdfDoc.setKeywords(data.keywords || ['Open Access', 'Peer-Reviewed', 'NextGen Innovation & Research Journals']);
   pdfDoc.setProducer('NextGen Innovation & Research Journal, London, UK');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
+  if (data.publishedAt) {
+    const pDate = typeof data.publishedAt === 'string' ? new Date(data.publishedAt) : data.publishedAt;
+    if (!isNaN(pDate.getTime())) {
+      pdfDoc.setCreationDate(pDate);
+    }
+  }
+  pdfDoc.setModificationDate(new Date());
 
   // Embed standard PDF fonts
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -910,6 +927,63 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   } else {
     currentY -= 6;
   }
+
+  // 4b. Article History & Scholarly Publication Information Bar (Google Scholar Indexing Requirement)
+  const formatScholarlyDate = (d?: Date | string | null): string | null => {
+    if (!d) return null;
+    const dateObj = typeof d === 'string' ? new Date(d) : d;
+    if (isNaN(dateObj.getTime())) return null;
+    return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const pubDateFormatted = formatScholarlyDate(data.publishedAt) || `${data.year}`;
+  const recDateFormatted = formatScholarlyDate(data.receivedAt);
+  const accDateFormatted = formatScholarlyDate(data.acceptedAt);
+
+  const datesParts: string[] = [];
+  if (recDateFormatted) datesParts.push(`Received: ${recDateFormatted}`);
+  if (accDateFormatted) datesParts.push(`Accepted: ${accDateFormatted}`);
+  datesParts.push(`Published Online: ${pubDateFormatted}`);
+  const datesSummary = datesParts.join('   |   ');
+
+  currentY -= 2;
+  activePage.drawLine({
+    start: { x: marginX, y: currentY },
+    end: { x: pageWidth - marginX, y: currentY },
+    thickness: 0.5,
+    color: rgb(203 / 255, 213 / 255, 225 / 255),
+  });
+  currentY -= 9;
+
+  activePage.drawText(datesSummary, {
+    x: marginX,
+    y: currentY,
+    size: 7.5,
+    font: helveticaBold,
+    color: navyDark,
+  });
+
+  if (data.doi) {
+    const rawDoi = data.doi.replace(/^https?:\/\/doi\.org\//, '');
+    const doiLine = `DOI: https://doi.org/${rawDoi}`;
+    const doiWidth = helvetica.widthOfTextAtSize(doiLine, 7.5);
+    activePage.drawText(doiLine, {
+      x: pageWidth - marginX - doiWidth,
+      y: currentY,
+      size: 7.5,
+      font: helvetica,
+      color: bluePrimary,
+    });
+  }
+
+  currentY -= 5;
+  activePage.drawLine({
+    start: { x: marginX, y: currentY },
+    end: { x: pageWidth - marginX, y: currentY },
+    thickness: 0.5,
+    color: rgb(203 / 255, 213 / 255, 225 / 255),
+  });
+  currentY -= 14;
 
   // 5. Abstract
   activePage.drawText('ABSTRACT', {
