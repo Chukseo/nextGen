@@ -332,7 +332,7 @@ export async function sendWelcomeEmail({
     detailsTable: [
       { label: 'Registered Email', value: toEmail },
       { label: 'Primary Roles', value: 'Author, Reader & Prospective Reviewer' },
-      { label: 'Publishing Model', value: 'Open Access (No Author Publication Fees)' },
+      { label: 'Publishing Model', value: 'Open Access' },
       { label: 'Licensing Standard', value: 'Creative Commons Attribution 4.0 International (CC BY 4.0)' },
       { label: 'Persistent Identifiers', value: 'Crossref DOI & Highwire Press Academic Meta Tags' },
     ],

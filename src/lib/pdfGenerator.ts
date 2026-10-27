@@ -928,7 +928,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
     currentY -= 6;
   }
 
-  // 4b. Article History & Scholarly Publication Information Bar (Google Scholar Indexing Requirement)
+  // 4b. Scholarly Publication Information Bar (Google Scholar Indexing Requirement)
   const formatScholarlyDate = (d?: Date | string | null): string | null => {
     if (!d) return null;
     const dateObj = typeof d === 'string' ? new Date(d) : d;
@@ -937,14 +937,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   };
 
   const pubDateFormatted = formatScholarlyDate(data.publishedAt) || `${data.year}`;
-  const recDateFormatted = formatScholarlyDate(data.receivedAt);
-  const accDateFormatted = formatScholarlyDate(data.acceptedAt);
-
-  const datesParts: string[] = [];
-  if (recDateFormatted) datesParts.push(`Received: ${recDateFormatted}`);
-  if (accDateFormatted) datesParts.push(`Accepted: ${accDateFormatted}`);
-  datesParts.push(`Published Online: ${pubDateFormatted}`);
-  const datesSummary = datesParts.join('   |   ');
+  const pubDateLine = `Published Online: ${pubDateFormatted}`;
 
   currentY -= 2;
   activePage.drawLine({
@@ -955,7 +948,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   });
   currentY -= 9;
 
-  activePage.drawText(datesSummary, {
+  activePage.drawText(pubDateLine, {
     x: marginX,
     y: currentY,
     size: 7.5,
