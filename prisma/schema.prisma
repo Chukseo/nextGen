@@ -361,6 +361,7 @@ model PublishedArticle {
   citationString String?
   viewsCount     Int       @default(0)
   downloadsCount Int       @default(0)
+  countryViews   String?   @default("{}") @db.Text
   publishedAt    DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

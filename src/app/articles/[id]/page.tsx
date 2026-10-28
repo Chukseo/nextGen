@@ -221,11 +221,7 @@ export default async function ArticleDetailPage({
     redirect(`/articles/${article.slug}`);
   }
 
-  // Increment views count asynchronously
-  prisma.publishedArticle.update({
-    where: { id: article.id },
-    data: { viewsCount: { increment: 1 } },
-  }).catch(() => {});
+  // View count and country analytics are tracked via /api/articles/[id]/view with real client geolocation
 
   // Extract manuscript blocks (headings, paragraphs, tables) from manuscript file if present
   let manuscriptBlocks: any = null;

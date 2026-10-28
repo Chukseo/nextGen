@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Download,
@@ -14,9 +14,13 @@ import {
   FileText,
   CheckCircle,
   Eye,
-  ArrowLeft
+  ArrowLeft,
+  Globe,
+  ChevronDown,
+  X
 } from 'lucide-react';
 import CitationModal from '@/components/CitationModal';
+import { parseCountryViews, getCountryFromTimezone, CountryViewStat } from '@/lib/geo';
 
 export default function ArticleDetailClient({
   article,
@@ -27,6 +31,64 @@ export default function ArticleDetailClient({
 }) {
   const [citationModalOpen, setCitationModalOpen] = useState(false);
   const [downloadsCount, setDownloadsCount] = useState<number>(article.downloadsCount || 0);
+  const [viewsCount, setViewsCount] = useState<number>(article.viewsCount || 0);
+  const [countryStats, setCountryStats] = useState<CountryViewStat[]>(() =>
+    parseCountryViews(article.countryViews, article.viewsCount)
+  );
+  const [showViewsPopover, setShowViewsPopover] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Record article view with real client geolocation / timezone
+    let isMounted = true;
+    const recordView = async () => {
+      try {
+        let countryCode: string | undefined;
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          countryCode = getCountryFromTimezone(tz) || undefined;
+        } catch {}
+
+        const res = await fetch(`/api/articles/${article.id}/view`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ countryCode }),
+        });
+
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          if (typeof data.viewsCount === 'number') {
+            setViewsCount(data.viewsCount);
+          }
+          if (Array.isArray(data.countryBreakdown)) {
+            setCountryStats(data.countryBreakdown);
+          }
+        }
+      } catch (err) {
+        console.warn('Article view recording notice:', err);
+      }
+    };
+
+    recordView();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [article.id]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setShowViewsPopover(false);
+      }
+    };
+    if (showViewsPopover) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showViewsPopover]);
 
   const publicationYear = new Date(article.publishedAt).getFullYear();
   const rawAuthors = article.submission?.coAuthors || [];
@@ -193,10 +255,96 @@ export default function ArticleDetailClient({
                 <Download className="w-3.5 h-3.5 text-blue-600" />
                 <span>{downloadsCount} {downloadsCount === 1 ? 'Download' : 'Downloads'}</span>
               </span>
-              <span className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
-                <Eye className="w-3.5 h-3.5 text-slate-600" />
-                <span>{article.viewsCount || 0} {article.viewsCount === 1 ? 'View' : 'Views'}</span>
-              </span>
+              {/* Interactive View Count with Country Readership Popover */}
+              <div
+                className="relative inline-block"
+                ref={popoverRef}
+                onMouseEnter={() => setShowViewsPopover(true)}
+                onMouseLeave={() => setShowViewsPopover(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowViewsPopover(!showViewsPopover)}
+                  className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-blue-700 hover:border-blue-300 px-2 py-0.5 rounded border border-slate-200 transition-colors shadow-xs cursor-pointer group"
+                  title="Hover or click to view reader country breakdown"
+                >
+                  <Eye className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{viewsCount} {viewsCount === 1 ? 'View' : 'Views'}</span>
+                  {countryStats.length > 0 && (
+                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 font-bold px-1.5 py-0.2 rounded ml-1">
+                      {countryStats.length} {countryStats.length === 1 ? 'country' : 'countries'}
+                    </span>
+                  )}
+                  <ChevronDown className={`w-3 h-3 text-slate-400 group-hover:text-blue-600 transition-transform ${showViewsPopover ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Country Analytics Popover */}
+                {showViewsPopover && (
+                  <div
+                    className="absolute left-0 bottom-full mb-2 z-50 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-slate-200 p-4 space-y-3 animation-fade-in"
+                  >
+                    <div className="flex items-start justify-between border-b border-slate-100 pb-2.5">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-navy-950 scholarly-heading">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                          <span>Global Readership by Country</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          {viewsCount} total {viewsCount === 1 ? 'view' : 'views'} recorded globally
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowViewsPopover(false);
+                        }}
+                        className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"
+                        title="Close"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {countryStats.length > 0 ? (
+                      <div className="max-h-56 overflow-y-auto space-y-2.5 pr-1 divide-y divide-slate-50">
+                        {countryStats.map((stat) => (
+                          <div key={stat.code} className="pt-2 first:pt-0 space-y-1">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="inline-flex items-center space-x-2 font-medium text-slate-800 truncate">
+                                <span className="text-base flex-shrink-0 leading-none">{stat.flag}</span>
+                                <span className="truncate">{stat.country}</span>
+                              </span>
+                              <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-[11px] flex-shrink-0 ml-2">
+                                {stat.count} {stat.count === 1 ? 'view' : 'views'}
+                              </span>
+                            </div>
+                            {/* Visual Progress Bar */}
+                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-blue-600 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${Math.max(stat.percentage, 4)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 text-center text-xs text-slate-500 bg-slate-50 rounded-lg">
+                        Readership country analytics will update as readers view this publication globally.
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                      <span className="flex items-center space-x-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Live Reader Analytics</span>
+                      </span>
+                      <span>IP Geolocation</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
