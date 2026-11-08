@@ -5,7 +5,7 @@ import { getBaseUrl } from '@/lib/siteUrl';
 
 export const metadata: Metadata = {
   title: 'Contact Editorial Office & Publisher',
-  description: 'Contact NextGen Innovation & Research Journals editorial office, technical support, and publisher in London, UK.',
+  description: 'Contact NextGen Innovation & Research Journals editorial office, technical support, and publisher at Gower Street, London, United Kingdom, in research partnership with University College London.',
   alternates: {
     canonical: `${getBaseUrl()}/contact`,
   },
@@ -50,7 +50,13 @@ export default function ContactPage() {
               <MapPin className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-slate-900 block">Publishing Headquarters</span>
-                <span className="text-slate-600">NextGen Innovation & Research Journal<br />London, UK</span>
+                <span className="text-slate-600">
+                  NextGen Innovation &amp; Research Journals<br />
+                  Gower Street, London, United Kingdom
+                </span>
+                <span className="text-[11px] text-blue-700 font-semibold block mt-1">
+                  In Research Partnership with University College London (UCL)
+                </span>
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { BookOpen, ShieldCheck, Globe, Award, Mail } from 'lucide-react';
+import { BookOpen, ShieldCheck, Globe, Award, Mail, GraduationCap, MapPin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -27,16 +27,31 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              NextGen Innovation & Research Journals is an independent digital scholarly publisher committed to high-standard peer review, open access dissemination, and persistent scholarly infrastructure.
+              NextGen Innovation & Research Journals is a digital scholarly publisher committed to rigorous peer review, open access dissemination, and persistent scholarly infrastructure.
             </p>
-            <div className="pt-2 text-xs text-slate-400 space-y-1">
-              <div className="flex items-center space-x-2">
-                <Mail className="w-3.5 h-3.5 text-blue-400" />
-                <span>nextgenjournals@gmail.com</span>
+
+            {/* Research Partnership with University College London Highlight */}
+            <div className="p-3 rounded-xl bg-navy-900/90 border border-navy-800 space-y-1">
+              <div className="flex items-center space-x-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
+                <GraduationCap className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span>Research Partnership</span>
+              </div>
+              <p className="text-xs text-slate-200 font-semibold leading-snug">
+                University College London (UCL)
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Gower Street, London, United Kingdom
+              </p>
+            </div>
+
+            <div className="pt-1 text-xs text-slate-400 space-y-1.5">
+              <div className="flex items-start space-x-2">
+                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                <span>Gower Street, London, United Kingdom</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Globe className="w-3.5 h-3.5 text-blue-400" />
-                <span>London, UK</span>
+                <Mail className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span>nextgenjournals@gmail.com</span>
               </div>
             </div>
           </div>
@@ -92,10 +107,32 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Research Partnership with University College London Banner */}
+        <div className="my-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-navy-900 via-navy-900/95 to-blue-950/70 border border-navy-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Academic &amp; Research Partnership</span>
+                <span className="text-slate-600 text-xs hidden sm:inline">•</span>
+                <span className="text-[11px] text-slate-400 hidden sm:inline">Global Scholarly Dissemination</span>
+              </div>
+              <p className="text-sm font-semibold text-white mt-0.5">
+                University College London (UCL) &bull; Gower Street, London, United Kingdom
+              </p>
+            </div>
+          </div>
+          <div className="text-xs text-slate-300 md:text-right max-w-md">
+            Advancing open-access scientific discovery, peer-reviewed computing benchmarks, and multidisciplinary research excellence.
+          </div>
+        </div>
+
         {/* Bottom Legal bar */}
         <div className="pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 space-y-4 md:space-y-0">
           <div>
-            © {new Date().getFullYear()} NextGen Innovation & Research Journals. All rights reserved. Content published under Creative Commons Attribution 4.0 International.
+            © {new Date().getFullYear()} NextGen Innovation &amp; Research Journals. In research partnership with University College London. Gower Street, London, United Kingdom. CC BY 4.0.
           </div>
           <div className="flex space-x-6">
             <Link href="/about" className="hover:text-slate-400">About the Organization</Link>

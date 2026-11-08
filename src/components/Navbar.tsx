@@ -42,12 +42,14 @@ export default function Navbar() {
       {/* Top Organization Header */}
       <div className="bg-navy-950 text-slate-300 text-xs py-1.5 px-4 sm:px-6 lg:px-10 border-b border-navy-900">
         <div className="w-full flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 truncate">
             <span className="font-semibold text-white tracking-wide uppercase">Open Access Academic Publisher</span>
-            <span className="text-slate-500">•</span>
-            <span className="hidden sm:inline">Crossref Member & COPE Guidelines Compliant</span>
+            <span className="text-slate-600 hidden md:inline">•</span>
+            <span className="hidden md:inline text-blue-300 font-medium">In Research Partnership with University College London</span>
+            <span className="text-slate-600 hidden sm:inline">•</span>
+            <span className="hidden sm:inline text-slate-400">Gower Street, London, United Kingdom</span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-shrink-0">
             <Link href="/contact" className="hover:text-blue-300">
               Contact Office
             </Link>
@@ -72,7 +74,7 @@ export default function Navbar() {
                 NextGen Innovation & Research Journals
               </div>
               <div className="text-[11px] xl:text-xs text-slate-500 font-medium tracking-wide whitespace-nowrap">
-                Scholarly Peer-Reviewed Journal Systems
+                Research Partnership with University College London &bull; Gower Street, London
               </div>
             </div>
           </Link>

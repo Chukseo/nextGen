@@ -175,6 +175,7 @@ export const INDEXING_PLATFORMS: IndexingPlatform[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TRUST_BADGES = [
+  { label: 'UCL Research Partnership' },
   { label: 'DOI Enabled' },
   { label: 'Open Access' },
   { label: 'Long-Term Preservation' },

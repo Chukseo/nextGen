@@ -507,7 +507,7 @@ export async function stampScholarlyPdf(
     pdfDoc.setAuthor(meta.authors.map(a => `${a.firstName} ${a.lastName}`).join(', '));
   }
   pdfDoc.setSubject(`Published in ${sanitizeForPdf(meta.journalTitle)}`);
-  pdfDoc.setProducer('NextGen Innovation & Research Journal, London, UK');
+  pdfDoc.setProducer('NextGen Innovation & Research Journal, Gower Street, London, United Kingdom');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
   if (meta.publishedAt) {
     const pDate = typeof meta.publishedAt === 'string' ? new Date(meta.publishedAt) : meta.publishedAt;
@@ -556,7 +556,7 @@ export async function stampScholarlyPdf(
       color: rgb(226 / 255, 232 / 255, 240 / 255),
     });
 
-    const copyrightText = `© ${meta.year} NextGen Innovation & Research Journal, London, UK. CC BY 4.0`;
+    const copyrightText = `© ${meta.year} NextGen Innovation & Research Journal, Gower Street, London, United Kingdom. CC BY 4.0`;
     page.drawText(copyrightText, {
       x: marginX,
       y: bottomY + 1,
@@ -624,7 +624,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
   pdfDoc.setAuthor(data.authors.map(a => `${a.firstName} ${a.lastName}`).join(', '));
   pdfDoc.setSubject(`Published in ${data.journalTitle}`);
   pdfDoc.setKeywords(data.keywords || ['Open Access', 'Peer-Reviewed', 'NextGen Innovation & Research Journals']);
-  pdfDoc.setProducer('NextGen Innovation & Research Journal, London, UK');
+  pdfDoc.setProducer('NextGen Innovation & Research Journal, Gower Street, London, United Kingdom');
   pdfDoc.setCreator('NextGen Scholarly Publishing Typesetter');
   if (data.publishedAt) {
     const pDate = typeof data.publishedAt === 'string' ? new Date(data.publishedAt) : data.publishedAt;
@@ -811,7 +811,7 @@ export async function generateScholarlyArticlePdf(data: ScholarlyPdfData): Promi
       color: rgb(226 / 255, 232 / 255, 240 / 255),
     });
 
-    const copyrightText = `© ${data.year} NextGen Innovation & Research Journal, London, UK. CC BY 4.0`;
+    const copyrightText = `© ${data.year} NextGen Innovation & Research Journal, Gower Street, London, United Kingdom. CC BY 4.0`;
     page.drawText(copyrightText, {
       x: marginX,
       y: bottomY + 2,

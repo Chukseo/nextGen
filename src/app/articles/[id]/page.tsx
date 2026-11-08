@@ -96,7 +96,7 @@ export async function generateMetadata({
   // Direct public PDF URL or API download stream
   const pdfUrl = `${canonical}/pdf`;
 
-  const publisherName = article.journal.publisher || 'NextGen Innovation & Research Journals, London, UK';
+  const publisherName = article.journal.publisher || 'NextGen Innovation & Research Journals, Gower Street, London, United Kingdom';
 
   const citationMetadata: Record<string, string | string[]> = {
     citation_title: article.title,
