@@ -14,13 +14,16 @@ export const metadata: Metadata = {
     default: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
     template: '%s | NextGen Innovation & Research Journals',
   },
-  description: 'Digital scholarly academic journal publisher based at Gower Street, London, United Kingdom, in research partnership with University College London (UCL), advancing science, technology, artificial intelligence, computing, engineering, and interdisciplinary research.',
+  description: 'Digital scholarly academic journal publisher based at Gower Street, London, United Kingdom, affiliated with University College London (UCL) and in partnership with LOU Publishing, advancing science, technology, artificial intelligence, computing, engineering, and interdisciplinary research.',
   keywords: [
     'NextGen Innovation & Research Journals',
     'NextGen Journals',
     'NextGen Research',
     'University College London',
     'UCL Research Partnership',
+    'UCL Affiliated Institution',
+    'LOU Publishing',
+    'LOU Publishing and Information Services',
     'Gower Street London',
     'nextgenuk.online',
     'academic publishing',
@@ -42,7 +45,7 @@ export const metadata: Metadata = {
     locale: 'en_GB',
     siteName: 'NextGen Innovation & Research Journals',
     title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
-    description: 'Peer-reviewed open-access scholarly publishing based at Gower Street, London, United Kingdom, in research partnership with University College London (UCL).',
+    description: 'Peer-reviewed open-access scholarly publishing based at Gower Street, London, United Kingdom. Affiliated with University College London (UCL) and in partnership with LOU Publishing.',
     url: SITE_URL,
   },
   twitter: {
@@ -83,7 +86,7 @@ export default function RootLayout({
     alternateName: 'NextGen Research and Innovation Press',
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
-    description: 'Peer-reviewed open-access scholarly academic publisher based at Gower Street, London, United Kingdom, in research partnership with University College London (UCL).',
+    description: 'Peer-reviewed open-access scholarly academic publisher based at Gower Street, London, United Kingdom, affiliated with University College London (UCL) and in partnership with LOU Publishing and Information Services.',
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Gower Street',
@@ -94,6 +97,11 @@ export default function RootLayout({
       '@type': 'EducationalOrganization',
       name: 'University College London (UCL)',
       url: 'https://www.ucl.ac.uk',
+    },
+    sponsor: {
+      '@type': 'Organization',
+      name: 'LOU Publishing and Information Services',
+      url: 'https://loupublishing.onrender.com',
     },
     publishingPrinciples: `${SITE_URL}/editorial-policies`,
   };

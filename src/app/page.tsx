@@ -31,11 +31,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = getBaseUrl();
   return {
     title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
-    description: 'Digital scholarly academic journal publisher based at Gower Street, London, United Kingdom, in research partnership with University College London advancing computer science, artificial intelligence, healthcare, and multidisciplinary research.',
+    description: 'Digital scholarly academic journal publisher based at Gower Street, London, United Kingdom, affiliated with University College London (UCL) and in strategic partnership with LOU Publishing, advancing computer science, artificial intelligence, healthcare, and multidisciplinary research.',
     alternates: { canonical: baseUrl },
     openGraph: {
       title: 'NextGen Innovation & Research Journals | Peer-Reviewed Open Access Publishing',
-      description: 'Advancing global scholarly discovery with peer-reviewed open access journals in research partnership with University College London. Gower Street, London, United Kingdom.',
+      description: 'Advancing global scholarly discovery with peer-reviewed open access journals. Affiliated with University College London (UCL) and in partnership with LOU Publishing. Gower Street, London, United Kingdom.',
       url: baseUrl,
     },
   };
@@ -107,7 +107,9 @@ export default async function HomePage() {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Open Access Scholarly Publishing Ecosystem</span>
               <span className="text-blue-500 hidden sm:inline">•</span>
-              <span className="font-semibold text-white hidden sm:inline">In Research Partnership with University College London (UCL)</span>
+              <span className="font-semibold text-white hidden sm:inline">Affiliated with University College London (UCL)</span>
+              <span className="text-blue-500 hidden md:inline">•</span>
+              <span className="text-blue-200 hidden md:inline">In Partnership with LOU Publishing</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold scholarly-heading tracking-tight leading-tight">
               NextGen Innovation & Research Journals
@@ -420,59 +422,71 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Strategic Research Partnership Card */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/40 rounded-3xl border border-slate-200/90 shadow-lg p-8 sm:p-12">
-          {/* Decorative glowing gradient backdrop */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-0 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -z-0 pointer-events-none" />
+      {/* Strategic Research & Publishing Partnerships */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200/80 pb-4">
+          <div>
+            <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200 mb-2">
+              <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+              <span>Academic Affiliation &amp; Publishing Alliances</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 scholarly-heading tracking-tight">
+              Institutional Affiliation &amp; Strategic Partners
+            </h2>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-md">
+            Partnering with global academic institutions and scholarly service providers to guarantee editorial rigor, persistent archiving, and equitable open access.
+          </p>
+        </div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-            <div className="space-y-4 max-w-2xl">
-              <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Card 1: University College London (UCL) */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/40 rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200">
                 <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
-                <span>Premier Academic &amp; Research Partnership</span>
+                <span>Affiliated Institution &amp; Research Partner</span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 scholarly-heading tracking-tight">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 scholarly-heading tracking-tight">
                 University College London (UCL)
-              </h2>
+              </h3>
 
-              <p className="text-sm text-slate-600 leading-relaxed font-normal">
-                NextGen Innovation &amp; Research Journals operates in strategic research partnership with <strong>University College London (UCL)</strong> to advance frontier scientific inquiry, cross-disciplinary computing, and equitable worldwide open-access dissemination under CC BY 4.0.
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                NextGen Innovation &amp; Research Journals operates with academic and research affiliation with <strong>University College London (UCL)</strong> to advance frontier scientific inquiry, cross-disciplinary computing, and equitable worldwide open-access dissemination under CC BY 4.0.
               </p>
 
-              {/* Contact & Partnership Directory Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-slate-700">
-                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+              {/* Directory Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-xs text-slate-700">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
                   <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Headquarters &amp; Research Office</span>
-                    <span>Gower Street, London, United Kingdom</span>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Campus Location</span>
+                    <span className="text-[11px]">Gower Street, London, United Kingdom</span>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
                   <Award className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Academic Collaboration</span>
-                    <span className="font-medium text-slate-800">University College London (UCL)</span>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Institutional Affiliation</span>
+                    <span className="text-[11px] font-medium text-slate-800">University College London (UCL)</span>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
                   <Mail className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Editorial Office Inquiries</span>
-                    <a href="mailto:nextgenjournals@gmail.com" className="text-blue-700 font-semibold hover:underline truncate block">nextgenjournals@gmail.com</a>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Editorial Inquiries</span>
+                    <a href="mailto:nextgenjournals@gmail.com" className="text-blue-700 font-semibold hover:underline text-[11px] truncate block">nextgenjournals@gmail.com</a>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-3 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
                   <Globe className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Institutional Portal</span>
-                    <a href="https://www.ucl.ac.uk" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-semibold hover:underline inline-flex items-center gap-1">
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Institutional Portal</span>
+                    <a href="https://www.ucl.ac.uk" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-semibold hover:underline inline-flex items-center gap-1 text-[11px]">
                       <span>ucl.ac.uk</span>
                       <ExternalLink className="w-3 h-3 text-blue-500" />
                     </a>
@@ -481,23 +495,83 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Action CTA */}
-            <div className="lg:w-72 w-full flex flex-col justify-center items-center text-center p-6 bg-navy-950 text-white rounded-2xl shadow-md border border-navy-800 space-y-4 shrink-0">
-              <div className="w-14 h-14 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-2xl flex items-center justify-center">
-                <GraduationCap className="w-7 h-7" />
-              </div>
-              <div className="space-y-1">
-                <h4 className="font-bold text-base text-white">Research Partnership</h4>
-                <p className="text-xs text-slate-300">Explore collaborative open-science frameworks, peer-reviewed archives, and academic initiatives.</p>
-              </div>
+            <div className="mt-6 pt-4 border-t border-slate-200/80">
               <a
                 href="https://www.ucl.ac.uk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group"
+                className="w-full bg-navy-950 hover:bg-blue-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group"
               >
-                <span>Visit University College London</span>
-                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <span>Visit University College London (UCL)</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-blue-400" />
+              </a>
+            </div>
+          </div>
+
+          {/* Card 2: LOU Publishing and Information Services */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-emerald-50/30 rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-200">
+                <Award className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Strategic Scholarly Publishing Partner</span>
+              </div>
+
+              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 scholarly-heading tracking-tight">
+                LOU Publishing and Information Services
+              </h3>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                NextGen Innovation &amp; Research Journals proudly collaborates with <strong>LOU Publishing and Information Services</strong> to elevate scholarly communication, bibliographic archiving, and open-science digital distribution across African and international research communities.
+              </p>
+
+              {/* Directory Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-xs text-slate-700">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Regional Headquarters</span>
+                    <span className="text-[11px]">20 Nnamdi Crescent Street Asaba, Delta State, Nigeria</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <Phone className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Direct Telephone</span>
+                    <a href="tel:+2348055821283" className="text-blue-700 font-semibold hover:underline text-[11px]">+234 8055821283</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <Mail className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Official Email</span>
+                    <a href="mailto:loupublishinginfo@gmail.com" className="text-blue-700 font-semibold hover:underline text-[11px] truncate block">loupublishinginfo@gmail.com</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                  <Globe className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Publishing Web Portal</span>
+                    <a href="https://loupublishing.onrender.com" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-semibold hover:underline inline-flex items-center gap-1 text-[11px]">
+                      <span>loupublishing.onrender.com</span>
+                      <ExternalLink className="w-3 h-3 text-blue-500" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-200/80">
+              <a
+                href="https://loupublishing.onrender.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-navy-950 hover:bg-emerald-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group"
+              >
+                <span>Visit LOU Publishing and Information Services</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-emerald-400" />
               </a>
             </div>
           </div>

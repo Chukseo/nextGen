@@ -6,7 +6,7 @@ import { getBaseUrl } from '@/lib/siteUrl';
 
 export const metadata: Metadata = {
   title: 'About NextGen Innovation & Research Journals',
-  description: 'Learn about NextGen Innovation & Research Journals, an academic scholarly publisher based at Gower Street, London, United Kingdom, in research partnership with University College London (UCL).',
+  description: 'Learn about NextGen Innovation & Research Journals, an academic scholarly publisher based at Gower Street, London, United Kingdom, affiliated with University College London (UCL) and in strategic partnership with LOU Publishing and Information Services.',
   alternates: {
     canonical: `${getBaseUrl()}/about`,
   },
@@ -31,33 +31,45 @@ export default function AboutPage() {
             Our Mission &amp; Positioning
           </h2>
           <p>
-            NextGen Innovation &amp; Research Journals was established to address the critical need for rapid, rigorous, and completely unrestricted dissemination of advanced scientific and technical research. Headquartered at Gower Street, London, United Kingdom, and operating in research partnership with University College London (UCL), the publisher specializes in computer science, artificial intelligence, cyber-physical systems, hardware architectures, and computational healthcare sciences.
+            NextGen Innovation &amp; Research Journals was established to address the critical need for rapid, rigorous, and completely unrestricted dissemination of advanced scientific and technical research. Headquartered at Gower Street, London, United Kingdom, with academic affiliation with University College London (UCL) and in strategic partnership with LOU Publishing and Information Services, the publisher specializes in computer science, artificial intelligence, cyber-physical systems, hardware architectures, and computational healthcare sciences.
           </p>
           <p>
             We believe scholarly knowledge is a global public good. All peer-reviewed articles published across our catalog are released under the Creative Commons Attribution 4.0 International License (CC BY 4.0), ensuring universal accessibility without subscription walls or reading barriers.
           </p>
         </section>
 
-        {/* Research Partnership with University College London Highlight Section */}
-        <section className="bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 p-6 sm:p-7 rounded-2xl border border-blue-200/90 shadow-sm space-y-4">
-          <div className="flex items-center space-x-2 text-blue-800 font-bold text-base scholarly-heading">
-            <GraduationCap className="w-5 h-5 text-blue-700 shrink-0" />
-            <span>Research Partnership with University College London (UCL)</span>
-          </div>
-          <p className="text-xs text-slate-700 leading-relaxed">
-            NextGen Innovation &amp; Research Journals conducts collaborative academic initiatives in research partnership with <strong>University College London (UCL)</strong>, located at <strong>Gower Street, London, United Kingdom</strong>. This research alliance brings together leading domain specialists to foster rigorous peer review methodologies, open-science transparency, and worldwide discoverability for breakthrough innovations.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs text-slate-600">
-            <div className="flex items-start space-x-2">
-              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span><strong>Joint Research Focus:</strong> Foundational and applied machine intelligence, computational physics, and translational informatics.</span>
+        {/* Institutional Affiliation & Publishing Partnerships */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* UCL Affiliation Card */}
+          <div className="bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 p-6 rounded-2xl border border-blue-200/90 shadow-sm space-y-3">
+            <div className="flex items-center space-x-2 text-blue-800 font-bold text-sm scholarly-heading">
+              <GraduationCap className="w-5 h-5 text-blue-700 shrink-0" />
+              <span>Affiliated Institution: University College London (UCL)</span>
             </div>
-            <div className="flex items-start space-x-2">
-              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <span><strong>Institutional Location:</strong> Gower Street, London, United Kingdom.</span>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              NextGen Innovation &amp; Research Journals operates with academic and research affiliation with <strong>University College London (UCL)</strong>, located at <strong>Gower Street, London, United Kingdom</strong>. This alliance fosters rigorous peer review methodologies, computational research benchmarks, and global discoverability.
+            </p>
+            <div className="pt-2 border-t border-blue-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500">Location: Gower Street, London, UK</span>
+              <a href="https://www.ucl.ac.uk" target="_blank" rel="noopener noreferrer" className="text-blue-700 font-semibold hover:underline">ucl.ac.uk &rarr;</a>
             </div>
           </div>
-        </section>
+
+          {/* LOU Publishing Card */}
+          <div className="bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/60 p-6 rounded-2xl border border-emerald-200/90 shadow-sm space-y-3">
+            <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm scholarly-heading">
+              <Award className="w-5 h-5 text-emerald-700 shrink-0" />
+              <span>Strategic Partner: LOU Publishing and Information Services</span>
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              In strategic publishing collaboration with <strong>LOU Publishing and Information Services</strong>, based in Asaba, Delta State, Nigeria, we expand bibliographic indexing, digital archiving, and cross-continental open-access scholarly distribution.
+            </p>
+            <div className="pt-2 border-t border-emerald-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500">Asaba, Delta State, Nigeria</span>
+              <a href="https://loupublishing.onrender.com" target="_blank" rel="noopener noreferrer" className="text-emerald-700 font-semibold hover:underline">loupublishing.onrender.com &rarr;</a>
+            </div>
+          </div>
+        </div>
 
         <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
           <h3 className="text-base font-bold text-slate-900 scholarly-heading flex items-center space-x-2">

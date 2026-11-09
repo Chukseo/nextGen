@@ -139,7 +139,8 @@ const KNOWLEDGE_BASE: {
     keywords: ['contact', 'email', 'editorial office', 'help', 'editor email', 'support'],
     response: `You can reach our administrative and editorial offices:
 - **General Inquiries**: \`nextgenjournals@gmail.com\`
-- **Office**: Gower Street, London, United Kingdom (In research partnership with University College London)
+- **Office**: Gower Street, London, United Kingdom (Affiliated with University College London)
+- **Publishing Partner**: LOU Publishing and Information Services (Asaba, Delta State, Nigeria)
 - You can also leave a message right here in this chat, and our academic support team will follow up!`,
     links: [
       { label: 'Contact Us', href: '/contact' },

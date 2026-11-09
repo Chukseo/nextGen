@@ -45,7 +45,9 @@ export default function Navbar() {
           <div className="flex items-center space-x-2 sm:space-x-3 truncate">
             <span className="font-semibold text-white tracking-wide uppercase">Open Access Academic Publisher</span>
             <span className="text-slate-600 hidden md:inline">•</span>
-            <span className="hidden md:inline text-blue-300 font-medium">In Research Partnership with University College London</span>
+            <span className="hidden md:inline text-blue-300 font-medium">Affiliated with UCL</span>
+            <span className="text-slate-600 hidden lg:inline">•</span>
+            <span className="hidden lg:inline text-emerald-300 font-medium">In Partnership with LOU Publishing</span>
             <span className="text-slate-600 hidden sm:inline">•</span>
             <span className="hidden sm:inline text-slate-400">Gower Street, London, United Kingdom</span>
           </div>
@@ -74,7 +76,7 @@ export default function Navbar() {
                 NextGen Innovation & Research Journals
               </div>
               <div className="text-[11px] xl:text-xs text-slate-500 font-medium tracking-wide whitespace-nowrap">
-                Research Partnership with University College London &bull; Gower Street, London
+                Affiliated with UCL &bull; In Partnership with LOU Publishing &bull; Gower Street, London
               </div>
             </div>
           </Link>

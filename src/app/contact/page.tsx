@@ -5,7 +5,7 @@ import { getBaseUrl } from '@/lib/siteUrl';
 
 export const metadata: Metadata = {
   title: 'Contact Editorial Office & Publisher',
-  description: 'Contact NextGen Innovation & Research Journals editorial office, technical support, and publisher at Gower Street, London, United Kingdom, in research partnership with University College London.',
+  description: 'Contact NextGen Innovation & Research Journals editorial office, technical support, and publisher at Gower Street, London, United Kingdom, affiliated with University College London (UCL) and in partnership with LOU Publishing.',
   alternates: {
     canonical: `${getBaseUrl()}/contact`,
   },
@@ -55,8 +55,24 @@ export default function ContactPage() {
                   Gower Street, London, United Kingdom
                 </span>
                 <span className="text-[11px] text-blue-700 font-semibold block mt-1">
-                  In Research Partnership with University College London (UCL)
+                  Affiliated Institution: University College London (UCL)
                 </span>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 pt-2 border-t border-slate-100">
+              <MapPin className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-slate-900 block">Strategic Publishing Partner</span>
+                <span className="text-slate-600">
+                  LOU Publishing and Information Services<br />
+                  20 Nnamdi Crescent Street Asaba, Delta State, Nigeria
+                </span>
+                <div className="text-[11px] text-slate-600 mt-1 space-y-0.5">
+                  <div>Tel: <a href="tel:+2348055821283" className="text-blue-700 hover:underline">+234 8055821283</a></div>
+                  <div>Email: <a href="mailto:loupublishinginfo@gmail.com" className="text-blue-700 hover:underline">loupublishinginfo@gmail.com</a></div>
+                  <div>Portal: <a href="https://loupublishing.onrender.com" target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">loupublishing.onrender.com</a></div>
+                </div>
               </div>
             </div>
           </div>
