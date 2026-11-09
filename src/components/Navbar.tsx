@@ -120,9 +120,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-3 xl:space-x-4 flex-shrink-0 whitespace-nowrap">
             <Link
               href="/submit"
-              className="inline-flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 text-white px-3.5 py-2 rounded-md text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] btn-shimmer transition-all whitespace-nowrap"
             >
-              <UploadCloud className="w-4 h-4" />
+              <UploadCloud className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" />
               <span>Submit Manuscript</span>
             </Link>
 

@@ -25,7 +25,7 @@ export default function ContactPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-slate-700">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div className="reveal-on-scroll hover-lift bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-blue-200 transition-all duration-300 space-y-4">
           <h2 className="text-base font-bold text-slate-900 scholarly-heading border-b border-slate-100 pb-2">
             Editorial Office
           </h2>
@@ -78,7 +78,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div className="reveal-on-scroll hover-lift delay-100 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-blue-200 transition-all duration-300 space-y-4">
           <h2 className="text-base font-bold text-slate-900 scholarly-heading border-b border-slate-100 pb-2">
             Journal-Specific Contacts
           </h2>

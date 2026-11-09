@@ -225,7 +225,7 @@ export default async function ArticlesSearchPage({
                 return (
                   <article
                     key={article.id}
-                    className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow space-y-3"
+                    className="reveal-on-scroll hover-lift bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 space-y-3 group"
                   >
                     <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
                       <div className="flex items-center space-x-2">
@@ -237,7 +237,7 @@ export default async function ArticlesSearchPage({
                       <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
                     </div>
 
-                    <h2 className="text-xl font-bold text-slate-900 scholarly-heading hover:text-blue-700">
+                    <h2 className="text-xl font-bold text-slate-900 scholarly-heading group-hover:text-blue-700 transition-colors">
                       <Link href={`/articles/${article.slug || article.id}`}>{article.title}</Link>
                     </h2>
 
@@ -254,7 +254,7 @@ export default async function ArticlesSearchPage({
                         {article.keywords.map((k) => (
                           <span
                             key={k.id}
-                            className="bg-slate-100 text-slate-600 text-[11px] px-2 py-0.5 rounded"
+                            className="bg-slate-100 group-hover:bg-blue-50/60 text-slate-600 group-hover:text-blue-700 text-[11px] px-2 py-0.5 rounded transition-colors"
                           >
                             {k.keyword}
                           </span>
@@ -278,7 +278,7 @@ export default async function ArticlesSearchPage({
                           className="font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1"
                         >
                           <span>View Article Details</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
                         </Link>
                       </div>
                     </div>

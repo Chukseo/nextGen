@@ -25,20 +25,27 @@ h1, h2, h3, .scholarly-heading {
   line-height: 1.75;
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars with sleek transitions */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
 }
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 4px;
+  border-radius: 9999px;
+  border: 2px solid #f1f5f9;
+  transition: background-color 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
 /* Apple Glassmorphism and Micro-interactions */
@@ -60,9 +67,9 @@ h1, h2, h3, .scholarly-heading {
 }
 
 .apple-glass-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(147, 197, 253, 0.6);
-  box-shadow: 0 16px 36px -4px rgba(37, 99, 235, 0.1), 0 6px 12px -2px rgba(15, 23, 42, 0.04);
+  transform: translateY(-4px);
+  border-color: rgba(147, 197, 253, 0.8);
+  box-shadow: 0 20px 40px -4px rgba(37, 99, 235, 0.12), 0 8px 16px -2px rgba(15, 23, 42, 0.05);
 }
 
 .apple-glass-dark {
@@ -73,6 +80,84 @@ h1, h2, h3, .scholarly-heading {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
+/* Hover Lift Effect */
+.hover-lift {
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.32s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 32px -8px rgba(15, 23, 42, 0.1), 0 8px 16px -4px rgba(15, 23, 42, 0.05);
+}
+
+.hover-lift-sm {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -4px rgba(15, 23, 42, 0.08);
+}
+
+/* Interactive Button Shimmer Sweep */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.75s ease-in-out;
+  pointer-events: none;
+}
+.btn-shimmer:hover::before {
+  left: 140%;
+}
+
+/* Gentle Floating Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 9s ease-in-out infinite;
+}
+
+/* Shimmer pulse for glowing accents */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 5s ease-in-out infinite;
+}
+
 @keyframes subtle-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.92; transform: scale(1.02); }
@@ -80,5 +165,43 @@ h1, h2, h3, .scholarly-heading {
 
 .animate-subtle-pulse {
   animation: subtle-pulse 3s infinite ease-in-out;
+}
+
+/* Scroll reveal utility */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delay helpers for grid items */
+.delay-75 { transition-delay: 75ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-225 { transition-delay: 225ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-375 { transition-delay: 375ms; }
+
+/* Interactive link underlines */
+.link-underline-grow {
+  position: relative;
+  display: inline-block;
+}
+.link-underline-grow::after {
+  content: '';
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: currentColor;
+  transition: width 0.25s ease-out;
+}
+.link-underline-grow:hover::after {
+  width: 100%;
 }
 

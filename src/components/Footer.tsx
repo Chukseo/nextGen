@@ -75,11 +75,11 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-white tracking-wider uppercase">Journals & Library</h4>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li><Link href="/journals/jstai" className="hover:text-white transition-colors">Journal of Science, Technology & AI</Link></li>
-              <li><Link href="/journals/necr" className="hover:text-white transition-colors">NextGen Engineering & Computing Review</Link></li>
-              <li><Link href="/journals/ihls" className="hover:text-white transition-colors">Interdisciplinary Health & Life Sciences</Link></li>
-              <li><Link href="/journals" className="hover:text-white transition-colors">All Journals & Archives</Link></li>
-              <li><Link href="/articles" className="hover:text-white transition-colors">Browse Published Articles</Link></li>
+              <li><Link href="/journals/jstai" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Journal of Science, Technology & AI</Link></li>
+              <li><Link href="/journals/necr" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">NextGen Engineering & Computing Review</Link></li>
+              <li><Link href="/journals/ihls" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Interdisciplinary Health & Life Sciences</Link></li>
+              <li><Link href="/journals" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">All Journals & Archives</Link></li>
+              <li><Link href="/articles" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Browse Published Articles</Link></li>
             </ul>
           </div>
 
@@ -87,11 +87,11 @@ export default function Footer() {
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-white tracking-wider uppercase">Editorial & Policies</h4>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li><Link href="/submit" className="hover:text-white transition-colors">Author Submission Guidelines</Link></li>
-              <li><Link href="/editorial-policies" className="hover:text-white transition-colors">Peer Review Process</Link></li>
-              <li><Link href="/editorial-policies" className="hover:text-white transition-colors">COPE Publication Ethics</Link></li>
-              <li><Link href="/editorial-policies" className="hover:text-white transition-colors">Open Access & CC BY 4.0 License</Link></li>
-              <li><Link href="/editorial-policies" className="hover:text-white transition-colors">Plagiarism & Retraction Policy</Link></li>
+              <li><Link href="/submit" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Author Submission Guidelines</Link></li>
+              <li><Link href="/editorial-policies" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Peer Review Process</Link></li>
+              <li><Link href="/editorial-policies" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">COPE Publication Ethics</Link></li>
+              <li><Link href="/editorial-policies" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Open Access & CC BY 4.0 License</Link></li>
+              <li><Link href="/editorial-policies" className="hover:text-blue-300 hover:translate-x-1 inline-block transition-all duration-200">Plagiarism & Retraction Policy</Link></li>
             </ul>
           </div>
 
@@ -102,19 +102,19 @@ export default function Footer() {
               Each journal under NextGen is governed by an independent Editor-in-Chief across different Universities in the world and an international editorial board of recognized scholars. Editorial decisions are made strictly on scholarly merits, technical rigour and methodological soundness, free from commercial or political influence.
             </p>
             <div className="grid grid-cols-2 gap-2 pt-2">
-              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center">
+              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center hover:border-blue-700 hover:scale-105 transition-all duration-200 cursor-default">
                 <span className="text-[10px] text-blue-400 font-bold block uppercase tracking-wider">Crossref</span>
                 <span className="text-[11px] text-slate-300">Registered DOIs</span>
               </div>
-              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center">
+              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center hover:border-emerald-700 hover:scale-105 transition-all duration-200 cursor-default">
                 <span className="text-[10px] text-emerald-400 font-bold block uppercase tracking-wider">CC BY 4.0</span>
                 <span className="text-[11px] text-slate-300">Open Access</span>
               </div>
-              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center">
+              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center hover:border-amber-700 hover:scale-105 transition-all duration-200 cursor-default">
                 <span className="text-[10px] text-amber-400 font-bold block uppercase tracking-wider">COPE</span>
                 <span className="text-[11px] text-slate-300">Ethics Compliant</span>
               </div>
-              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center">
+              <div className="bg-navy-900 border border-navy-800 rounded p-2 text-center hover:border-indigo-700 hover:scale-105 transition-all duration-200 cursor-default">
                 <span className="text-[10px] text-indigo-400 font-bold block uppercase tracking-wider">Peer-Reviewed</span>
                 <span className="text-[11px] text-slate-300">Scholarly Standard</span>
               </div>
@@ -123,7 +123,7 @@ export default function Footer() {
         </div>
 
         {/* Institutional Affiliation & Publishing Partnership Banner */}
-        <div className="my-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-navy-900 via-navy-900/95 to-blue-950/70 border border-navy-800 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div className="my-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-navy-900 via-navy-900/95 to-blue-950/70 border border-navy-800 hover:border-blue-900/70 grid grid-cols-1 md:grid-cols-2 gap-6 items-center transition-colors">
           <div className="flex items-center space-x-3.5">
             <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center shrink-0">
               <GraduationCap className="w-5 h-5" />

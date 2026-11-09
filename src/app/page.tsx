@@ -88,7 +88,7 @@ export default async function HomePage() {
       {/* Scholarly Hero Section with Faded Unsplash Image & Navy Solid Overlay */}
       <section className="relative bg-navy-950 text-white pt-20 pb-24 px-4 sm:px-8 border-b border-navy-800 overflow-hidden">
         {/* Background Image Layer with Milder Scholarly Overlay */}
-        <div className="absolute inset-0 pointer-events-none select-none z-0">
+        <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
           <img
             src="/hero-bg.jpg"
             alt="Scholarly Research Library Architecture"
@@ -99,11 +99,15 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-navy-950/35" />
           <div className="absolute inset-0 bg-gradient-to-r from-navy-950/75 via-navy-950/35 to-navy-950/40" />
           <div className="absolute inset-0 bg-gradient-to-t from-navy-950/70 via-transparent to-transparent" />
+
+          {/* Ambient Glowing Orbs with Smooth Floating Animation */}
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float pointer-events-none" />
+          <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl animate-float-slow pointer-events-none" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto space-y-8">
           <div className="max-w-3xl space-y-4">
-            <div className="inline-flex flex-wrap items-center gap-2 bg-blue-900/60 border border-blue-700/50 rounded-full px-3.5 py-1 text-xs text-blue-300">
+            <div className="inline-flex flex-wrap items-center gap-2 bg-blue-900/60 border border-blue-700/50 rounded-full px-3.5 py-1 text-xs text-blue-300 backdrop-blur-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Open Access Scholarly Publishing Ecosystem</span>
               <span className="text-blue-500 hidden sm:inline">•</span>
@@ -120,31 +124,41 @@ export default async function HomePage() {
           </div>
 
           {/* Quick Search Bar */}
-          <div className="max-w-3xl bg-white p-2 rounded-xl shadow-2xl flex flex-col sm:flex-row items-center gap-2">
+          <div className="max-w-3xl bg-white/95 backdrop-blur-md p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center gap-2 border border-white/20 focus-within:ring-4 focus-within:ring-blue-500/25 focus-within:border-blue-500 transition-all duration-300">
             <div className="flex-1 flex items-center px-3 space-x-2 w-full text-slate-400">
-              <Search className="w-5 h-5 text-slate-400" />
+              <Search className="w-5 h-5 text-blue-600 shrink-0" />
               <input
                 type="text"
                 placeholder="Search articles by title, author, keyword, or DOI..."
-                className="w-full py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none"
+                className="w-full py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none bg-transparent"
               />
             </div>
             <Link
               href="/articles"
-              className="w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm px-6 py-2.5 rounded-lg transition-colors flex items-center justify-center space-x-1 shadow"
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] btn-shimmer group shrink-0"
             >
               <span>Explore Library</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
 
           {/* Quick Navigation Badges */}
-          <div className="flex flex-wrap gap-4 text-xs text-slate-300 pt-2">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-300 pt-2">
             <span className="text-slate-400 font-medium">Browse Subjects:</span>
-            <Link href="/articles?discipline=Machine+Learning" className="hover:text-blue-300 underline underline-offset-4">Machine Learning</Link>
-            <Link href="/articles?discipline=Formal+Methods" className="hover:text-blue-300 underline underline-offset-4">Formal Verification</Link>
-            <Link href="/articles?discipline=Distributed+Systems" className="hover:text-blue-300 underline underline-offset-4">Distributed Systems</Link>
-            <Link href="/articles?discipline=Biomedical" className="hover:text-blue-300 underline underline-offset-4">Biomedical Informatics</Link>
+            {[
+              { label: 'Machine Learning', discipline: 'Machine+Learning' },
+              { label: 'Formal Verification', discipline: 'Formal+Methods' },
+              { label: 'Distributed Systems', discipline: 'Distributed+Systems' },
+              { label: 'Biomedical Informatics', discipline: 'Biomedical' },
+            ].map((sub) => (
+              <Link
+                key={sub.label}
+                href={`/articles?discipline=${sub.discipline}`}
+                className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white border border-white/10 hover:border-white/30 backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs"
+              >
+                {sub.label}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -152,61 +166,61 @@ export default async function HomePage() {
       {/* Key Scholarly Pillars & Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center shadow-xs">
+          <div className="reveal-on-scroll hover-lift apple-glass-card group p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 cursor-default">
+            <div className="w-10 h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-blue-100">
               <CheckCircle className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">Double-Anonymous Review</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-blue-700 transition-colors">Double-Anonymous Review</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Standardized rigorous academic editorial workflow ensuring unbiased expert technical assessment and reproducibility checks.
             </p>
           </div>
 
-          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center shadow-xs">
+          <div className="reveal-on-scroll hover-lift delay-75 apple-glass-card group p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 cursor-default">
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-emerald-100">
               <Award className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">Crossref DOI Infrastructure</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition-colors">Crossref DOI Infrastructure</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Persistent, machine-readable digital object identifiers registered directly with Crossref for permanent scholarly citation.
             </p>
           </div>
 
-          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center shadow-xs">
+          <div className="reveal-on-scroll hover-lift delay-150 apple-glass-card group p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 cursor-default">
+            <div className="w-10 h-10 bg-amber-50 text-amber-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-amber-100">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">Open Access Publishing</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-amber-700 transition-colors">Open Access Publishing</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Free to read, download, and cite globally under CC BY 4.0. No paywalls, no author fees, and no reading restrictions for the scientific community.
             </p>
           </div>
 
-          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center shadow-xs">
+          <div className="reveal-on-scroll hover-lift delay-225 apple-glass-card group p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 cursor-default">
+            <div className="w-10 h-10 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-purple-100">
               <Shield className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">COPE Ethics Standards</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-purple-700 transition-colors">COPE Ethics Standards</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Uncompromising publication ethics, conflict-of-interest declarations, data availability mandates, and transparent corrections.
             </p>
           </div>
 
-          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-sky-50 text-sky-700 rounded-xl flex items-center justify-center shadow-xs">
+          <div className="reveal-on-scroll hover-lift delay-300 apple-glass-card group p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 cursor-default">
+            <div className="w-10 h-10 bg-sky-50 text-sky-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-sky-100">
               <GraduationCap className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">Google Scholar & Global Indexing</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-sky-700 transition-colors">Google Scholar & Global Indexing</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Comprehensive highwire metadata tags, automated sitemap feeds, and full-text harvest integration across Google Scholar and library discovery systems.
             </p>
           </div>
 
-          <div className="apple-glass-card p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <div className="w-10 h-10 bg-rose-50 text-rose-700 rounded-xl flex items-center justify-center shadow-xs">
+          <div className="reveal-on-scroll hover-lift delay-375 apple-glass-card group p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 cursor-default">
+            <div className="w-10 h-10 bg-rose-50 text-rose-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-rose-100">
               <TrendingUp className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base">2-Year Impact Factor Reports</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-rose-700 transition-colors">2-Year Impact Factor Reports</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
               Transparent, citation-tracked 2-year Journal Impact Factor (JIF) calculations, immediacy metrics, and annual citable item reports across all journals.
             </p>
@@ -214,7 +228,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Published Research Articles (Always Featured Across All Journals) */}
+      {/* Academic Trust & Indexing Section */}
       <AcademicTrustSection />
 
       {/* Featured Published Research Articles (Always Featured Across All Journals) */}
@@ -222,19 +236,19 @@ export default async function HomePage() {
         <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3 border-b border-slate-200 pb-4">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Recently Published Scholarship</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 scholarly-heading mt-1">
-              ## Latest Published Articles Across NextGen
+              Latest Published Articles Across NextGen
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Peer-reviewed open-access discoveries published in real time across all participating journals.
             </p>
           </div>
-          <Link href="/articles" className="text-xs sm:text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1 shrink-0">
+          <Link href="/articles" className="text-xs sm:text-sm font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1 shrink-0 group">
             <span>Explore all articles</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
         </div>
 
@@ -262,7 +276,7 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {publishedArticles.map((article: any) => {
+            {publishedArticles.map((article: any, index: number) => {
               const authorNames = (article.submission?.coAuthors || [])
                 .map((a: any) => `${a.firstName} ${a.lastName}`)
                 .join(', ');
@@ -270,7 +284,7 @@ export default async function HomePage() {
               return (
                 <article
                   key={article.id}
-                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4 group"
+                  className={`reveal-on-scroll hover-lift bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col justify-between space-y-4 group delay-${(index % 3) * 75}`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2 text-xs">
@@ -280,7 +294,7 @@ export default async function HomePage() {
                             <img
                               src={article.journal.coverImageUrl}
                               alt={article.journal.abbreviation}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                             />
                           </div>
                         )}
@@ -330,10 +344,10 @@ export default async function HomePage() {
                     )}
                     <Link
                       href={`/articles/${article.slug || article.id}`}
-                      className="font-semibold text-blue-700 hover:text-blue-800 flex items-center space-x-1 ml-auto"
+                      className="font-semibold text-blue-700 hover:text-blue-800 flex items-center space-x-1 ml-auto group/btn"
                     >
                       <span>Read Article</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
                     </Link>
                   </div>
                 </article>
@@ -357,10 +371,10 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {journals.map((journal) => (
+            {journals.map((journal, idx: number) => (
               <div
                 key={journal.id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-0 overflow-hidden hover:shadow-md transition-shadow"
+                className={`reveal-on-scroll hover-lift bg-white rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-0 overflow-hidden hover:shadow-xl hover:border-blue-300 transition-all duration-300 group delay-${idx * 75}`}
               >
                 {/* Cover Image or Fallback Slug Banner */}
                 {journal.coverImageUrl ? (
@@ -368,12 +382,13 @@ export default async function HomePage() {
                     <img
                       src={journal.coverImageUrl}
                       alt={journal.title}
-                      className="w-full h-40 object-cover hover:scale-105 transition-transform duration-200"
+                      className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
                   </Link>
                 ) : (
-                  <div className="w-full h-24 bg-navy-950 flex items-center justify-center">
-                    <span className="text-white font-bold text-2xl tracking-widest opacity-60">
+                  <div className="w-full h-28 bg-navy-950 flex items-center justify-center relative overflow-hidden group-hover:bg-navy-900 transition-colors">
+                    <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="text-white font-bold text-2xl tracking-widest opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-300">
                       {journal.slug.toUpperCase()}
                     </span>
                   </div>
@@ -382,12 +397,12 @@ export default async function HomePage() {
                 <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                   <div className="space-y-2">
                     {!journal.coverImageUrl && (
-                      <div className="w-10 h-10 bg-navy-950 text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                      <div className="w-10 h-10 bg-navy-950 text-white rounded-lg flex items-center justify-center font-bold text-sm shadow-xs group-hover:bg-blue-700 transition-colors">
                         {journal.slug.toUpperCase()}
                       </div>
                     )}
-                    <h3 className="text-base font-bold text-slate-900 scholarly-heading">
-                      <Link href={`/journals/${journal.slug}`} className="hover:text-blue-700">
+                    <h3 className="text-base font-bold text-slate-900 scholarly-heading group-hover:text-blue-700 transition-colors">
+                      <Link href={`/journals/${journal.slug}`}>
                         {journal.title}
                       </Link>
                     </h3>
@@ -403,14 +418,14 @@ export default async function HomePage() {
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                     <Link
                       href={`/journals/${journal.slug}`}
-                      className="text-blue-700 font-semibold hover:text-blue-900 flex items-center space-x-1"
+                      className="text-blue-700 font-semibold hover:text-blue-900 flex items-center space-x-1 group/btn"
                     >
                       <span>View Journal</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:translate-x-1" />
                     </Link>
                     <Link
                       href={`/submit?journal=${journal.id}`}
-                      className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-2.5 py-1 rounded transition-colors"
+                      className="bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-800 font-semibold px-3 py-1 rounded-md transition-all shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95"
                     >
                       Submit
                     </Link>
@@ -441,7 +456,7 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Card 1: University College London (UCL) */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/40 rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 flex flex-col justify-between">
+          <div className="reveal-on-scroll hover-lift relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50/40 rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-300 p-6 sm:p-8 flex flex-col justify-between transition-all duration-300">
             <div className="space-y-4">
               <div className="inline-flex items-center space-x-2 bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-blue-200">
                 <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
@@ -458,7 +473,7 @@ export default async function HomePage() {
 
               {/* Directory Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-xs text-slate-700">
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-blue-300 transition-colors">
                   <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Campus Location</span>
@@ -466,7 +481,7 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-colors">
                   <Award className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Institutional Affiliation</span>
@@ -474,7 +489,7 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-rose-300 transition-colors">
                   <Mail className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Editorial Inquiries</span>
@@ -482,7 +497,7 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-indigo-300 transition-colors">
                   <Globe className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Institutional Portal</span>
@@ -500,7 +515,7 @@ export default async function HomePage() {
                 href="https://www.ucl.ac.uk"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-navy-950 hover:bg-blue-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group"
+                className="w-full bg-navy-950 hover:bg-blue-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group btn-shimmer hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
               >
                 <span>Visit University College London (UCL)</span>
                 <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-blue-400" />
@@ -509,7 +524,7 @@ export default async function HomePage() {
           </div>
 
           {/* Card 2: LOU Publishing and Information Services */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-emerald-50/30 rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 flex flex-col justify-between">
+          <div className="reveal-on-scroll hover-lift delay-100 relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-emerald-50/30 rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-emerald-300 p-6 sm:p-8 flex flex-col justify-between transition-all duration-300">
             <div className="space-y-4">
               <div className="inline-flex items-center space-x-2 bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-200">
                 <Award className="w-3.5 h-3.5 text-emerald-600" />
@@ -526,7 +541,7 @@ export default async function HomePage() {
 
               {/* Directory Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-xs text-slate-700">
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-blue-300 transition-colors">
                   <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Regional Headquarters</span>
@@ -534,7 +549,7 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-colors">
                   <Phone className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Direct Telephone</span>
@@ -542,7 +557,7 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-rose-300 transition-colors">
                   <Mail className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Official Email</span>
@@ -550,7 +565,7 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs">
+                <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-200/80 shadow-xs hover:border-indigo-300 transition-colors">
                   <Globe className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-slate-900 block text-[10px] uppercase tracking-wide">Publishing Web Portal</span>
@@ -568,7 +583,7 @@ export default async function HomePage() {
                 href="https://loupublishing.onrender.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-navy-950 hover:bg-emerald-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group"
+                className="w-full bg-navy-950 hover:bg-emerald-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition-all flex items-center justify-center space-x-2 group btn-shimmer hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
               >
                 <span>Visit LOU Publishing and Information Services</span>
                 <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform text-emerald-400" />
@@ -580,27 +595,27 @@ export default async function HomePage() {
 
       {/* Author Call to Action */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="bg-navy-900 text-white rounded-2xl p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="reveal-on-scroll hover-lift-sm bg-gradient-to-r from-navy-950 via-navy-900 to-blue-950 text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-navy-800 flex flex-col md:flex-row items-center justify-between gap-8 transition-all">
           <div className="space-y-3 max-w-2xl">
             <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Call for Submissions</span>
             <h2 className="text-2xl sm:text-3xl font-bold scholarly-heading">
               Publish Your Next Breakthrough with NextGen Innovation & Research Journals
             </h2>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-slate-300 leading-relaxed font-light">
               Experience a streamlined, respectful editorial process. Authors retain full copyright under Creative Commons Attribution licenses, with rapid desk screening, rigorous double-anonymous peer review, and automated Crossref DOI registration upon acceptance.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
             <Link
               href="/submit"
-              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-lg shadow transition-colors flex items-center justify-center space-x-2"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] btn-shimmer transition-all flex items-center justify-center space-x-2"
             >
               <UploadCloud className="w-4 h-4" />
               <span>Submit Manuscript (DOC/DOCX)</span>
             </Link>
             <Link
               href="/editorial-policies"
-              className="border border-slate-500 hover:border-slate-300 text-slate-200 text-sm px-5 py-3 rounded-lg font-medium transition-colors text-center"
+              className="border border-slate-600 hover:border-slate-300 hover:bg-white/10 text-slate-200 text-sm px-5 py-3 rounded-xl font-medium transition-all text-center hover:scale-[1.02] active:scale-[0.98]"
             >
               Submission Guidelines
             </Link>

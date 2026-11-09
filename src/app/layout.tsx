@@ -4,6 +4,7 @@ import Providers from '@/components/Providers';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SupportChatbot from '@/components/SupportChatbot';
+import ScrollEnhancements from '@/components/ScrollEnhancements';
 import { getBaseUrl } from '@/lib/siteUrl';
 
 const SITE_URL = getBaseUrl();
@@ -116,6 +117,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
         <Providers>
+          <ScrollEnhancements />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />

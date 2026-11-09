@@ -41,7 +41,7 @@ export default function AboutPage() {
         {/* Institutional Affiliation & Publishing Partnerships */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* UCL Affiliation Card */}
-          <div className="bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 p-6 rounded-2xl border border-blue-200/90 shadow-sm space-y-3">
+          <div className="reveal-on-scroll hover-lift bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 p-6 sm:p-7 rounded-2xl border border-blue-200/90 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 space-y-3">
             <div className="flex items-center space-x-2 text-blue-800 font-bold text-sm scholarly-heading">
               <GraduationCap className="w-5 h-5 text-blue-700 shrink-0" />
               <span>Affiliated Institution: University College London (UCL)</span>
@@ -56,7 +56,7 @@ export default function AboutPage() {
           </div>
 
           {/* LOU Publishing Card */}
-          <div className="bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/60 p-6 rounded-2xl border border-emerald-200/90 shadow-sm space-y-3">
+          <div className="reveal-on-scroll hover-lift delay-100 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/60 p-6 sm:p-7 rounded-2xl border border-emerald-200/90 shadow-xs hover:shadow-xl hover:border-emerald-300 transition-all duration-300 space-y-3">
             <div className="flex items-center space-x-2 text-emerald-800 font-bold text-sm scholarly-heading">
               <Award className="w-5 h-5 text-emerald-700 shrink-0" />
               <span>Strategic Partner: LOU Publishing and Information Services</span>
@@ -71,7 +71,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <section className="reveal-on-scroll hover-lift bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-blue-200 transition-all duration-300 space-y-4">
           <h3 className="text-base font-bold text-slate-900 scholarly-heading flex items-center space-x-2">
             <Award className="w-5 h-5 text-blue-700" />
             <span>Persistent Scholarly Infrastructure</span>

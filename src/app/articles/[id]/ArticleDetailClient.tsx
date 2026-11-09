@@ -351,7 +351,7 @@ export default function ArticleDetailClient({
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setCitationModalOpen(true)}
-              className="inline-flex items-center space-x-1.5 py-2 px-3.5 bg-white border border-slate-300 hover:bg-slate-100 rounded-md font-semibold text-slate-700 shadow-sm transition-colors"
+              className="inline-flex items-center space-x-1.5 py-2 px-3.5 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-lg font-semibold text-slate-700 shadow-xs hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <Quote className="w-4 h-4 text-blue-700" />
               <span>Cite</span>
@@ -361,9 +361,9 @@ export default function ArticleDetailClient({
               href={downloadUrl}
               download
               onClick={handleDownloadClick}
-              className="inline-flex items-center space-x-1.5 py-2 px-4 bg-blue-700 hover:bg-blue-800 text-white rounded-md font-semibold shadow-sm transition-colors"
+              className="inline-flex items-center space-x-1.5 py-2 px-4 bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white rounded-lg font-semibold shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] btn-shimmer transition-all"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
               <span>Download PDF</span>
             </a>
           </div>

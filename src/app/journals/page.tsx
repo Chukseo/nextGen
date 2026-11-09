@@ -61,15 +61,15 @@ export default async function JournalsPage() {
           return (
             <div
               key={journal.id}
-              className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-6 items-start"
+              className="reveal-on-scroll hover-lift bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col md:flex-row gap-6 items-start group"
             >
               {journal.coverImageUrl && (
-                <div className="w-28 sm:w-36 flex-shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
+                <div className="w-28 sm:w-36 flex-shrink-0 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
                   <Link href={`/journals/${journal.slug}`}>
                     <img
                       src={journal.coverImageUrl}
                       alt={journal.title}
-                      className="w-full h-auto aspect-[3/4] object-cover hover:scale-105 transition-transform"
+                      className="w-full h-auto aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
                   </Link>
                 </div>
@@ -125,13 +125,13 @@ export default async function JournalsPage() {
                 <div className="space-y-2">
                   <Link
                     href={`/journals/${journal.slug}`}
-                    className="w-full bg-navy-900 hover:bg-navy-950 text-white font-semibold text-xs py-2 px-3 rounded text-center block transition-colors"
+                    className="w-full bg-navy-900 hover:bg-navy-950 text-white font-semibold text-xs py-2.5 px-3 rounded-lg text-center block transition-all shadow-xs hover:shadow-md hover:scale-[1.01] active:scale-[0.99] btn-shimmer"
                   >
                     View Journal
                   </Link>
                   <Link
                     href={`/submit?journal=${journal.id}`}
-                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-xs py-2 px-3 rounded text-center block transition-colors"
+                    className="w-full bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-200 hover:border-blue-600 font-semibold text-xs py-2.5 px-3 rounded-lg text-center block transition-all shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99]"
                   >
                     Submit Manuscript
                   </Link>
