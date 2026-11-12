@@ -20,7 +20,9 @@ export default function robots(): MetadataRoute.Robots {
           '/articles/',
           '/journals/',
           '/issues/',
-          '/api/articles/',   // needed for citation_pdf_url discovery
+          '/volumes/',
+          '/api/articles/',
+          '/*.pdf',
         ],
         disallow: ['/dashboard/', '/api/admin/', '/api/auth/'],
       },

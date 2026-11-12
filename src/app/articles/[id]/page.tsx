@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { getFileBuffer } from '@/lib/storage';
 import { parseManuscriptDocx } from '@/lib/pdfGenerator';
 import { getBaseUrl } from '@/lib/siteUrl';
+import { cleanAndMergeReferences } from '@/lib/referenceCleaner';
 import ArticleDetailClient from './ArticleDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -52,17 +53,24 @@ function getArticleAuthors(article: any): { names: string[]; affiliations: strin
   const coAuthors = article.submission?.coAuthors || [];
   if (coAuthors.length > 0) {
     const names = coAuthors.map((c: any) => `${c.firstName} ${c.lastName}`.trim()).filter(Boolean);
-    const affiliations = coAuthors.map((c: any) => c.affiliation).filter(Boolean);
+    const affiliations = coAuthors.map((c: any) => {
+      const aff = (c.affiliation || '').trim().replace(/,+$/, '');
+      const country = (c.country || '').trim();
+      if (aff && country && !aff.toLowerCase().includes(country.toLowerCase())) {
+        return `${aff}, ${country}`;
+      }
+      return aff || country || '';
+    }).filter(Boolean);
     return { names, affiliations, raw: coAuthors };
   }
 
   const leadName = article.submission?.author?.name;
   if (leadName && !/NextGen|Admin|Staff|System/i.test(leadName)) {
-    const affiliation = article.submission?.author?.affiliation || '';
+    const aff = (article.submission?.author?.affiliation || '').trim().replace(/,+$/, '');
     return {
       names: [leadName.trim()],
-      affiliations: affiliation ? [affiliation] : [],
-      raw: [{ firstName: leadName, lastName: '', affiliation }],
+      affiliations: aff ? [aff] : [],
+      raw: [{ firstName: leadName, lastName: '', affiliation: aff }],
     };
   }
 
@@ -93,8 +101,8 @@ export async function generateMetadata({
     .slice(0, 10)
     .replaceAll('-', '/');
 
-  // Direct public PDF URL or API download stream
-  const pdfUrl = `${canonical}/pdf`;
+  // Direct official PDF URL ending in .pdf
+  const pdfUrl = `${canonical}/article.pdf`;
 
   const publisherName = article.journal.publisher || 'NextGen Innovation & Research Journals, Gower Street, London, United Kingdom';
 
@@ -154,11 +162,7 @@ export async function generateMetadata({
   citationMetadata.citation_language = 'en';
 
   if (article.references && article.references.length > 0) {
-    citationMetadata.citation_reference = article.references.map((r) => {
-      let refStr = r.rawText;
-      if (r.doi) refStr += ` https://doi.org/${r.doi.replace(/^https?:\/\/doi\.org\//, '')}`;
-      return refStr;
-    });
+    citationMetadata.citation_reference = cleanAndMergeReferences(article.references);
   }
 
   // Dublin Core
@@ -246,9 +250,7 @@ export default async function ArticleDetailPage({
 
   const baseUrl = getBaseUrl();
   const canonical = `${baseUrl}/articles/${article.slug || article.id}`;
-  const pdfUrl = article.pdfUrl && /^https?:\/\//i.test(article.pdfUrl)
-    ? article.pdfUrl
-    : `${baseUrl}/api/articles/${article.id}/pdf`;
+  const pdfUrl = `${canonical}/article.pdf`;
 
   const { raw: authorObjects } = getArticleAuthors(article);
   const [firstPage, lastPage] = (article.pageRange || '').split('-', 2);
@@ -283,16 +285,23 @@ export default async function ArticleDetailPage({
         },
       },
     },
-    author: authorObjects.map((a: any) => ({
-      '@type': 'Person',
-      name: `${a.firstName || ''} ${a.lastName || ''}`.trim() || 'Scholarly Author',
-      ...(a.affiliation && {
-        affiliation: {
-          '@type': 'Organization',
-          name: a.affiliation,
-        },
-      }),
-    })),
+    author: authorObjects.map((a: any) => {
+      const aff = (a.affiliation || '').trim().replace(/,+$/, '');
+      const country = (a.country || '').trim();
+      const fullAff = aff && country && !aff.toLowerCase().includes(country.toLowerCase())
+        ? `${aff}, ${country}`
+        : (aff || country);
+      return {
+        '@type': 'Person',
+        name: `${a.firstName || ''} ${a.lastName || ''}`.trim() || 'Scholarly Author',
+        ...(fullAff && {
+          affiliation: {
+            '@type': 'Organization',
+            name: fullAff,
+          },
+        }),
+      };
+    }),
     publisher: {
       '@type': 'Organization',
       name: article.journal.publisher || 'NextGen Innovation & Research Journals',

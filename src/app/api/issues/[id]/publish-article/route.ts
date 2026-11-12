@@ -11,6 +11,7 @@ import { generateScholarlyArticlePdf, extractDocxText, parseManuscriptDocx } fro
 import { uploadFile, getFileBuffer } from '@/lib/storage';
 import { generateUniqueArticleSlug } from '@/lib/slug';
 import { getBaseUrl } from '@/lib/siteUrl';
+import { cleanAndMergeReferences } from '@/lib/referenceCleaner';
 import { publishArticleToZenodo } from '@/lib/zenodo';
 
 export const dynamic = 'force-dynamic';
@@ -163,6 +164,7 @@ export async function POST(
           } catch {
             list = submission.referencesRaw.split('\n').map((r: string) => r.trim()).filter(Boolean);
           }
+          list = cleanAndMergeReferences(list);
           parsedRefsForPdf = list.map((rawText, idx) => {
             const doiMatch = rawText.match(/\b(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/);
             return {
@@ -309,6 +311,7 @@ export async function POST(
         } catch {
           parsedReferences = submission.referencesRaw.split('\n').map((r: string) => r.trim()).filter(Boolean);
         }
+        parsedReferences = cleanAndMergeReferences(parsedReferences);
         await tx.articleReference.deleteMany({
           where: { publishedArticleId: pubArt.id },
         });

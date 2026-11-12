@@ -120,7 +120,7 @@ export default function ArticleDetailClient({
     authors: authors.map((a: any) => ({ firstName: a.firstName, lastName: a.lastName })),
   };
 
-  const downloadUrl = `/articles/${article.slug || article.id}/pdf`;
+  const downloadUrl = `/articles/${article.slug || article.id}/article.pdf`;
 
   const handleDownloadClick = () => {
     setDownloadsCount((prev) => prev + 1);

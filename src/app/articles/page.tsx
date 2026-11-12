@@ -26,12 +26,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ArticlesSearchPage({
   searchParams,
 }: {
-  searchParams: { q?: string; journal?: string; discipline?: string; year?: string };
+  searchParams: { q?: string; journal?: string; discipline?: string; year?: string; page?: string };
 }) {
   const query = searchParams.q?.trim() || '';
   const journalSlug = searchParams.journal;
   const discipline = searchParams.discipline;
   const year = searchParams.year;
+  const PAGE_SIZE = 10;
+  const currentPage = Math.max(1, parseInt(searchParams.page || '1', 10) || 1);
 
   let where: any = {
     submission: {
@@ -84,9 +86,12 @@ export default async function ArticlesSearchPage({
     ];
   }
 
-  const [articles, journals] = await Promise.all([
+  const [totalArticles, articles, journals] = await Promise.all([
+    prisma.publishedArticle.count({ where }),
     prisma.publishedArticle.findMany({
       where,
+      skip: (currentPage - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
       include: {
         journal: { select: { title: true, abbreviation: true, slug: true } },
         issue: { include: { volume: true } },
@@ -101,6 +106,19 @@ export default async function ArticlesSearchPage({
     }),
     prisma.journal.findMany({ select: { id: true, title: true, slug: true, abbreviation: true } }),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalArticles / PAGE_SIZE));
+
+  const buildPageUrl = (targetPage: number) => {
+    const sp = new URLSearchParams();
+    if (query) sp.set('q', query);
+    if (journalSlug) sp.set('journal', journalSlug);
+    if (discipline) sp.set('discipline', discipline);
+    if (year) sp.set('year', year);
+    if (targetPage > 1) sp.set('page', String(targetPage));
+    const qs = sp.toString();
+    return qs ? `/articles?${qs}` : '/articles';
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 space-y-10">
@@ -285,6 +303,43 @@ export default async function ArticlesSearchPage({
                   </article>
                 );
               })}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-xs text-slate-500">
+                Showing <span className="font-semibold text-slate-800">{(currentPage - 1) * PAGE_SIZE + 1}</span>–<span className="font-semibold text-slate-800">{Math.min(currentPage * PAGE_SIZE, totalArticles)}</span> of <span className="font-semibold text-slate-800">{totalArticles}</span> published articles
+              </div>
+              <div className="flex items-center space-x-2">
+                {currentPage > 1 ? (
+                  <Link
+                    href={buildPageUrl(currentPage - 1)}
+                    className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    &larr; Previous
+                  </Link>
+                ) : (
+                  <span className="px-3.5 py-1.5 text-xs font-semibold text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed">
+                    &larr; Previous
+                  </span>
+                )}
+                <span className="text-xs font-medium text-slate-600 px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                {currentPage < totalPages ? (
+                  <Link
+                    href={buildPageUrl(currentPage + 1)}
+                    className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    Next &rarr;
+                  </Link>
+                ) : (
+                  <span className="px-3.5 py-1.5 text-xs font-semibold text-slate-400 bg-slate-100 border border-slate-200 rounded-lg cursor-not-allowed">
+                    Next &rarr;
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>

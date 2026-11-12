@@ -8,6 +8,7 @@ import { uploadFile } from '@/lib/storage';
 import { generateAPACitation } from '@/lib/citations';
 import { formatDOISuffix } from '@/lib/crossref';
 import { generateUniqueArticleSlug } from '@/lib/slug';
+import { cleanAndMergeReferences } from '@/lib/referenceCleaner';
 import { publishArticleToZenodo } from '@/lib/zenodo';
 
 export const dynamic = 'force-dynamic';
@@ -175,6 +176,7 @@ export async function POST(req: Request) {
       } catch {
         parsedReferences = referencesRaw.split('\n').map((r) => r.trim()).filter(Boolean);
       }
+      parsedReferences = cleanAndMergeReferences(parsedReferences);
     }
 
     // Upload PDF file if provided
