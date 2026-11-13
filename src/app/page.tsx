@@ -180,9 +180,9 @@ export default async function HomePage() {
             <div className="w-10 h-10 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:bg-emerald-100">
               <Award className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition-colors">Crossref DOI Infrastructure</h3>
+            <h3 className="font-bold text-slate-900 text-base group-hover:text-emerald-700 transition-colors">DOI Infrastructure</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Persistent, machine-readable digital object identifiers registered directly with Crossref for permanent scholarly citation.
+              Persistent, machine-readable digital object identifiers registered directly with Zenodo for permanent scholarly citation.
             </p>
           </div>
 
