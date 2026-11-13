@@ -5,7 +5,6 @@ import { CheckCircle, ExternalLink, Clock, AlertCircle } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PLATFORM DATA CONFIGURATION
-// Add/remove platforms here without touching component logic.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type PlatformStatus = 'active' | 'scholar-ready' | 'submitted' | 'planned';
@@ -17,13 +16,10 @@ export interface IndexingPlatform {
   status: PlatformStatus;
   statusLabel: string;
   url: string;
-  /** SVG string rendered inline — keeps bundle clean, no external img requests */
   logo: React.ReactNode;
-  /** Whether to show this platform in the main grid */
   featured: boolean;
 }
 
-// Official Brand Logos
 const GoogleScholarLogo = () => (
   <img
     src="/logos/google-scholar.png"
@@ -35,9 +31,7 @@ const GoogleScholarLogo = () => (
 const ZenodoLogo = () => (
   <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Zenodo" role="img" className="w-14 h-14">
     <rect width="120" height="120" rx="20" fill="#1A1A2E"/>
-    {/* Z lettermark */}
     <path d="M22 30h76l-56 60h56" stroke="#1EAAF1" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-    {/* DOT */}
     <circle cx="60" cy="112" r="5" fill="#1EAAF1"/>
   </svg>
 );
@@ -56,14 +50,6 @@ const DOAJLogo = () => (
     alt="DOAJ — Directory of Open Access Journals"
     className="h-9 sm:h-10 w-auto max-w-full object-contain rounded-md shadow-xs select-none"
   />
-);
-
-// Planned / pipeline platforms (shown in secondary row when featured: false)
-const CrossrefLogo = () => (
-  <svg viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Crossref" role="img" className="h-8 w-auto">
-    <text x="0" y="30" fontSize="26" fontWeight="800" fontFamily="sans-serif" fill="#E77B24">Cross</text>
-    <text x="56" y="30" fontSize="26" fontWeight="800" fontFamily="sans-serif" fill="#E05C1A">ref</text>
-  </svg>
 );
 
 export const INDEXING_PLATFORMS: IndexingPlatform[] = [
@@ -107,72 +93,7 @@ export const INDEXING_PLATFORMS: IndexingPlatform[] = [
     logo: <DOAJLogo />,
     featured: true,
   },
-  // Pipeline platforms (not rendered in main grid, but available for future use)
-  {
-    id: 'crossref',
-    name: 'Crossref',
-    description: 'DOI registration and scholarly metadata infrastructure.',
-    status: 'active',
-    statusLabel: 'Active',
-    url: 'https://crossref.org',
-    logo: <CrossrefLogo />,
-    featured: false,
-  },
-  {
-    id: 'openalex',
-    name: 'OpenAlex',
-    description: 'Open scholarly knowledge graph for global research discovery.',
-    status: 'planned',
-    statusLabel: 'Planned',
-    url: 'https://openalex.org',
-    logo: null,
-    featured: false,
-  },
-  {
-    id: 'base',
-    name: 'BASE',
-    description: 'Bielefeld Academic Search Engine for open-access resources.',
-    status: 'planned',
-    statusLabel: 'Planned',
-    url: 'https://base-search.net',
-    logo: null,
-    featured: false,
-  },
-  {
-    id: 'road',
-    name: 'ROAD',
-    description: 'ISSN International Centre directory of open access resources.',
-    status: 'planned',
-    statusLabel: 'Planned',
-    url: 'https://road.issn.org',
-    logo: null,
-    featured: false,
-  },
-  {
-    id: 'scopus',
-    name: 'Scopus',
-    description: 'Elsevier Scopus abstract and citation database.',
-    status: 'planned',
-    statusLabel: 'Planned',
-    url: 'https://scopus.com',
-    logo: null,
-    featured: false,
-  },
-  {
-    id: 'dimensions',
-    name: 'Dimensions',
-    description: 'Digital Science linked research data and analytics platform.',
-    status: 'planned',
-    statusLabel: 'Planned',
-    url: 'https://dimensions.ai',
-    logo: null,
-    featured: false,
-  },
 ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Trust badges row
-// ─────────────────────────────────────────────────────────────────────────────
 
 const TRUST_BADGES = [
   { label: 'UCL Affiliated Institution' },
@@ -184,32 +105,24 @@ const TRUST_BADGES = [
   { label: 'Google Scholar Compatible' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Status pill helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
 const STATUS_STYLES: Record<PlatformStatus, { pill: string; icon: React.ReactNode }> = {
   active: {
-    pill: 'bg-emerald-50 text-emerald-800 border border-emerald-200',
+    pill: 'bg-emerald-50 text-emerald-800 border border-emerald-200/90',
     icon: <CheckCircle className="w-3 h-3 text-emerald-600" />,
   },
   'scholar-ready': {
-    pill: 'bg-blue-50 text-blue-800 border border-blue-200',
+    pill: 'bg-blue-50 text-blue-800 border border-blue-200/90',
     icon: <CheckCircle className="w-3 h-3 text-blue-600" />,
   },
   submitted: {
-    pill: 'bg-amber-50 text-amber-800 border border-amber-200',
+    pill: 'bg-amber-50 text-amber-800 border border-amber-200/90',
     icon: <Clock className="w-3 h-3 text-amber-600" />,
   },
   planned: {
-    pill: 'bg-slate-50 text-slate-600 border border-slate-200',
+    pill: 'bg-slate-50 text-slate-600 border border-slate-200/90',
     icon: <AlertCircle className="w-3 h-3 text-slate-400" />,
   },
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Intersection-observer hook for fade-up animation
-// ─────────────────────────────────────────────────────────────────────────────
 
 function useFadeUp(delay = 0) {
   const ref = useRef<HTMLDivElement>(null);
@@ -235,10 +148,6 @@ function useFadeUp(delay = 0) {
   return { ref, visible };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Platform card
-// ─────────────────────────────────────────────────────────────────────────────
-
 function PlatformCard({
   platform,
   delay,
@@ -257,23 +166,22 @@ function PlatformCard({
         transitionDuration: '500ms',
       }}
       className={`
-        group relative bg-white rounded-2xl border border-slate-200 shadow-sm
+        group relative glass-card card-gradient-reveal rounded-2xl
         p-6 flex flex-col items-center text-center gap-4
-        transition-all duration-500 ease-out
-        hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-200
+        transition-all duration-400 ease-out
         focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2
         ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
         motion-reduce:transition-none motion-reduce:translate-y-0 motion-reduce:opacity-100
       `}
     >
       {/* Logo container */}
-      <div className="w-full max-w-[150px] h-20 px-3 flex items-center justify-center rounded-xl bg-slate-50/80 border border-slate-100 transition-transform duration-300 group-hover:scale-105 motion-reduce:scale-100">
+      <div className="w-full max-w-[150px] h-20 px-3 flex items-center justify-center rounded-xl bg-white/70 border border-slate-100/90 shadow-2xs transition-transform duration-300 group-hover:scale-105 motion-reduce:scale-100">
         {platform.logo}
       </div>
 
       {/* Platform name */}
       <div className="space-y-1.5">
-        <h3 className="font-bold text-slate-900 text-sm tracking-tight">
+        <h3 className="font-bold text-slate-900 text-sm tracking-tight group-hover:text-blue-700 transition-colors duration-200">
           {platform.name}
         </h3>
         <p className="text-xs text-slate-500 leading-relaxed">
@@ -300,16 +208,12 @@ function PlatformCard({
       </a>
 
       {/* Hover arrow overlay */}
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:hidden">
-        <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+      <div className="absolute top-3.5 right-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:hidden">
+        <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
       </div>
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function AcademicTrustSection() {
   const headerFade = useFadeUp(0);
@@ -320,27 +224,15 @@ export default function AcademicTrustSection() {
   return (
     <section
       aria-labelledby="trust-section-heading"
-      className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50/60 border-y border-slate-200 py-16 sm:py-20 px-4 sm:px-8 overflow-hidden"
+      className="relative bg-gradient-to-b from-slate-50/70 via-white/80 to-slate-50/50 border-y border-slate-200/70 py-16 sm:py-20 px-4 sm:px-8 overflow-hidden"
     >
-      {/* Decorative background blobs */}
+      {/* Decorative background glows */}
       <div
         aria-hidden="true"
         className="pointer-events-none select-none absolute inset-0 overflow-hidden"
       >
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl" />
-        {/* Subtle dot-grid pattern */}
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.025]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.5" fill="#334155" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dots)" />
-        </svg>
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl animate-orb" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl animate-orb-slow" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto space-y-12">
@@ -352,7 +244,7 @@ export default function AcademicTrustSection() {
             ${headerFade.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}
             motion-reduce:opacity-100 motion-reduce:translate-y-0`}
         >
-          <div className="inline-flex items-center space-x-2 bg-blue-50 border border-blue-200 rounded-full px-3 py-1 text-xs font-bold text-blue-700 uppercase tracking-wider">
+          <div className="inline-flex items-center space-x-2 bg-blue-50/90 border border-blue-200/80 rounded-full px-3.5 py-1 text-xs font-bold text-blue-700 uppercase tracking-wider backdrop-blur-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>Academic Indexing &amp; Preservation</span>
           </div>
@@ -364,13 +256,13 @@ export default function AcademicTrustSection() {
             Trusted Academic Indexing &amp; Preservation
           </h2>
 
-          <p className="text-sm text-slate-500 leading-relaxed">
+          <p className="text-sm text-slate-500 leading-relaxed font-light">
             NextGen journals are built for long-term preservation, scholarly discoverability,
             citation tracking, and global academic visibility.
           </p>
         </div>
 
-        {/* Platform card grid: 4-col desktop / 2-col tablet / 1-col mobile */}
+        {/* Platform card grid */}
         <div
           role="list"
           aria-label="Academic indexing and archiving platforms"
@@ -378,7 +270,7 @@ export default function AcademicTrustSection() {
         >
           {featuredPlatforms.map((platform, i) => (
             <div key={platform.id} role="listitem">
-              <PlatformCard platform={platform} delay={i * 100} />
+              <PlatformCard platform={platform} delay={i * 90} />
             </div>
           ))}
         </div>
@@ -386,14 +278,14 @@ export default function AcademicTrustSection() {
         {/* Trust badges row */}
         <div
           ref={badgesFade.ref}
-          className={`flex flex-wrap justify-center gap-3 pt-2 transition-all duration-500 ease-out
+          className={`flex flex-wrap justify-center gap-2.5 pt-2 transition-all duration-500 ease-out
             ${badgesFade.visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
             motion-reduce:opacity-100 motion-reduce:translate-y-0`}
         >
           {TRUST_BADGES.map((badge) => (
             <div
               key={badge.label}
-              className="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:border-emerald-300 hover:text-emerald-800 hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 cursor-default"
+              className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-xs border border-slate-200/80 rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:border-emerald-300 hover:text-emerald-800 hover:-translate-y-0.5 hover:shadow-xs transition-all duration-200 cursor-default"
             >
               <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
               <span>{badge.label}</span>

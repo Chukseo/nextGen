@@ -39,7 +39,6 @@ export default function ArticleDetailClient({
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Record article view with real client geolocation / timezone
     let isMounted = true;
     const recordView = async () => {
       try {
@@ -129,11 +128,11 @@ export default function ArticleDetailClient({
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 space-y-10">
       {/* Back Link & Journal Banner */}
-      <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 gap-4 border-b border-slate-200 pb-4">
+      <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 gap-4 border-b border-slate-200/80 pb-4">
         <div className="flex items-center gap-4">
           {article.journal?.coverImageUrl && (
-            <Link href={`/journals/${article.journal.slug}`} className="flex-shrink-0">
-              <div className="w-12 h-16 rounded overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
+            <Link href={`/journals/${article.journal.slug}`} className="flex-shrink-0 group">
+              <div className="w-12 h-16 rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-slate-50 transition-transform duration-300 group-hover:scale-105">
                 <img
                   src={article.journal.coverImageUrl}
                   alt={article.journal.title}
@@ -144,16 +143,16 @@ export default function ArticleDetailClient({
           )}
           <Link
             href={`/journals/${article.journal.slug}`}
-            className="hover:text-blue-700 flex items-center space-x-1 font-semibold"
+            className="hover:text-blue-700 flex items-center space-x-1 font-semibold group transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-x-1" />
             <span>{article.journal.title}</span>
           </Link>
         </div>
         <div className="flex items-center space-x-3">
           <span>Vol. {article.issue?.volume?.volumeNumber || 1}, No. {article.issue?.issueNumber || 1} ({publicationYear})</span>
           <span>•</span>
-          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-200">
+          <span className="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200 text-[11px]">
             Open Access
           </span>
         </div>
@@ -162,10 +161,10 @@ export default function ArticleDetailClient({
       {/* Main Article Header */}
       <div className="space-y-6">
         <div className="space-y-3">
-          <span className="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 px-2.5 py-1 rounded border border-blue-200">
+          <span className="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50/90 px-3 py-1 rounded-full border border-blue-200">
             {article.submission.articleType.replace('_', ' ')}
           </span>
-          <h1 className="text-2xl sm:text-4xl font-bold text-navy-950 scholarly-heading leading-tight">
+          <h1 className="text-2xl sm:text-4xl font-bold text-navy-950 scholarly-heading leading-tight tracking-tight">
             {article.title}
           </h1>
           {article.submission.subtitle && (
@@ -185,7 +184,7 @@ export default function ArticleDetailClient({
                 </Link>
                 <sup className="text-blue-700 ml-0.5 font-bold">{idx + 1}</sup>
                 {author.isCorresponding && (
-                  <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1 ml-1 rounded">
+                  <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 ml-1 rounded-full font-bold">
                     Corresponding
                   </span>
                 )}
@@ -194,7 +193,7 @@ export default function ArticleDetailClient({
                     href={`https://orcid.org/${author.orcid}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="ml-1 text-[#a6ce39] hover:opacity-80"
+                    className="ml-1 text-[#a6ce39] hover:opacity-80 font-bold"
                     title={`ORCID: ${author.orcid}`}
                   >
                     iD
@@ -205,7 +204,7 @@ export default function ArticleDetailClient({
             ))}
           </div>
 
-          <div className="text-xs text-slate-500 space-y-1 pt-1 border-t border-slate-100">
+          <div className="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-100">
             {authors.map((author: any, idx: number) => (
               <div key={author.id} className="flex items-start space-x-2">
                 <sup className="font-bold text-blue-700">{idx + 1}</sup>
@@ -215,11 +214,11 @@ export default function ArticleDetailClient({
           </div>
         </div>
 
-        {/* Persistent Identifiers & Metrics Bar */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs">
-          <div className="space-y-1">
+        {/* Persistent Identifiers & Metrics Bar with Glass Design */}
+        <div className="glass-card rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div className="space-y-2">
             {activeDoi && (
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-slate-700">DOI:</span>
                 <a
                   href={`https://doi.org/${activeDoi}`}
@@ -228,9 +227,9 @@ export default function ArticleDetailClient({
                   className="font-mono text-blue-700 hover:underline flex items-center space-x-1"
                 >
                   <span>https://doi.org/{activeDoi}</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 text-blue-500" />
                 </a>
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
                   {article.zenodoDoi ? 'Zenodo' : article.doiStatus}
                 </span>
                 {article.zenodoUrl && (
@@ -249,12 +248,13 @@ export default function ArticleDetailClient({
             <div className="text-slate-500 flex flex-wrap items-center gap-3">
               <span>Published: {new Date(article.publishedAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>
               <span>•</span>
-              <span>Peer-Reviewed</span>
+              <span className="font-medium text-slate-700">Peer-Reviewed</span>
               <span>•</span>
-              <span className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+              <span className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white/80 px-2.5 py-0.5 rounded-full border border-slate-200/80 shadow-2xs">
                 <Download className="w-3.5 h-3.5 text-blue-600" />
                 <span>{downloadsCount} {downloadsCount === 1 ? 'Download' : 'Downloads'}</span>
               </span>
+
               {/* Interactive View Count with Country Readership Popover */}
               <div
                 className="relative inline-block"
@@ -265,13 +265,13 @@ export default function ArticleDetailClient({
                 <button
                   type="button"
                   onClick={() => setShowViewsPopover(!showViewsPopover)}
-                  className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-blue-700 hover:border-blue-300 px-2 py-0.5 rounded border border-slate-200 transition-colors shadow-xs cursor-pointer group"
+                  className="inline-flex items-center space-x-1.5 font-semibold text-slate-700 bg-white/80 hover:bg-white hover:text-blue-700 hover:border-blue-300 px-2.5 py-0.5 rounded-full border border-slate-200/80 transition-all shadow-2xs cursor-pointer group"
                   title="Hover or click to view reader country breakdown"
                 >
                   <Eye className="w-3.5 h-3.5 text-blue-600" />
                   <span>{viewsCount} {viewsCount === 1 ? 'View' : 'Views'}</span>
                   {countryStats.length > 0 && (
-                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 font-bold px-1.5 py-0.2 rounded ml-1">
+                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 font-bold px-1.5 py-0.2 rounded-full ml-1">
                       {countryStats.length} {countryStats.length === 1 ? 'country' : 'countries'}
                     </span>
                   )}
@@ -281,7 +281,7 @@ export default function ArticleDetailClient({
                 {/* Country Analytics Popover */}
                 {showViewsPopover && (
                   <div
-                    className="absolute left-0 bottom-full mb-2 z-50 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-slate-200 p-4 space-y-3 animation-fade-in"
+                    className="absolute left-0 bottom-full mb-2 z-50 w-72 sm:w-80 glass-card rounded-2xl p-4 space-y-3 animate-slide-up shadow-2xl border border-white/60"
                   >
                     <div className="flex items-start justify-between border-b border-slate-100 pb-2.5">
                       <div className="space-y-0.5">
@@ -299,7 +299,7 @@ export default function ArticleDetailClient({
                           e.stopPropagation();
                           setShowViewsPopover(false);
                         }}
-                        className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100"
+                        className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
                         title="Close"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -319,7 +319,6 @@ export default function ArticleDetailClient({
                                 {stat.count} {stat.count === 1 ? 'view' : 'views'}
                               </span>
                             </div>
-                            {/* Visual Progress Bar */}
                             <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                               <div
                                 className="bg-blue-600 h-full rounded-full transition-all duration-500"
@@ -351,7 +350,7 @@ export default function ArticleDetailClient({
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setCitationModalOpen(true)}
-              className="inline-flex items-center space-x-1.5 py-2 px-3.5 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 rounded-lg font-semibold text-slate-700 shadow-xs hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="inline-flex items-center space-x-1.5 py-2.5 px-4 bg-white/80 border border-slate-300/80 hover:bg-white hover:border-blue-300 rounded-xl font-semibold text-slate-700 shadow-2xs hover:shadow-sm btn-magnetic transition-all"
             >
               <Quote className="w-4 h-4 text-blue-700" />
               <span>Cite</span>
@@ -361,7 +360,7 @@ export default function ArticleDetailClient({
               href={downloadUrl}
               download
               onClick={handleDownloadClick}
-              className="inline-flex items-center space-x-1.5 py-2 px-4 bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white rounded-lg font-semibold shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] btn-shimmer transition-all"
+              className="inline-flex items-center space-x-2 py-2.5 px-5 bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-600 hover:to-indigo-500 text-white rounded-xl font-semibold shadow-md btn-shimmer btn-magnetic transition-all"
             >
               <Download className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
               <span>Download PDF</span>
@@ -370,8 +369,8 @@ export default function ArticleDetailClient({
         </div>
       </div>
 
-      {/* Abstract Section */}
-      <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4">
+      {/* Abstract Section with Glass Panel */}
+      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-4">
         <h2 className="text-lg font-bold text-navy-950 scholarly-heading border-b border-slate-100 pb-2">
           Abstract
         </h2>
@@ -386,7 +385,7 @@ export default function ArticleDetailClient({
               {article.keywords.map((k: any) => (
                 <span
                   key={k.id}
-                  className="bg-slate-100 text-slate-700 text-xs px-2.5 py-0.5 rounded font-medium"
+                  className="bg-blue-50/70 border border-blue-200/60 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-medium"
                 >
                   {k.keyword}
                 </span>
@@ -396,14 +395,14 @@ export default function ArticleDetailClient({
         )}
       </section>
 
-      {/* Bibliographic References Section (Standard Scholarly Citation Format) */}
+      {/* Bibliographic References Section */}
       {article.references && article.references.length > 0 && (
-        <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <h2 className="text-lg font-bold text-navy-950 scholarly-heading">
               References ({article.references.length})
             </h2>
-            <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2.5 py-1 rounded">
+            <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2.5 py-1 rounded-full">
               Verified Bibliographic Citations
             </span>
           </div>
@@ -431,24 +430,24 @@ export default function ArticleDetailClient({
       )}
 
       {/* Declarations & Ethics Statement */}
-      <section className="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm space-y-4 text-xs text-slate-700">
+      <section className="glass-card p-6 sm:p-8 rounded-2xl space-y-4 text-xs text-slate-700">
         <h2 className="text-base font-bold text-navy-950 scholarly-heading border-b border-slate-100 pb-2">
-          Declarations & Editorial Statements
+          Declarations &amp; Editorial Statements
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="p-3.5 bg-white/60 rounded-xl border border-slate-100">
             <h4 className="font-bold text-slate-900 mb-1">Conflict of Interest</h4>
             <p className="text-slate-600">{article.submission.conflictOfInterest || 'The authors declare no competing financial or non-financial interests.'}</p>
           </div>
-          <div>
+          <div className="p-3.5 bg-white/60 rounded-xl border border-slate-100">
             <h4 className="font-bold text-slate-900 mb-1">Funding Information</h4>
             <p className="text-slate-600">{article.submission.fundingInfo || 'No external research grant was declared for this project.'}</p>
           </div>
-          <div>
+          <div className="p-3.5 bg-white/60 rounded-xl border border-slate-100">
             <h4 className="font-bold text-slate-900 mb-1">Data Availability Statement</h4>
             <p className="text-slate-600">{article.submission.dataAvailability || 'Data sharing is not applicable or research artifacts are publicly archived as cited in the text.'}</p>
           </div>
-          <div>
+          <div className="p-3.5 bg-white/60 rounded-xl border border-slate-100">
             <h4 className="font-bold text-slate-900 mb-1">Publishing License</h4>
             <p className="text-slate-600">
               Published under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="text-blue-700 underline font-semibold">Creative Commons Attribution 4.0 International (CC BY 4.0)</a>. Authors retain copyright.

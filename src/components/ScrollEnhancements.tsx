@@ -9,21 +9,20 @@ export default function ScrollEnhancements() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const totalScroll =
+        document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const currentScroll = window.scrollY;
 
       if (totalScroll > 0) {
-        const progress = Math.min(100, Math.max(0, (currentScroll / totalScroll) * 100));
-        setScrollProgress(progress);
+        setScrollProgress(Math.min(100, Math.max(0, (currentScroll / totalScroll) * 100)));
       }
-
       setShowBackToTop(currentScroll > 320);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
 
-    // IntersectionObserver for reveal-on-scroll elements
+    // ── Intersection Observer for all reveal variants ────────────
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -32,20 +31,24 @@ export default function ScrollEnhancements() {
           }
         });
       },
-      {
-        root: null,
-        rootMargin: '0px 0px -40px 0px',
-        threshold: 0.08,
-      }
+      { root: null, rootMargin: '0px 0px -48px 0px', threshold: 0.07 }
     );
 
-    const elements = document.querySelectorAll('.reveal-on-scroll');
-    elements.forEach((el) => observer.observe(el));
+    const selectors = [
+      '.reveal-on-scroll',
+      '.reveal-left',
+      '.reveal-scale',
+    ];
 
-    // Handle dynamically rendered elements
+    const allRevealEls = document.querySelectorAll(selectors.join(','));
+    allRevealEls.forEach((el) => observer.observe(el));
+
+    // Handle dynamically rendered reveal elements
     const mutationObserver = new MutationObserver(() => {
-      const newElements = document.querySelectorAll('.reveal-on-scroll:not(.is-observed)');
-      newElements.forEach((el) => {
+      const newEls = document.querySelectorAll(
+        selectors.map((s) => `${s}:not(.is-observed)`).join(',')
+      );
+      newEls.forEach((el) => {
         el.classList.add('is-observed');
         observer.observe(el);
       });
@@ -60,38 +63,39 @@ export default function ScrollEnhancements() {
     };
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <>
-      {/* Top Reading / Scroll Progress Bar */}
+      {/* Reading progress bar */}
       <div
-        className="fixed top-0 left-0 right-0 h-[3px] z-[999] pointer-events-none transition-all duration-150"
+        className="fixed top-0 left-0 right-0 h-[3px] z-[999] pointer-events-none scroll-progress-bar transition-[width] duration-150"
         style={{
-          background: 'linear-gradient(90deg, #2563eb, #3b82f6, #06b6d4, #10b981)',
           width: `${scrollProgress}%`,
           opacity: scrollProgress > 1 ? 1 : 0,
-          boxShadow: '0 0 10px rgba(37, 99, 235, 0.5)',
+          transition: 'width 0.15s linear, opacity 0.3s ease',
         }}
       />
 
-      {/* Floating Back-to-Top Button */}
+      {/* Back-to-top button - positioned comfortably above the chat launcher */}
       <button
         type="button"
         onClick={scrollToTop}
         aria-label="Scroll to top of page"
-        className={`fixed bottom-6 right-6 z-40 p-3 rounded-full bg-navy-950/90 hover:bg-blue-600 text-white shadow-xl hover:shadow-2xl border border-white/10 backdrop-blur-md transition-all duration-300 transform group ${
-          showBackToTop
+        className={`fixed bottom-24 right-6 z-40 w-11 h-11 rounded-2xl
+          bg-navy-950/90 hover:bg-blue-600 text-white
+          shadow-xl hover:shadow-blue-500/30 hover:shadow-2xl
+          border border-white/10 backdrop-blur-md
+          flex items-center justify-center
+          transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)]
+          group btn-magnetic
+          ${showBackToTop
             ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
-            : 'opacity-0 translate-y-6 scale-90 pointer-events-none'
-        }`}
+            : 'opacity-0 translate-y-6 scale-85 pointer-events-none'
+          }`}
+        style={{ WebkitBackdropFilter: 'blur(12px)' }}
       >
-        <ArrowUp className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110" />
+        <ArrowUp className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-110" />
       </button>
     </>
   );
