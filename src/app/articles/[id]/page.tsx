@@ -107,17 +107,17 @@ export async function generateMetadata({
   const publisherName = article.journal.publisher || 'NextGen Innovation & Research Journals, Gower Street, London, United Kingdom';
 
   const citationMetadata: Record<string, string | string[]> = {
-    citation_title: article.title,
+    citation_title: article.title.trim(),
     citation_author: fallbackAuthors,
     citation_publication_date: citationDate,
     citation_online_date: citationDate,
-    citation_journal_title: article.journal.title,
-    citation_publisher: publisherName,
+    citation_journal_title: article.journal.title.trim(),
+    citation_publisher: publisherName.trim(),
     citation_fulltext_world_readable: '',
   };
 
   if (article.journal.abbreviation) {
-    citationMetadata.citation_journal_abbrev = article.journal.abbreviation;
+    citationMetadata.citation_journal_abbrev = article.journal.abbreviation.trim();
   }
   if (article.journal.onlineIssn) {
     citationMetadata.citation_issn = article.journal.onlineIssn;
