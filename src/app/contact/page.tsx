@@ -34,7 +34,7 @@ export default function ContactPage() {
               <Mail className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-slate-900 block">General Submissions</span>
-                <span className="text-slate-600">editorial@nextgen.org</span>
+                <span className="text-slate-600">nextgenjournals@gmail.com</span>
               </div>
             </div>
 
@@ -42,7 +42,7 @@ export default function ContactPage() {
               <MessageSquare className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-slate-900 block">DOI & Metadata Deposits</span>
-                <span className="text-slate-600">doi@nextgen-press.org</span>
+                <span className="text-slate-600">depositsdoi@nextgenuk.online</span>
               </div>
             </div>
 
@@ -84,16 +84,24 @@ export default function ContactPage() {
           </h2>
           <div className="space-y-3">
             <div>
+              <span className="font-bold text-slate-900 block">NextGen International Journal of Knowledge Management (NIJKM)</span>
+              <span className="text-blue-700">lucky.urhiewhu@dou.edu.ng</span>
+            </div>
+            <div>
               <span className="font-bold text-slate-900 block">Journal of Science, Technology & AI (JSTAI)</span>
-              <span className="text-blue-700">jstai-nextgenjournals@gmail.com</span>
+              <span className="text-blue-700">nextgeneditorial1@gmail.com</span>
             </div>
             <div>
               <span className="font-bold text-slate-900 block">NextGen Engineering & Computing Review (NECR)</span>
-              <span className="text-blue-700">necr-nextgenjournals@gmail.com</span>
+              <span className="text-blue-700">nextgeneditorial1@gmail.com</span>
+            </div>
+            <div>
+              <span className="font-bold text-slate-900 block">NextGen Journal of Librarianship (NJL)</span>
+              <span className="text-blue-700">lucky.urhiewhu@dou.edu.ng</span>
             </div>
             <div>
               <span className="font-bold text-slate-900 block">Interdisciplinary Health & Life Sciences (IHLS)</span>
-              <span className="text-blue-700">ihls-nextgenjournals@gmail.com</span>
+              <span className="text-blue-700">nextgeneditorial1@gmail.com</span>
             </div>
           </div>
         </div>
